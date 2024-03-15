@@ -302,11 +302,19 @@ def wcsgs(x,y,z,f,d,lam,res,iters,sub):
 
     return out, get_performance_metrics(ints, t)
 
+
 if __name__ == "__main__":
-    # usage examplefor a 20mm focal length system, a 512x512 pixels slm with 15 micron pitch, and 488nm wavelength.
+    # usage example for a 20mm focal length system, a 512x512 pixels slm with 15 micron pitch, and 488nm wavelength.
     # x,y,z are arrays with the desired positions of 100 points, chosen at random in a 100x100x10 volume.
     # GS,CSGS,WGS and WCSGS algorithms are run for 30 iterations. CSGS and WCSGS are run with a compression factor
     # of 0.05 (only 1 out of 20 pixels of the SLM is considered in the loop)
+    FOCAL_LENGTH = 20.0
+    PIXELS       = 512
+    PITCH        = 15.0
+    WAVELENGTH   = 0.488
+    NPOINTS      = 100
+    ITERATIONS   = 30
+    COMPRESSION  = 0.05
 
 
     # use a fixed seed to make reproducible results
@@ -314,9 +322,9 @@ if __name__ == "__main__":
     np.random.seed(SEED)
 
 
-    x=(np.random.random(100)-0.5)*100.0
-    y=(np.random.random(100)-0.5)*100.0
-    z=(np.random.random(100)-0.5)*10.0
+    x=(np.random.random(NPOINTS)-0.5)*100.0
+    y=(np.random.random(NPOINTS)-0.5)*100.0
+    z=(np.random.random(NPOINTS)-0.5)*10.0
 
 
     performance_pars = [
@@ -328,7 +336,7 @@ if __name__ == "__main__":
 
 
     print("Computing random superposition hologram:")
-    phase, performance=rs(x,y,z,20.0,15.0,0.488,512)
+    phase, performance=rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
@@ -336,7 +344,7 @@ if __name__ == "__main__":
 
 
     print("Computing Gerchberg-Saxton hologram:")
-    phase, performance=gs(x,y,z,20.0,15.0,0.488,512,30)
+    phase, performance=gs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
    
     for i in range(4):
         print(performance_pars[i],performance[i])
@@ -344,7 +352,7 @@ if __name__ == "__main__":
 
 
     print("Computing Weighted Gerchberg-Saxton hologram:")
-    phase, performance=wgs(x,y,z,20.0,15.0,0.488,512,30)
+    phase, performance=wgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
@@ -352,7 +360,7 @@ if __name__ == "__main__":
 
 
     print("Computing Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=csgs(x,y,z,20.0,15.0,0.488,512,30,0.05)
+    phase, performance=csgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
@@ -360,7 +368,7 @@ if __name__ == "__main__":
 
 
     print("Computing Weighted Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=wcsgs(x,y,z,20.0,15.0,0.488,512,30,0.05)
+    phase, performance=wcsgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
