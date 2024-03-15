@@ -10,6 +10,18 @@ get_time=time.perf_counter
 #micrometers, res is the lateral resolution of the SLM.The software assumes the use of a circular area within a square slm:
 #additional zero padding may be needed to operate rectangular SLMs
 
+
+def get_performance_metrics(intensities, t):
+    min = np.min(intensities)
+    max = np.max(intensities)
+
+    efficiency = np.sum(intensities)
+    uniformity = 1 - (max - min) / (max + min)
+    variance   = np.sqrt(np.var(intensities)) / np.mean(intensities)
+
+    return [efficiency, uniformity, variance, t]
+
+
 # Random superposition algorithm: Fastest available algorithm, produces low quality holograms
 
 def rs(x,y,z,f,d,lam,res):
@@ -51,7 +63,7 @@ def rs(x,y,z,f,d,lam,res):
 
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     
-    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
+    return out, get_performance_metrics(ints, t)
 
 
 
@@ -98,7 +110,8 @@ def gs(x,y,z,f,d,lam,res,iters):
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
+
+    return out, get_performance_metrics(ints, t)
 
 
 
@@ -151,7 +164,8 @@ def wgs(x,y,z,f,d,lam,res,iters):
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
+
+    return out, get_performance_metrics(ints, t)
 
 
 
@@ -214,7 +228,8 @@ def csgs(x,y,z,f,d,lam,res,iters,sub):
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
+
+    return out, get_performance_metrics(ints, t)
 
 # Weighted compressive sensing GS:Fast, efficiency and uniformity between GS and WGS.
 # The parameter "sub" is a float greater than 0.0 and up to 1.0, indicating the Subsampling of the pupil. For sub=1.0, CSGS is equivalent to GS.
@@ -284,7 +299,8 @@ def wcsgs(x,y,z,f,d,lam,res,iters,sub):
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
+
+    return out, get_performance_metrics(ints, t)
 
 if __name__ == "__main__":
     # usage examplefor a 20mm focal length system, a 512x512 pixels slm with 15 micron pitch, and 488nm wavelength.
