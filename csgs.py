@@ -302,42 +302,50 @@ if __name__ == "__main__":
     y=(np.random.random(100)-0.5)*100.0
     z=(np.random.random(100)-0.5)*10.0
 
-    performance_pars=["Efficiency : ","Uniformity : ","Variance : ","Computation time (s) : "]
+
+    performance_pars = [
+            "Efficiency           : ",
+            "Uniformity           : ",
+            "Variance             : ",
+            "Computation time (s) : "
+    ]
+
 
     print("Computing random superposition hologram:")
-
     phase, performance=rs(x,y,z,20.0,15.0,0.488,512)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
+    print()
+
 
     print("Computing Gerchberg-Saxton hologram:")
-
     phase, performance=gs(x,y,z,20.0,15.0,0.488,512,30)
-    
    
     for i in range(4):
         print(performance_pars[i],performance[i])
+    print()
+
 
     print("Computing Weighted Gerchberg-Saxton hologram:")
-
     phase, performance=wgs(x,y,z,20.0,15.0,0.488,512,30)
 
-    
     for i in range(4):
         print(performance_pars[i],performance[i])
+    print()
+
 
     print("Computing Compressive Sensing Gerchberg-Saxton hologram:")
-
     phase, performance=csgs(x,y,z,20.0,15.0,0.488,512,30,0.05)
-
 
     for i in range(4):
         print(performance_pars[i],performance[i])
+    print()
+
 
     print("Computing Weighted Compressive Sensing Gerchberg-Saxton hologram:")
-
     phase, performance=wcsgs(x,y,z,20.0,15.0,0.488,512,30,0.05)
 
     for i in range(4):
         print(performance_pars[i],performance[i])
+    print()
