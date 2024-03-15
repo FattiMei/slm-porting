@@ -1,11 +1,9 @@
-from __future__ import print_function
 import numpy as np
 import time
-import sys
-if sys.version_info[0] < 3:
-    get_time=time.clock
-else:
-    get_time=time.perf_counter
+
+
+get_time=time.perf_counter
+
 
 #For all five functions, x,y,z are one-dimensional arrays of floats with coordinates in micrometers, f is a float with the
 #equivalent focal of the system in mm, d is a float with the pixel size in micrometers, lam is the wavelength used in
