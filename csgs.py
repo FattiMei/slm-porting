@@ -286,12 +286,17 @@ def wcsgs(x,y,z,f,d,lam,res,iters,sub):
     out[pup_coords]=slm_total_phase
     return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
-if __name__=="__main__":
-    
+if __name__ == "__main__":
     # usage examplefor a 20mm focal length system, a 512x512 pixels slm with 15 micron pitch, and 488nm wavelength.
     # x,y,z are arrays with the desired positions of 100 points, chosen at random in a 100x100x10 volume.
     # GS,CSGS,WGS and WCSGS algorithms are run for 30 iterations. CSGS and WCSGS are run with a compression factor
     # of 0.05 (only 1 out of 20 pixels of the SLM is considered in the loop)
+
+
+    # use a fixed seed to make reproducible results
+    SEED = 42
+    np.random.seed(SEED)
+
 
     x=(np.random.random(100)-0.5)*100.0
     y=(np.random.random(100)-0.5)*100.0
