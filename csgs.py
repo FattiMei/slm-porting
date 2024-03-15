@@ -1,5 +1,5 @@
 from __future__ import print_function
-import numpy
+import numpy as np
 import time
 import sys
 if sys.version_info[0] < 3:
@@ -18,42 +18,42 @@ def rs(x,y,z,f,d,lam,res):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
-    slm_xcoord,slm_ycoord=numpy.meshgrid(numpy.linspace(-1.0,1.0,res),numpy.linspace(-1.0,1.0,res))
-    pup_coords=numpy.where(slm_xcoord**2+slm_ycoord**2<1.0)
+    slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #array containing the phase of the field at each created spot
-    pists=numpy.random.random(x.shape[0])*2*numpy.pi
+    pists=np.random.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    slm_p_phase=numpy.zeros((x.shape[0],pup_coords[0].shape[0]))
+    slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
     for i in range(x.shape[0]):
-        slm_p_phase[i,:]=2.0*numpy.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(numpy.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
+        slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
 
     #creation of the hologram, as superposition of all the phase patterns with random pistons
-    slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-    slm_total_phase=numpy.angle(slm_total_field)
+    slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+    slm_total_phase=np.angle(slm_total_field)
 
     t=get_time()-t
 
     #evaluation of the algorithm performance, calculating the expected intensities of all spots
 
-    spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-    ints=numpy.abs(spot_fields)**2
+    spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+    ints=np.abs(spot_fields)**2
 
 
     #reshaping of the hologram in a square array
 
-    out=numpy.zeros((res,res))
+    out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
 
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
     
-    return out,[numpy.sum(ints),1-(numpy.max(ints)-numpy.min(ints))/(numpy.max(ints)+numpy.min(ints)),numpy.sqrt(numpy.var(ints))/numpy.mean(ints),t]
+    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
 
 
@@ -65,42 +65,42 @@ def gs(x,y,z,f,d,lam,res,iters):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
-    slm_xcoord,slm_ycoord=numpy.meshgrid(numpy.linspace(-1.0,1.0,res),numpy.linspace(-1.0,1.0,res))
-    pup_coords=numpy.where(slm_xcoord**2+slm_ycoord**2<1.0)
+    slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
     
     
     #array containing the phase of the field at each created spot
-    pists=numpy.random.random(x.shape[0])*2*numpy.pi
+    pists=np.random.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    slm_p_phase=numpy.zeros((x.shape[0],pup_coords[0].shape[0]))
+    slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
     for i in range(x.shape[0]):
-        slm_p_phase[i,:]=2.0*numpy.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(numpy.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
+        slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
 
     #main GS loop
     for n in range(iters):
         #creation of the hologram, as superposition of all the phase patterns with random pistons
-        slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-        slm_total_phase=numpy.angle(slm_total_field)
+        slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+        slm_total_phase=np.angle(slm_total_field)
 
 
         #Update of the phases at all spots locations. The intensities are evaluated too for performance
         #estimation of the algorithm
-        spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-        pists=numpy.angle(spot_fields)
-        ints=numpy.abs(spot_fields)**2
+        spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+        pists=np.angle(spot_fields)
+        ints=np.abs(spot_fields)**2
 
     t=get_time()-t
             
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
-    out=numpy.zeros((res,res))
+    out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[numpy.sum(ints),1-(numpy.max(ints)-numpy.min(ints))/(numpy.max(ints)+numpy.min(ints)),numpy.sqrt(numpy.var(ints))/numpy.mean(ints),t]
+    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
 
 
@@ -111,49 +111,49 @@ def wgs(x,y,z,f,d,lam,res,iters):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
-    slm_xcoord,slm_ycoord=numpy.meshgrid(numpy.linspace(-1.0,1.0,res),numpy.linspace(-1.0,1.0,res))
-    pup_coords=numpy.where(slm_xcoord**2+slm_ycoord**2<1.0)
+    slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
     
     #initialization of the weights, all with equal value
-    weights=numpy.ones(x.shape[0])/float(x.shape[0])
+    weights=np.ones(x.shape[0])/float(x.shape[0])
     
     #array containing the phase of the field at each created spot
-    pists=numpy.random.random(x.shape[0])*2*numpy.pi
+    pists=np.random.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    slm_p_phase=numpy.zeros((x.shape[0],pup_coords[0].shape[0]))
+    slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
     for i in range(x.shape[0]):
-        slm_p_phase[i,:]=2.0*numpy.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(numpy.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
+        slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
 
     #main GS loop
     for n in range(iters):
         #Creation of the hologram, as superposition of all the phase patterns with random pistons and weighted intensity
-        slm_total_field=numpy.sum(weights[:,None]/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-        slm_total_phase=numpy.angle(slm_total_field)
+        slm_total_field=np.sum(weights[:,None]/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+        slm_total_phase=np.angle(slm_total_field)
 
 
         #Update of the phases at all spots locations. The intensities are evaluated too for performance
         #estimation of the algorithm
-        spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-        pists=numpy.angle(spot_fields)
-        ints=numpy.abs(spot_fields)**2
+        spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+        pists=np.angle(spot_fields)
+        ints=np.abs(spot_fields)**2
         #update and renormalization of the weights. Renormalization is required to avoid computation precision errors in the final performance for
         #large numbers of iterations
-        weights=weights*(numpy.mean(numpy.sqrt(ints))/numpy.sqrt(ints))
-        weights=weights/numpy.sum(weights)
+        weights=weights*(np.mean(np.sqrt(ints))/np.sqrt(ints))
+        weights=weights/np.sum(weights)
 
 
     t=get_time()-t
             
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
-    out=numpy.zeros((res,res))
+    out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[numpy.sum(ints),1-(numpy.max(ints)-numpy.min(ints))/(numpy.max(ints)+numpy.min(ints)),numpy.sqrt(numpy.var(ints))/numpy.mean(ints),t]
+    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
 
 
@@ -165,15 +165,15 @@ def wgs(x,y,z,f,d,lam,res,iters):
 def csgs(x,y,z,f,d,lam,res,iters,sub):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
-    slm_xcoord,slm_ycoord=numpy.meshgrid(numpy.linspace(-1.0,1.0,res),numpy.linspace(-1.0,1.0,res))
-    pup_coords=numpy.where(slm_xcoord**2+slm_ycoord**2<1.0)
+    slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #creation of a list of the indexes of pup_coords, shuffled in random order
-    coordslist=numpy.asarray(range(pup_coords[0].shape[0]))
-    numpy.random.shuffle(coordslist)
+    coordslist=np.asarray(range(pup_coords[0].shape[0]))
+    np.random.shuffle(coordslist)
     
     #array containing the phase of the field at each created spot
-    pists=numpy.random.random(x.shape[0])*2*numpy.pi
+    pists=np.random.random(x.shape[0])*2*np.pi
 
     
     #conversion of the coordinates arrays in microns
@@ -181,42 +181,42 @@ def csgs(x,y,z,f,d,lam,res,iters,sub):
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    slm_p_phase=numpy.zeros((x.shape[0],pup_coords[0].shape[0]))
+    slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
     for i in range(x.shape[0]):
-        slm_p_phase[i,:]=2.0*numpy.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(numpy.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
+        slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
     #main GS loop
     for n in range(iters):
         #a new set of random points is chosen on the SLM
-        coordslist=numpy.roll(coordslist,int(coordslist.shape[0]*sub))
+        coordslist=np.roll(coordslist,int(coordslist.shape[0]*sub))
         coordslist_sparse=coordslist[:int(coordslist.shape[0]*sub)]
 
         #Creation of the hologram, as superposition of all the phase patterns with the estimated phases and weighted intensity
-        slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase[:,coordslist_sparse]+pists[:,None])),axis=0)
-        slm_total_phase=numpy.angle(slm_total_field)
+        slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase[:,coordslist_sparse]+pists[:,None])),axis=0)
+        slm_total_phase=np.angle(slm_total_field)
 
         #Update of the phases at all spots locations. The intensities are evaluated too for performance
         #estimation of the algorithm
-        spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase[:,coordslist_sparse])),axis=1)
-        pists=numpy.angle(spot_fields)
-        ints=numpy.abs(spot_fields)**2
+        spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase[:,coordslist_sparse])),axis=1)
+        pists=np.angle(spot_fields)
+        ints=np.abs(spot_fields)**2
 
 
     #The output holograms is estimated with the full SLM resolution
-    slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-    slm_total_phase=numpy.angle(slm_total_field)
+    slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+    slm_total_phase=np.angle(slm_total_field)
 
     t=get_time()-t
 
 
     #evaluation of the algorithm performance, calculating the expected intensities of all spots
-    spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-    ints=numpy.abs(spot_fields)**2
+    spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+    ints=np.abs(spot_fields)**2
             
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
-    out=numpy.zeros((res,res))
+    out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[numpy.sum(ints),1-(numpy.max(ints)-numpy.min(ints))/(numpy.max(ints)+numpy.min(ints)),numpy.sqrt(numpy.var(ints))/numpy.mean(ints),t]
+    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
 # Weighted compressive sensing GS:Fast, efficiency and uniformity between GS and WGS.
 # The parameter "sub" is a float greater than 0.0 and up to 1.0, indicating the Subsampling of the pupil. For sub=1.0, CSGS is equivalent to GS.
@@ -226,15 +226,15 @@ def csgs(x,y,z,f,d,lam,res,iters,sub):
 def wcsgs(x,y,z,f,d,lam,res,iters,sub):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
-    slm_xcoord,slm_ycoord=numpy.meshgrid(numpy.linspace(-1.0,1.0,res),numpy.linspace(-1.0,1.0,res))
-    pup_coords=numpy.where(slm_xcoord**2+slm_ycoord**2<1.0)
+    slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #creation of a list of the indexes of pup_coords, shuffled in random order
-    coordslist=numpy.asarray(range(pup_coords[0].shape[0]))
-    numpy.random.shuffle(coordslist)
+    coordslist=np.asarray(range(pup_coords[0].shape[0]))
+    np.random.shuffle(coordslist)
     
     #array containing the phase of the field at each created spot
-    pists=numpy.random.random(x.shape[0])*2*numpy.pi
+    pists=np.random.random(x.shape[0])*2*np.pi
 
     
     #conversion of the coordinates arrays in microns
@@ -242,51 +242,51 @@ def wcsgs(x,y,z,f,d,lam,res,iters,sub):
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    slm_p_phase=numpy.zeros((x.shape[0],pup_coords[0].shape[0]))
+    slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
     for i in range(x.shape[0]):
-        slm_p_phase[i,:]=2.0*numpy.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(numpy.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
+        slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
     #main GS loop
     for n in range(iters-1):
         #a new set of random points is chosen on the SLM
-        coordslist=numpy.roll(coordslist,int(coordslist.shape[0]*sub))
+        coordslist=np.roll(coordslist,int(coordslist.shape[0]*sub))
         coordslist_sparse=coordslist[:int(coordslist.shape[0]*sub)]
 
         #Creation of the hologram, as superposition of all the phase patterns with the estimated phases
-        slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase[:,coordslist_sparse]+pists[:,None])),axis=0)
-        slm_total_phase=numpy.angle(slm_total_field)
+        slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase[:,coordslist_sparse]+pists[:,None])),axis=0)
+        slm_total_phase=np.angle(slm_total_field)
 
         #Update of the phases at all spots locations. The intensities are evaluated too for performance
         #estimation of the algorithm
-        spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase[:,coordslist_sparse])),axis=1)
-        pists=numpy.angle(spot_fields)
-        ints=numpy.abs(spot_fields)**2
+        spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase[:,coordslist_sparse])),axis=1)
+        pists=np.angle(spot_fields)
+        ints=np.abs(spot_fields)**2
 
 
     # an additional single loop of WGS without compression
-    slm_total_field=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-    slm_total_phase=numpy.angle(slm_total_field)
+    slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+    slm_total_phase=np.angle(slm_total_field)
 
-    spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-    pists=numpy.angle(spot_fields)
-    ints=numpy.abs(spot_fields)**2
+    spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+    pists=np.angle(spot_fields)
+    ints=np.abs(spot_fields)**2
 
-    weights=numpy.ones(x.shape[0])/float(x.shape[0])*(numpy.mean(numpy.sqrt(ints))/numpy.sqrt(ints))
-    weights=weights/numpy.sum(weights)
+    weights=np.ones(x.shape[0])/float(x.shape[0])*(np.mean(np.sqrt(ints))/np.sqrt(ints))
+    weights=weights/np.sum(weights)
 
-    slm_total_field=numpy.sum(weights[:,None]/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-    slm_total_phase=numpy.angle(slm_total_field)
+    slm_total_field=np.sum(weights[:,None]/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
+    slm_total_phase=np.angle(slm_total_field)
 
     t=get_time()-t
 
     #evaluation of the algorithm performance, calculating the expected intensities of all spots
-    spot_fields=numpy.sum(1.0/(float(pup_coords[0].shape[0]))*numpy.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
-    ints=numpy.abs(spot_fields)**2    
+    spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+    ints=np.abs(spot_fields)**2    
             
     #the function returns the hologram, and a list with efficiency, uniformity and variance of the spots, and hologram computation time
-    out=numpy.zeros((res,res))
+    out=np.zeros((res,res))
     out[pup_coords]=slm_total_phase
-    return out,[numpy.sum(ints),1-(numpy.max(ints)-numpy.min(ints))/(numpy.max(ints)+numpy.min(ints)),numpy.sqrt(numpy.var(ints))/numpy.mean(ints),t]
+    return out,[np.sum(ints),1-(np.max(ints)-np.min(ints))/(np.max(ints)+np.min(ints)),np.sqrt(np.var(ints))/np.mean(ints),t]
 
 if __name__=="__main__":
     
@@ -295,9 +295,9 @@ if __name__=="__main__":
     # GS,CSGS,WGS and WCSGS algorithms are run for 30 iterations. CSGS and WCSGS are run with a compression factor
     # of 0.05 (only 1 out of 20 pixels of the SLM is considered in the loop)
 
-    x=(numpy.random.random(100)-0.5)*100.0
-    y=(numpy.random.random(100)-0.5)*100.0
-    z=(numpy.random.random(100)-0.5)*10.0
+    x=(np.random.random(100)-0.5)*100.0
+    y=(np.random.random(100)-0.5)*100.0
+    z=(np.random.random(100)-0.5)*10.0
 
     performance_pars=["Efficiency : ","Uniformity : ","Variance : ","Computation time (s) : "]
 

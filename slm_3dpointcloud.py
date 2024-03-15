@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import os
 import time
 import matplotlib.pyplot as plt
@@ -211,7 +211,7 @@ cuda_code = """
 
 def gauss(coords,I,off,x0,y0,w0_x,w0_y):
     x, y = coords
-    return I*(numpy.exp(-(x-x0)**2/w0_x**2-(y-y0)**2/w0_y**2))+off
+    return I*(np.exp(-(x-x0)**2/w0_x**2-(y-y0)**2/w0_y**2))+off
 
 
 class SlmControl:
@@ -226,7 +226,7 @@ If used for academic purposes, please consider citing the appropriate literature
             self.screenresolution = (screeninfo.get_monitors()[self.screenID].height,
                                    screeninfo.get_monitors()[self.screenID].width)
             if active_area_coords is None:
-                self.res = numpy.amin(numpy.asarray([screeninfo.get_monitors()[self.screenID].height,
+                self.res = np.amin(np.asarray([screeninfo.get_monitors()[self.screenID].height,
                                                      screeninfo.get_monitors()[self.screenID].width]))
                 self.position = (screeninfo.get_monitors()[self.screenID].x, 0)
                 self.aperture_position=(int((self.screenresolution[0]-self.res)/2),
@@ -296,51 +296,51 @@ If used for academic purposes, please consider citing the appropriate literature
         self.pix_size = pixel_size_um
         self.f = focal_mm*1000.0
         self.blocksize_forward = 512
-        XC, YC = numpy.meshgrid(numpy.linspace(-self.pix_size * self.res / 2, self.pix_size * self.res / 2, self.res),
-                                numpy.linspace(-self.pix_size * self.res / 2, self.pix_size * self.res / 2, self.res))
+        XC, YC = np.meshgrid(np.linspace(-self.pix_size * self.res / 2, self.pix_size * self.res / 2, self.res),
+                                np.linspace(-self.pix_size * self.res / 2, self.pix_size * self.res / 2, self.res))
         RC2 = XC ** 2 + YC ** 2
-        pupil_coords = numpy.where(numpy.sqrt(RC2) <= self.pix_size * self.res / 2)
-        indexes = numpy.asarray(range(pupil_coords[0].shape[0]))
-        numpy.random.shuffle(indexes)
+        pupil_coords = np.where(np.sqrt(RC2) <= self.pix_size * self.res / 2)
+        indexes = np.asarray(range(pupil_coords[0].shape[0]))
+        np.random.shuffle(indexes)
         self.pupil_coords = (pupil_coords[0][indexes], pupil_coords[1][indexes])
         self.PUP_NP = self.pupil_coords[0].shape[0]
 
-        # XC_unit, YC_unit = numpy.meshgrid(numpy.linspace(-1.0, 1.0, self.res),
-        #                         numpy.linspace(-1.0, 1.0, self.res))
+        # XC_unit, YC_unit = np.meshgrid(np.linspace(-1.0, 1.0, self.res),
+        #                         np.linspace(-1.0, 1.0, self.res))
         # pupil_int = gauss((XC_unit, YC_unit), 1.0, 0.0, 0.00851336, -0.02336506,  0.48547321,  0.50274484)**2
 
         if beam_radius_mm == None:
-            pupil_int=numpy.ones((self.res,self.res))
+            pupil_int=np.ones((self.res,self.res))
         else:
-            pupil_int = numpy.exp(-(XC**2+YC**2)/(1000.0*beam_radius_mm)**2)
+            pupil_int = np.exp(-(XC**2+YC**2)/(1000.0*beam_radius_mm)**2)
         pupil_int = pupil_int[self.pupil_coords]
-        pupil_int = (pupil_int/numpy.sum(pupil_int)).astype("float32")
+        pupil_int = (pupil_int/np.sum(pupil_int)).astype("float32")
         self.PUP_INT_gpu = gpuarray.to_gpu(pupil_int)
-        self.holo_real_gpu = gpuarray.to_gpu(numpy.zeros(self.PUP_NP, dtype="float32"))
-        self.holo_imag_gpu = gpuarray.to_gpu(numpy.zeros(self.PUP_NP, dtype="float32"))
+        self.holo_real_gpu = gpuarray.to_gpu(np.zeros(self.PUP_NP, dtype="float32"))
+        self.holo_imag_gpu = gpuarray.to_gpu(np.zeros(self.PUP_NP, dtype="float32"))
         self.XC_gpu = gpuarray.to_gpu(XC[self.pupil_coords].astype("float32"))
         self.YC_gpu = gpuarray.to_gpu(YC[self.pupil_coords].astype("float32"))
-        self.float_pars_gpu = gpuarray.to_gpu(numpy.asarray([2.0 * numpy.pi / (self.lam * self.f),
-                                                             numpy.pi / (self.lam * self.f ** 2) * 10 ** 3]
+        self.float_pars_gpu = gpuarray.to_gpu(np.asarray([2.0 * np.pi / (self.lam * self.f),
+                                                             np.pi / (self.lam * self.f ** 2) * 10 ** 3]
                                                             ).astype("float32"))
         self.screen_pup_coords_y_gpu = gpuarray.to_gpu((self.pupil_coords[0]+self.aperture_position[0]).astype("int32"))
         self.screen_pup_coords_x_gpu = gpuarray.to_gpu((self.pupil_coords[1]+self.aperture_position[1]).astype("int32"))
-        self.screenpars_gpu = gpuarray.to_gpu(numpy.asarray([self.PUP_NP,self.screenresolution[1], self.lut_edges[0], self.lut_edges[1]]).astype("int32"))
+        self.screenpars_gpu = gpuarray.to_gpu(np.asarray([self.PUP_NP,self.screenresolution[1], self.lut_edges[0], self.lut_edges[1]]).astype("int32"))
 
     def rs(self, spots_coords, spots_ints, get_perf=False):
         t = time.perf_counter()
         SPOTS_N = spots_coords.shape[0]
-        spots_parameters=numpy.zeros((SPOTS_N, 7))
+        spots_parameters=np.zeros((SPOTS_N, 7))
         spots_parameters[:, 0:3] = spots_coords
         spots_parameters[:, 3] = 1.0
         spots_parameters[:, 4] = spots_ints
-        spots_parameters[:, 5] = numpy.random.random(SPOTS_N)*2*numpy.pi
+        spots_parameters[:, 5] = np.random.random(SPOTS_N)*2*np.pi
         spots_parameters[:, 6] = 0.0
-        spots_parameters[:, 4] = spots_parameters[:, 4]/numpy.sum(spots_parameters[:, 4])
+        spots_parameters[:, 4] = spots_parameters[:, 4]/np.sum(spots_parameters[:, 4])
         spots_params_gpu = gpuarray.to_gpu(spots_parameters.astype("float32"))
         SPOTS_N=spots_parameters.shape[0]
         int_pars_gpu = gpuarray.to_gpu(
-            numpy.asarray([self.PUP_NP, SPOTS_N, self.blocksize_forward, 0, 0]).astype("int32"))
+            np.asarray([self.PUP_NP, SPOTS_N, self.blocksize_forward, 0, 0]).astype("int32"))
         self.project_to_slm(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                             self.holo_imag_gpu, self.float_pars_gpu, int_pars_gpu,
                             block=(1024, 1, 1), grid=(int(self.PUP_NP/1024)+1, 1, 1))
@@ -348,8 +348,8 @@ If used for academic purposes, please consider citing the appropriate literature
         if get_perf:
             result = int_pars_gpu.get()
             T = time.perf_counter()-t
-            temp_real_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
-            temp_imag_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+            temp_real_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+            temp_imag_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
             self.project_to_spots_setup(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                                         self.holo_imag_gpu, temp_real_gpu, temp_imag_gpu, self.PUP_INT_gpu,
                                         self.float_pars_gpu, int_pars_gpu,
@@ -358,29 +358,29 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                       block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             spots_ints = spots_params_gpu.get()[:,6]
-            e=numpy.sum(spots_ints/spots_parameters[:, 4]/SPOTS_N)
-            u=1-(numpy.amax(spots_ints)-numpy.amin(spots_ints))/(
-                            numpy.amax(spots_ints)+numpy.amin(spots_ints))
-            m=numpy.mean(spots_ints)
-            v=numpy.mean((spots_ints/m-1)**2)
+            e=np.sum(spots_ints/spots_parameters[:, 4]/SPOTS_N)
+            u=1-(np.amax(spots_ints)-np.amin(spots_ints))/(
+                            np.amax(spots_ints)+np.amin(spots_ints))
+            m=np.mean(spots_ints)
+            v=np.mean((spots_ints/m-1)**2)
             return {"Time": T, "Efficiency": e,"Uniformity": u, "Variance": v}
 
     def gs(self, spots_coords, spots_ints, iterations, get_perf=False):
         t=time.perf_counter()
         SPOTS_N = spots_coords.shape[0]
-        spots_parameters=numpy.zeros((SPOTS_N, 7))
+        spots_parameters=np.zeros((SPOTS_N, 7))
         spots_parameters[:, 0:3] = spots_coords
         spots_parameters[:, 3] = 1.0
         spots_parameters[:, 4] = spots_ints
-        spots_parameters[:, 5] = numpy.random.random(SPOTS_N)*2*numpy.pi
+        spots_parameters[:, 5] = np.random.random(SPOTS_N)*2*np.pi
         spots_parameters[:, 6] = 0.0
-        spots_parameters[:, 4] = spots_parameters[:, 4]/numpy.sum(spots_parameters[:, 4])
+        spots_parameters[:, 4] = spots_parameters[:, 4]/np.sum(spots_parameters[:, 4])
         spots_params_gpu = gpuarray.to_gpu(spots_parameters.astype("float32"))
         SPOTS_N = spots_parameters.shape[0]
-        temp_real_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
-        temp_imag_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_real_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_imag_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
         int_pars_gpu = gpuarray.to_gpu(
-            numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, 0, 0]).astype("int32"))
+            np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, 0, 0]).astype("int32"))
         self.project_to_slm(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                             self.holo_imag_gpu, self.float_pars_gpu, int_pars_gpu,
                             block=(1024,1,1),grid=(int(self.PUP_NP/1024)+1, 1, 1))
@@ -407,29 +407,29 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                       block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             spots_ints = spots_params_gpu.get()[:, 6]
-            e = numpy.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
-            u = 1 - (numpy.amax(spots_ints) - numpy.amin(spots_ints)) / (
-                    numpy.amax(spots_ints) + numpy.amin(spots_ints))
-            m=numpy.mean(spots_ints)
-            v=numpy.mean((spots_ints/m-1)**2)
+            e = np.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
+            u = 1 - (np.amax(spots_ints) - np.amin(spots_ints)) / (
+                    np.amax(spots_ints) + np.amin(spots_ints))
+            m=np.mean(spots_ints)
+            v=np.mean((spots_ints/m-1)**2)
             return {"Time": T, "Efficiency": e,"Uniformity": u, "Variance": v}
 
     def wgs(self, spots_coords, spots_ints, iterations, get_perf=False):
         t = time.perf_counter()
         SPOTS_N = spots_coords.shape[0]
-        spots_parameters=numpy.zeros((SPOTS_N, 7))
+        spots_parameters=np.zeros((SPOTS_N, 7))
         spots_parameters[:, 0:3] = spots_coords
         spots_parameters[:, 3] = 1.0
         spots_parameters[:, 4] = spots_ints
-        spots_parameters[:, 5] = numpy.random.random(SPOTS_N)*2*numpy.pi
+        spots_parameters[:, 5] = np.random.random(SPOTS_N)*2*np.pi
         spots_parameters[:, 6] = 0.0
-        spots_parameters[:, 4] = spots_parameters[:, 4]/numpy.sum(spots_parameters[:, 4])
+        spots_parameters[:, 4] = spots_parameters[:, 4]/np.sum(spots_parameters[:, 4])
         spots_params_gpu = gpuarray.to_gpu(spots_parameters.astype("float32"))
         SPOTS_N = spots_parameters.shape[0]
-        temp_real_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
-        temp_imag_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_real_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_imag_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
         int_pars_gpu = gpuarray.to_gpu(
-            numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, 0, 0]).astype("int32"))
+            np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, 0, 0]).astype("int32"))
         self.project_to_slm(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                             self.holo_imag_gpu, self.float_pars_gpu, int_pars_gpu,
                             block=(1024, 1, 1), grid=(int(self.PUP_NP/1024)+1, 1, 1))
@@ -458,30 +458,30 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                       block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             spots_ints = spots_params_gpu.get()[:, 6]
-            e = numpy.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
-            u = 1 - (numpy.amax(spots_ints) - numpy.amin(spots_ints)) / (
-                    numpy.amax(spots_ints) + numpy.amin(spots_ints))
-            m=numpy.mean(spots_ints)
-            v=numpy.mean((spots_ints/m-1)**2)
+            e = np.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
+            u = 1 - (np.amax(spots_ints) - np.amin(spots_ints)) / (
+                    np.amax(spots_ints) + np.amin(spots_ints))
+            m=np.mean(spots_ints)
+            v=np.mean((spots_ints/m-1)**2)
             return {"Time": T, "Efficiency": e,"Uniformity": u, "Variance": v}
 
     def cs_gs(self, spots_coords, spots_ints, iterations, comp, get_perf=False):
         t = time.perf_counter()
         SPOTS_N = spots_coords.shape[0]
-        spots_parameters=numpy.zeros((SPOTS_N, 7))
+        spots_parameters=np.zeros((SPOTS_N, 7))
         spots_parameters[:, 0:3] = spots_coords
         spots_parameters[:, 3] = 1.0
         spots_parameters[:, 4] = spots_ints
-        spots_parameters[:, 5] = numpy.random.random(SPOTS_N)*2*numpy.pi
+        spots_parameters[:, 5] = np.random.random(SPOTS_N)*2*np.pi
         spots_parameters[:, 6] = 0.0
-        spots_parameters[:, 4] = spots_parameters[:, 4]/numpy.sum(spots_parameters[:, 4])
+        spots_parameters[:, 4] = spots_parameters[:, 4]/np.sum(spots_parameters[:, 4])
         spots_params_gpu = gpuarray.to_gpu(spots_parameters.astype("float32"))
         SPOTS_N = spots_parameters.shape[0]
         PUP_NP_COMP = int(comp*self.PUP_NP)
-        temp_real_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
-        temp_imag_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_real_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_imag_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
         int_pars_gpu = gpuarray.to_gpu(
-            numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP, 0]
+            np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP, 0]
                           ).astype("int32"))
         self.project_to_slm_comp(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                             self.holo_imag_gpu, self.float_pars_gpu, int_pars_gpu,
@@ -495,7 +495,7 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end_comp(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                            block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             int_pars_gpu = gpuarray.to_gpu(
-                numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP,
+                np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP,
                                int(i*PUP_NP_COMP/2)%(self.PUP_NP-PUP_NP_COMP)]).astype("int32"))
             if i < iterations-1:
                 self.project_to_slm_comp(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
@@ -517,30 +517,30 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                       block=(int(SPOTS_N / 2 + 1), 1, 1), grid=(2, 1, 1))
             spots_ints = spots_params_gpu.get()[:, 6]
-            e = numpy.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
-            u = 1 - (numpy.amax(spots_ints) - numpy.amin(spots_ints)) / (
-                    numpy.amax(spots_ints) + numpy.amin(spots_ints))
-            m=numpy.mean(spots_ints)
-            v=numpy.mean((spots_ints/m-1)**2)
+            e = np.sum(spots_ints * spots_parameters[:, 4]) * SPOTS_N
+            u = 1 - (np.amax(spots_ints) - np.amin(spots_ints)) / (
+                    np.amax(spots_ints) + np.amin(spots_ints))
+            m=np.mean(spots_ints)
+            v=np.mean((spots_ints/m-1)**2)
             return {"Time": T, "Efficiency": e,"Uniformity": u, "Variance": v}
 
     def cs_wgs(self, spots_coords, spots_ints, iterations, comp, get_perf=False):
         t = time.perf_counter()
         SPOTS_N = spots_coords.shape[0]
-        spots_parameters=numpy.zeros((SPOTS_N, 7))
+        spots_parameters=np.zeros((SPOTS_N, 7))
         spots_parameters[:, 0:3] = spots_coords
         spots_parameters[:, 3] = 1.0
         spots_parameters[:, 4] = spots_ints
-        spots_parameters[:, 5] = numpy.random.random(SPOTS_N)*2*numpy.pi
+        spots_parameters[:, 5] = np.random.random(SPOTS_N)*2*np.pi
         spots_parameters[:, 6] = 0.0
-        spots_parameters[:, 4] = spots_parameters[:, 4]/numpy.sum(spots_parameters[:, 4])
+        spots_parameters[:, 4] = spots_parameters[:, 4]/np.sum(spots_parameters[:, 4])
         spots_params_gpu = gpuarray.to_gpu(spots_parameters.astype("float32"))
         SPOTS_N = spots_parameters.shape[0]
         PUP_NP_COMP = int(comp*self.PUP_NP)
-        temp_real_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
-        temp_imag_gpu = gpuarray.to_gpu(numpy.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_real_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
+        temp_imag_gpu = gpuarray.to_gpu(np.zeros((self.blocksize_forward, SPOTS_N)).astype("float32"))
         int_pars_gpu = gpuarray.to_gpu(
-            numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP, 0]
+            np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP, 0]
                           ).astype("int32"))
         self.project_to_slm_comp(spots_params_gpu, self.XC_gpu, self.YC_gpu, self.holo_real_gpu,
                             self.holo_imag_gpu, self.float_pars_gpu, int_pars_gpu,
@@ -554,7 +554,7 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end_comp(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                            block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             int_pars_gpu = gpuarray.to_gpu(
-                numpy.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP,
+                np.asarray([self.PUP_NP, spots_parameters.shape[0], self.blocksize_forward, PUP_NP_COMP,
                                int(i*PUP_NP_COMP/2)%(self.PUP_NP-PUP_NP_COMP)]).astype("int32"))
             self.update_weights(spots_params_gpu, int_pars_gpu,
                                 block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
@@ -590,32 +590,32 @@ If used for academic purposes, please consider citing the appropriate literature
             self.project_to_spots_end(spots_params_gpu, temp_real_gpu, temp_imag_gpu, int_pars_gpu,
                                       block=(int(SPOTS_N/2+1), 1, 1), grid=(2, 1, 1))
             spots_ints = spots_params_gpu.get()[:,6]
-            e=numpy.sum(spots_ints*spots_parameters[:, 4])*SPOTS_N
-            u=1 - (numpy.amax(spots_ints) - numpy.amin(spots_ints)) / (
-                    numpy.amax(spots_ints) + numpy.amin(spots_ints))
-            m=numpy.mean(spots_ints)
-            v=numpy.mean((spots_ints/m-1)**2)
+            e=np.sum(spots_ints*spots_parameters[:, 4])*SPOTS_N
+            u=1 - (np.amax(spots_ints) - np.amin(spots_ints)) / (
+                    np.amax(spots_ints) + np.amin(spots_ints))
+            m=np.mean(spots_ints)
+            v=np.mean((spots_ints/m-1)**2)
             return {"Time": T, "Efficiency": e,"Uniformity": u, "Variance": v}
 
     def wait_gpu(self):
         self.float_pars_gpu.get()
 
     def get_phase(self):
-        outarr = numpy.zeros((self.res,self.res))
-        outarr[self.pupil_coords] = numpy.arctan2(self.holo_imag_gpu.get(), self.holo_real_gpu.get())
+        outarr = np.zeros((self.res,self.res))
+        outarr[self.pupil_coords] = np.arctan2(self.holo_imag_gpu.get(), self.holo_real_gpu.get())
         return outarr
 
     def set_phase(self,phase):
         phase = phase[self.pupil_coords]
-        self.holo_real_gpu = gpuarray.to_gpu(numpy.cos(phase).astype("float32"))
-        self.holo_imag_gpu = gpuarray.to_gpu(numpy.sin(phase).astype("float32"))
+        self.holo_real_gpu = gpuarray.to_gpu(np.cos(phase).astype("float32"))
+        self.holo_imag_gpu = gpuarray.to_gpu(np.sin(phase).astype("float32"))
         self.draw_hologram()
 
     def draw_hologram(self):
         tex_map = self.cuda_pbo.map()
         data, sz = tex_map.device_ptr_and_size()
         self.fill_screen_output(self.holo_real_gpu, self.holo_imag_gpu, self.screenpars_gpu,
-                                self.screen_pup_coords_x_gpu, self.screen_pup_coords_y_gpu, numpy.intp(data),
+                                self.screen_pup_coords_x_gpu, self.screen_pup_coords_y_gpu, np.intp(data),
                                 block=(1024, 1, 1), grid=(int(self.PUP_NP/1024)+1, 1, 1))
         tex_map.unmap()
         glfw.poll_events()

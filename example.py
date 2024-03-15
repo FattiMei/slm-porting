@@ -1,22 +1,22 @@
 import slm_3dpointcloud
-import numpy
+import numpy as np
 import time
 
 # Function generating points coordinates for a regularly spaced grid of n by n points, with a given size in micrometers
 def grid_parameters(n,size):
-    cx, cy = numpy.meshgrid(numpy.linspace(-size/2, size/2, n), numpy.linspace(-size/2, size/2, n))
-    coords = numpy.ones((int(n**2), 3))
+    cx, cy = np.meshgrid(np.linspace(-size/2, size/2, n), np.linspace(-size/2, size/2, n))
+    coords = np.ones((int(n**2), 3))
     coords[:, 0] = cx.flatten()
     coords[:, 1] = cy.flatten()
     coords[:, 2] = 0.0
-    ints=numpy.ones(int(n**2))
+    ints=np.ones(int(n**2))
 
     return coords, ints
 
 # Function generating a rotation transform matrix for given pitch, yaw and roll angles
 def rotation_matrix(a, b, g):
     from numpy import cos, sin
-    return numpy.array([[cos(a)*cos(b), cos(a)*sin(b)*sin(g)-sin(a)*cos(g), cos(a)*sin(b)*cos(g)+sin(a)*sin(g)],
+    return np.array([[cos(a)*cos(b), cos(a)*sin(b)*sin(g)-sin(a)*cos(g), cos(a)*sin(b)*cos(g)+sin(a)*sin(g)],
                         [sin(a)*cos(b), sin(a)*sin(b)*sin(g)+cos(a)*cos(g), sin(a)*sin(b)*cos(g)-cos(a)*sin(g)],
                         [-sin(b)      , cos(b)*sin(g)                     , cos(b)*cos(g)                     ]])
 
@@ -87,10 +87,10 @@ print("\n")
 # Show a live rotating grid. get_perf is set to false for maximum live performance
 
 # Define rotation rates in pitch, yaw and roll
-rotation_rates_rad_per_s = numpy.array([1.0, 1.5, 2.0])
+rotation_rates_rad_per_s = np.array([1.0, 1.5, 2.0])
 
 #create an empty array with the rotated coordinates
-rot_coordinates=numpy.zeros_like(spots_coords)
+rot_coordinates=np.zeros_like(spots_coords)
 
 print("Live grid rotation, RS algorithm")
 t_0 = time.perf_counter()
@@ -99,7 +99,7 @@ while time.perf_counter()-t_0 < 10.0:
     angles = rotation_rates_rad_per_s*t
     rot_mat = rotation_matrix(angles[0], angles[1], angles[2])
     for i in range(spots_coords.shape[0]):
-        rot_coordinates[i, :] = numpy.dot(rot_mat, spots_coords[i, :])
+        rot_coordinates[i, :] = np.dot(rot_mat, spots_coords[i, :])
     SLM.rs(rot_coordinates, ints)
 
 print("Live grid rotation, WGS algorithm, 10 iterations")
@@ -109,7 +109,7 @@ while time.perf_counter()-t_0 < 10.0:
     angles = rotation_rates_rad_per_s*t
     rot_mat = rotation_matrix(angles[0], angles[1], angles[2])
     for i in range(spots_coords.shape[0]):
-        rot_coordinates[i, :] = numpy.dot(rot_mat, spots_coords[i, :])
+        rot_coordinates[i, :] = np.dot(rot_mat, spots_coords[i, :])
     SLM.wgs(rot_coordinates, ints, 10)
 
 print("Live grid rotation, WGS algorithm, 1 iteration")
@@ -119,7 +119,7 @@ while time.perf_counter()-t_0 < 10.0:
     angles = rotation_rates_rad_per_s*t
     rot_mat = rotation_matrix(angles[0], angles[1], angles[2])
     for i in range(spots_coords.shape[0]):
-        rot_coordinates[i, :] = numpy.dot(rot_mat, spots_coords[i, :])
+        rot_coordinates[i, :] = np.dot(rot_mat, spots_coords[i, :])
     SLM.wgs(rot_coordinates, ints, 1)
 
 print("Live grid rotation, CS-WGS algorithm, 10 iterations, 16x compression")
@@ -129,5 +129,5 @@ while time.perf_counter()-t_0 < 10.0:
     angles = rotation_rates_rad_per_s*t
     rot_mat = rotation_matrix(angles[0], angles[1], angles[2])
     for i in range(spots_coords.shape[0]):
-        rot_coordinates[i, :] = numpy.dot(rot_mat, spots_coords[i, :])
+        rot_coordinates[i, :] = np.dot(rot_mat, spots_coords[i, :])
     SLM.cs_wgs(rot_coordinates, ints, 10, 1/16.0)
