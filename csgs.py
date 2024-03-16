@@ -24,7 +24,7 @@ def get_performance_metrics(intensities, t):
 
 # Random superposition algorithm: Fastest available algorithm, produces low quality holograms
 
-def rs(x, y, z, f: float, d: float, lam: float, res: int):
+def rs(x, y, z, f: float, d: float, lam: float, res: int, rng: np.random.default_rng):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -32,7 +32,7 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int):
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #array containing the phase of the field at each created spot
-    pists=np.random.random(x.shape[0])*2*np.pi
+    pists=rng.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -71,7 +71,7 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int):
 # Standard GS algorithm: Slow, high efficiency holograms, better uniformity than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def gs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
+def gs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, rng: np.random.default_rng):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -80,7 +80,7 @@ def gs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
     
     
     #array containing the phase of the field at each created spot
-    pists=np.random.random(x.shape[0])*2*np.pi
+    pists=rng.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -118,7 +118,7 @@ def gs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
 # Standard WGS algorithm: Slow, high uniformity holograms, better efficiency than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def wgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
+def wgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, rng: np.random.default_rng):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -129,7 +129,7 @@ def wgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
     weights=np.ones(x.shape[0])/float(x.shape[0])
     
     #array containing the phase of the field at each created spot
-    pists=np.random.random(x.shape[0])*2*np.pi
+    pists=rng.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -174,7 +174,7 @@ def wgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
 # equal to the speed of RS. If sub is too small, performance may be affected (as a rule of thumb res^2*sub should be bigger than the
 # number of spots)
 
-def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float):
+def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float, rng: np.random.default_rng):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
@@ -182,10 +182,10 @@ def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: flo
 
     #creation of a list of the indexes of pup_coords, shuffled in random order
     coordslist=np.asarray(range(pup_coords[0].shape[0]))
-    np.random.shuffle(coordslist)
+    rng.shuffle(coordslist)
     
     #array containing the phase of the field at each created spot
-    pists=np.random.random(x.shape[0])*2*np.pi
+    pists=rng.random(x.shape[0])*2*np.pi
 
     
     #conversion of the coordinates arrays in microns
@@ -236,7 +236,7 @@ def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: flo
 # Smaller values of sub increase the speed, with a maximum speed equal to half the speed of RS. If sub is too small, performance may be affected
 # (as a rule of thumb (res^2)*sub should be at least twice the number of spots)
 
-def wcsgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float):
+def wcsgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float, rng: np.random.default_rng):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
@@ -244,10 +244,10 @@ def wcsgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: fl
 
     #creation of a list of the indexes of pup_coords, shuffled in random order
     coordslist=np.asarray(range(pup_coords[0].shape[0]))
-    np.random.shuffle(coordslist)
+    rng.shuffle(coordslist)
     
     #array containing the phase of the field at each created spot
-    pists=np.random.random(x.shape[0])*2*np.pi
+    pists=rng.random(x.shape[0])*2*np.pi
 
     
     #conversion of the coordinates arrays in microns
@@ -317,9 +317,9 @@ if __name__ == "__main__":
     COMPRESSION  = 0.05
 
 
-    # use a fixed seed to make reproducible results
-    SEED = 42
-    np.random.seed(SEED)
+    # make reproducible results, but be careful when changing the global seed!
+    GLOBAL_SEED = 42
+    np.random.seed(GLOBAL_SEED)
 
 
     x=(np.random.random(NPOINTS)-0.5)*100.0
@@ -336,40 +336,40 @@ if __name__ == "__main__":
 
 
     print("Computing random superposition hologram:")
-    phase, performance=rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
+    phase, performance=rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS, np.random.default_rng(GLOBAL_SEED))
 
-    for i in range(4):
+    for i in range(3):
         print(performance_pars[i],performance[i])
     print()
 
 
     print("Computing Gerchberg-Saxton hologram:")
-    phase, performance=gs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    phase, performance=gs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS, np.random.default_rng(GLOBAL_SEED))
    
-    for i in range(4):
+    for i in range(3):
         print(performance_pars[i],performance[i])
     print()
 
 
     print("Computing Weighted Gerchberg-Saxton hologram:")
-    phase, performance=wgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    phase, performance=wgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS, np.random.default_rng(GLOBAL_SEED))
 
-    for i in range(4):
+    for i in range(3):
         print(performance_pars[i],performance[i])
     print()
 
 
     print("Computing Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=csgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION)
+    phase, performance=csgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION, np.random.default_rng(GLOBAL_SEED))
 
-    for i in range(4):
+    for i in range(3):
         print(performance_pars[i],performance[i])
     print()
 
 
     print("Computing Weighted Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=wcsgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION)
+    phase, performance=wcsgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION, np.random.default_rng(GLOBAL_SEED))
 
-    for i in range(4):
+    for i in range(3):
         print(performance_pars[i],performance[i])
     print()
