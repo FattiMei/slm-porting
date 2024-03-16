@@ -28,3 +28,18 @@ Project developed under the supervision of:
 
 ## Agreed goals
 ...
+
+
+## Development steps
+`csgs.py`
+ * Remove the indeterminism in the kernel invocation (fixed seed)
+ * Annotate shapes in all data used
+ * Produce regression tests with adequate makefile rules
+ * (HARD) setup remote pipeline for testing and reporting results
+
+`slm_3dpointcloud.py`
+ * Build a virtual environment that takes care of the many dependencies (virtual environment or maybe Docker??)
+ * Search on the internet the way to properly install pycuda with openGL support
+ * Run on an NVIDIA machine the script once
+ * Separate CUDA code in its own file
+ * Solve kernel parameter hell
