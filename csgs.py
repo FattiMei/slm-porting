@@ -34,10 +34,12 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
 
     # @shape(pup_coords) = tuple((m), (m))
+    # where m is the number of pixels in the pupil
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #array containing the phase of the field at each created spot
-    # @shape(pists) = (res)
+    # @shape(pists) = (n)
+    # where n is the number of desired points
     pists=rng.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
@@ -45,7 +47,7 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
-    # @shape(slm_p_phase) = (res, m)
+    # @shape(slm_p_phase) = (n, m)
     slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
 
     for i in range(x.shape[0]):
@@ -68,8 +70,8 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     #evaluation of the algorithm performance, calculating the expected intensities of all spots
 
     # @OPT: pup_coords[0].shape[0] = m
-    # @shape(spot_fields) = (res)
-    # @shape(ints) = (res)
+    # @shape(spot_fields) = (n)
+    # @shape(ints) = (n)
     spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
     ints=np.abs(spot_fields)**2
 
