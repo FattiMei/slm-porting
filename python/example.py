@@ -1,4 +1,5 @@
-import slm_3dpointcloud
+# import slm_3dpointcloud
+import slm_bridge as slm_lib
 import numpy as np
 import time
 
@@ -32,7 +33,8 @@ wavelength_nm=800
 slm_pixel_pitch_um = 9.2
 
 # screen number of the SLM
-screenID = 1
+# screenID = 1
+screenID = None
 
 # Radius of the gaussian laser beam at the SLM surface, in millimeters. Set to None to consider uniform intensity
 beam_radius_slm_mm = 6.0
@@ -45,7 +47,7 @@ focal = 180.0/20.0
 # inputs are assumed to be linear in phase.
 lut_limits=[0,255]
 
-SLM = slm_3dpointcloud.SlmControl(wavelength_nm,
+SLM = slm_lib.SlmControl(wavelength_nm,
                                   slm_to_pupil_magnification*slm_pixel_pitch_um,
                                   focal,
                                   slm_to_pupil_magnification*beam_radius_slm_mm,
@@ -57,32 +59,35 @@ SLM = slm_3dpointcloud.SlmControl(wavelength_nm,
 # Define coordinates for a regular grid of spots
 spots_coords, ints = grid_parameters(10, 300.0)
 
+print(type(spots_coords))
+print(spots_coords.shape)
+
 # Test the RS performance
-performance = SLM.rs(spots_coords, ints, get_perf = True)
-print("RS performance:")
-print("Computation time: "+str(performance["Time"]))
-print("Efficiency: "+str(performance["Efficiency"]))
-print("Uniformity: "+str(performance["Uniformity"]))
-print("Variance: "+str(performance["Variance"]))
-print("\n")
-
-# Test the WGS performance
-performance = SLM.wgs(spots_coords, ints, 10, get_perf = True)
-print("WGS performance, 10 iterations:")
-print("Computation time: "+str(performance["Time"]))
-print("Efficiency: "+str(performance["Efficiency"]))
-print("Uniformity: "+str(performance["Uniformity"]))
-print("Variance: "+str(performance["Variance"]))
-print("\n")
-
-# Test the CS-WGS performance
-performance = SLM.cs_wgs(spots_coords, ints, 10, 1/16.0, get_perf = True)
-print("CS-WGS performance, 10 iterations, 16x compression:")
-print("Computation time: "+str(performance["Time"]))
-print("Efficiency: "+str(performance["Efficiency"]))
-print("Uniformity: "+str(performance["Uniformity"]))
-print("Variance: "+str(performance["Variance"]))
-print("\n")
+# performance = SLM.rs(spots_coords, ints, get_perf = True)
+# print("RS performance:")
+# print("Computation time: "+str(performance["Time"]))
+# print("Efficiency: "+str(performance["Efficiency"]))
+# print("Uniformity: "+str(performance["Uniformity"]))
+# print("Variance: "+str(performance["Variance"]))
+# print("\n")
+# 
+# # Test the WGS performance
+# performance = SLM.wgs(spots_coords, ints, 10, get_perf = True)
+# print("WGS performance, 10 iterations:")
+# print("Computation time: "+str(performance["Time"]))
+# print("Efficiency: "+str(performance["Efficiency"]))
+# print("Uniformity: "+str(performance["Uniformity"]))
+# print("Variance: "+str(performance["Variance"]))
+# print("\n")
+# 
+# # Test the CS-WGS performance
+# performance = SLM.cs_wgs(spots_coords, ints, 10, 1/16.0, get_perf = True)
+# print("CS-WGS performance, 10 iterations, 16x compression:")
+# print("Computation time: "+str(performance["Time"]))
+# print("Efficiency: "+str(performance["Efficiency"]))
+# print("Uniformity: "+str(performance["Uniformity"]))
+# print("Variance: "+str(performance["Variance"]))
+# print("\n")
 
 # Show a live rotating grid. get_perf is set to false for maximum live performance
 

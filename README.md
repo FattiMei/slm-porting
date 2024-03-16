@@ -43,3 +43,7 @@ Project developed under the supervision of:
  * Run on an NVIDIA machine the script once
  * Separate CUDA code in its own file
  * Solve kernel parameter hell
+
+
+## Critical path
+Understand the relation between `csgs.py` and `slm_3dpointcloud.py`. It seems that the latter builds on top of the basic kernels, but implements them in CUDA and does obfuscated parameter passing (we'll figure it out).

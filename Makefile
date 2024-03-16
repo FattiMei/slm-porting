@@ -14,6 +14,10 @@ regression:
 	$(PYTHON) python/regression.py
 
 
+example:
+	$(PYTHON) python/example.py
+
+
 porting: $(obj)
 	$(CXX) -o $@ $^
 
