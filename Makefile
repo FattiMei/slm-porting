@@ -1,13 +1,22 @@
-PYTHON = python3.8
+CXX      = g++
+CXXFLAGS = -Wall -Wextra -Wpedantic
+PYTHON   = python3.8
 
 
-serial:
-	$(PYTHON) python/csgs.py
+src = src/main.cpp
+obj = $(patsubst src/%.cpp,build/%.o,$(src))
+
+
+all: porting
 
 
 regression:
 	$(PYTHON) python/regression.py
 
 
-cuda:
-	$(PYTHON) python/example.py
+porting: $(obj)
+	$(CXX) -o $@ $^
+
+
+build/%.o: src/%.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $^
