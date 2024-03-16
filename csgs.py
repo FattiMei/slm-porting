@@ -28,10 +28,15 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, rng: np.random.default
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
+    # @rank(slm_xcoord) = 2 , @shape(slm_xcoord) = (res, res)
+    # @rank(slm_ycoord) = 2 , @shape(slm_ycoord) = (res, res)
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+
+    # @shape(pup_coords) = tuple((m), (m))
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
     #array containing the phase of the field at each created spot
+    # @shape(pists) = (res)
     pists=rng.random(x.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
@@ -39,12 +44,21 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, rng: np.random.default
     slm_ycoord=slm_ycoord*d*float(res)/2.0
     
     #computation of the phase patterns generating each single spot independently
+    # @shape(slm_p_phase) = (res, m)
     slm_p_phase=np.zeros((x.shape[0],pup_coords[0].shape[0]))
+
     for i in range(x.shape[0]):
+        # @shape(slm_p_phase[i,:]) = (m)
+        # @shape(slm_xcoord[pup_coords]) = (m)
+        # @OPT: I think there is even a smarter way to make this operation, not so relevant right now
         slm_p_phase[i,:]=2.0*np.pi/(lam*(f*10.0**3))*(x[i]*slm_xcoord[pup_coords]+y[i]*slm_ycoord[pup_coords])+(np.pi*z[i])/(lam*(f*10.0**3)**2)*(slm_xcoord[pup_coords]**2+slm_ycoord[pup_coords]**2)
 
 
     #creation of the hologram, as superposition of all the phase patterns with random pistons
+    # @OPT: pup_coords[0].shape[0] = m
+    # @OPT: move the constant term out of the sum (requires accurate regression tests)
+    # @shape(slm_total_field) = (m) (need confirm)
+    # @shape(slm_total_phase) = (m)
     slm_total_field=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
     slm_total_phase=np.angle(slm_total_field)
 
@@ -52,6 +66,9 @@ def rs(x, y, z, f: float, d: float, lam: float, res: int, rng: np.random.default
 
     #evaluation of the algorithm performance, calculating the expected intensities of all spots
 
+    # @OPT: pup_coords[0].shape[0] = m
+    # @shape(spot_fields) = (res)
+    # @shape(ints) = (res)
     spot_fields=np.sum(1.0/(float(pup_coords[0].shape[0]))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
     ints=np.abs(spot_fields)**2
 
