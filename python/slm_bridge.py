@@ -273,10 +273,13 @@ If used for academic purposes, please consider citing the appropriate literature
         glEnable(GL_TEXTURE_2D)
         self.tex=glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.tex)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     self.screenresolution[1], self.screenresolution[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+                     self.screenresolution[1], self.screenresolution[0], 0, GL_RED, GL_UNSIGNED_BYTE, None)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
 
         # import pycuda.gl.autoinit
@@ -674,7 +677,7 @@ If used for academic purposes, please consider citing the appropriate literature
 
 
         # qui dentro bisogna inviare un buffer, la chiamata è
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, self.screenresolution[1], self.screenresolution[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer.astype(np.uint8))
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, self.screenresolution[1], self.screenresolution[0], 0, GL_RED, GL_UNSIGNED_BYTE, buffer.astype(np.uint8))
         # glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
                         # self.screenresolution[1], self.screenresolution[0], GL_LUMINANCE, GL_UNSIGNED_BYTE, None);
 
