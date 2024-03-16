@@ -24,7 +24,7 @@ def get_performance_metrics(intensities, t):
 
 # Random superposition algorithm: Fastest available algorithm, produces low quality holograms
 
-def rs(x,y,z,f,d,lam,res):
+def rs(x, y, z, f: float, d: float, lam: float, res: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -71,7 +71,7 @@ def rs(x,y,z,f,d,lam,res):
 # Standard GS algorithm: Slow, high efficiency holograms, better uniformity than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def gs(x,y,z,f,d,lam,res,iters):
+def gs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -118,7 +118,7 @@ def gs(x,y,z,f,d,lam,res,iters):
 # Standard WGS algorithm: Slow, high uniformity holograms, better efficiency than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def wgs(x,y,z,f,d,lam,res,iters):
+def wgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -174,7 +174,7 @@ def wgs(x,y,z,f,d,lam,res,iters):
 # equal to the speed of RS. If sub is too small, performance may be affected (as a rule of thumb res^2*sub should be bigger than the
 # number of spots)
 
-def csgs(x,y,z,f,d,lam,res,iters,sub):
+def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
@@ -236,7 +236,7 @@ def csgs(x,y,z,f,d,lam,res,iters,sub):
 # Smaller values of sub increase the speed, with a maximum speed equal to half the speed of RS. If sub is too small, performance may be affected
 # (as a rule of thumb (res^2)*sub should be at least twice the number of spots)
 
-def wcsgs(x,y,z,f,d,lam,res,iters,sub):
+def wcsgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: float):
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
