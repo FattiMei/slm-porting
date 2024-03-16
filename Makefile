@@ -2,12 +2,12 @@ PYTHON = python3.8
 
 
 serial:
-	$(PYTHON) csgs.py
+	$(PYTHON) python/csgs.py
 
 
 regression:
-	$(PYTHON) regression.py
+	$(PYTHON) python/regression.py
 
 
 cuda:
-	$(PYTHON) example.py
+	$(PYTHON) python/example.py
