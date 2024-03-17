@@ -61,6 +61,9 @@ if __name__ == "__main__":
             reference,   _ = test['reference'](seed)
             alternative, _ = test['alternative'](seed)
 
-            err = np.max(np.abs(reference - alternative))
-            if (err > 0.0):
-                print(f"Something went south in testing {test['name']}, L-inf error {err}")
+            abs_err = np.max(np.abs(reference - alternative))
+
+            nnz = np.where(reference != 0.0)
+            rel_err = np.max(np.abs((reference[nnz] - alternative[nnz]) / reference[nnz]))
+
+            print(f"Testing {test['name']}, absolute error {abs_err}, relative error {rel_err}")
