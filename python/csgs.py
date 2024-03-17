@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 
 get_time=time.perf_counter
@@ -94,16 +95,23 @@ def rs_refactored(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     # @rank(slm_xcoord) = 2 , @shape(slm_xcoord) = (res, res)
     # @rank(slm_ycoord) = 2 , @shape(slm_ycoord) = (res, res)
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
+    assert(slm_xcoord.shape == (res,res))
+    assert(slm_ycoord.shape == (res,res))
+
 
     # @shape(pup_coords) = tuple((m), (m))
     # where m is the number of pixels in the pupil
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
     num_pupil_points = pup_coords[0].shape[0]
 
+    n = x.shape[0]
+    m = num_pupil_points
+
     #array containing the phase of the field at each created spot
     # @shape(pists) = (n)
     # where n is the number of desired points
-    pists=rng.random(x.shape[0])*2*np.pi
+    pists=rng.random(n)*2*np.pi
+    assert(pists.shape == (n,))
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -111,9 +119,11 @@ def rs_refactored(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     
     #computation of the phase patterns generating each single spot independently
     # @shape(slm_p_phase) = (n, m)
-    slm_p_phase=np.zeros((x.shape[0],num_pupil_points))
+    slm_p_phase=np.zeros((n,num_pupil_points))
+    assert(slm_p_phase.shape == (n, m))
 
-    for i in range(x.shape[0]):
+
+    for i in range(n):
         # @shape(slm_p_phase[i,:]) = (m)
         # @shape(slm_xcoord[pup_coords]) = (m)
         # @OPT: I think there is even a smarter way to make this operation, not so relevant right now
@@ -121,14 +131,12 @@ def rs_refactored(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
 
 
     #creation of the hologram, as superposition of all the phase patterns with random pistons
-    # @OPT: pup_coords[0].shape[0] = m
-    # @OPT: move the constant term out of the sum (requires accurate regression tests)
-    # @shape(slm_total_field) = (m) (need confirm)
-    # @shape(slm_total_phase) = (m)
-    slm_total_field=np.sum(1.0/(float(num_pupil_points))*np.exp(1j*(slm_p_phase+pists[:,None])),axis=0)
-    # @OPT: this is a possible improvement in performance, L-inf error is 4e-14
-    # slm_total_field=np.sum(np.exp(1j*(slm_p_phase+pists[:,None])),axis=0) / float(num_pupil_points)
+    # L-inf error is 4e-14
+    slm_total_field=np.sum(np.exp(1j*(slm_p_phase+pists[:,None])),axis=0) / float(num_pupil_points)
+    assert(slm_total_field.shape == (m,))
+
     slm_total_phase=np.angle(slm_total_field)
+    assert(slm_total_phase.shape == (m,))
 
     t=get_time()-t
 
@@ -137,8 +145,11 @@ def rs_refactored(x, y, z, f: float, d: float, lam: float, res: int, seed: int):
     # @OPT: pup_coords[0].shape[0] = m
     # @shape(spot_fields) = (n)
     # @shape(ints) = (n)
-    spot_fields=np.sum(1.0/(float(num_pupil_points))*np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)
+    spot_fields=np.sum(np.exp(1j*(slm_total_phase[None,:]-slm_p_phase)),axis=1)/(float(num_pupil_points))
+    assert(spot_fields.shape == (n,))
+
     ints=np.abs(spot_fields)**2
+    assert(ints.shape == (n,))
 
 
     #reshaping of the hologram in a square array
@@ -415,49 +426,9 @@ if __name__ == "__main__":
     z=(np.random.random(NPOINTS)-0.5)*10.0
 
 
-    performance_pars = [
-            "Efficiency           : ",
-            "Uniformity           : ",
-            "Variance             : ",
-            "Computation time (s) : "
-    ]
+    out, _ = rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,SEED)
 
-
-    print("Computing random superposition hologram:")
-    phase, performance=rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,SEED)
-
-    for i in range(3):
-        print(performance_pars[i],performance[i])
-    print()
-
-
-    print("Computing Gerchberg-Saxton hologram:")
-    phase, performance=gs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,SEED)
-   
-    for i in range(3):
-        print(performance_pars[i],performance[i])
-    print()
-
-
-    print("Computing Weighted Gerchberg-Saxton hologram:")
-    phase, performance=wgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,SEED)
-
-    for i in range(3):
-        print(performance_pars[i],performance[i])
-    print()
-
-
-    print("Computing Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=csgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,SEED)
-
-    for i in range(3):
-        print(performance_pars[i],performance[i])
-    print()
-
-
-    print("Computing Weighted Compressive Sensing Gerchberg-Saxton hologram:")
-    phase, performance=wcsgs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,SEED)
-
-    for i in range(3):
-        print(performance_pars[i],performance[i])
-    print()
+    plt.imshow(out, cmap='viridis', interpolation='nearest')
+    plt.colorbar()
+    plt.title('Il momento clue')
+    plt.show()
