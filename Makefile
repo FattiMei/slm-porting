@@ -1,9 +1,10 @@
 CXX      = g++
 CXXFLAGS = -Wall -Wextra -Wpedantic
+INCLUDE  = -I ./include
 PYTHON   = python3.8
 
 
-src = src/main.cpp
+src = src/main.cpp src/serial.cpp
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
@@ -23,4 +24,9 @@ porting: $(obj)
 
 
 build/%.o: src/%.cpp
-	$(CXX) -c $(CXXFLAGS) -o $@ $^
+	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -o $@ $^
+
+
+.PHONY clean:
+clean:
+	rm -f $(obj)

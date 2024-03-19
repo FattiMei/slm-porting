@@ -1,7 +1,8 @@
 #include <iostream>
+#include "slm.hpp"
 
 
 int main() {
-	std::cout << "Hello, world!" << std::endl;
+	SLM slm(512, 512, 488.0, 15.0, 30.0);
 	return 0;
 }

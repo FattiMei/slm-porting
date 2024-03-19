@@ -2,6 +2,9 @@
 #define __SLM_HPP__
 
 
+#include <cstdio>
+
+
 /*
  *  General guidelines:
  *   - kernel signature should be as primitive as possible to maximize performance portability
@@ -15,13 +18,17 @@
 class SLM {
 	public:
 		SLM(int width_, int height_, double wavelength_nm_, double pixel_size_um_, double focal_length_mm);
+		~SLM();
 
 		// @DESIGN: for performance reasons it could be convenient to store point data in AoS form
-		rs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4],                                     int seed);
-		gs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		wgs  (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		csgs (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
-		wcsgs(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+		void rs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4],                                     int seed);
+		void gs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
+		void wgs  (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
+		void csgs (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+		void wcsgs(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+
+		void write_on_texture(int id);
+		void write_on_file(FILE *out);
 
 
 	private:
@@ -33,8 +40,6 @@ class SLM {
 
 		double        *phase_buffer   = NULL;
 		unsigned char *texture_buffer = NULL;
-
-		void render_on_texture(int id);
 };
 
 
