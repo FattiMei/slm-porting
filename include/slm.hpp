@@ -3,6 +3,7 @@
 
 
 #include <cstdio>
+#include <fstream>
 
 
 /*
@@ -29,6 +30,7 @@ class SLM {
 
 		void write_on_texture(int id);
 		void write_on_file(FILE *out);
+		void write_on_file(std::ofstream &out);
 
 
 	private:

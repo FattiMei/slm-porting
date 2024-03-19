@@ -11,3 +11,9 @@ SLM::~SLM() {
 	delete[] phase_buffer;
 	delete[] texture_buffer;
 }
+
+
+void SLM::write_on_file(std::ofstream &out) {
+	out << width << " " << height << std::endl;
+	out.write(reinterpret_cast<const char *>(phase_buffer), width * height * sizeof(double));
+}
