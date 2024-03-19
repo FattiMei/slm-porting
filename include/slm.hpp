@@ -21,12 +21,14 @@ class SLM {
 		SLM(int width_, int height_, double wavelength_nm_, double pixel_size_um_, double focal_length_mm);
 		~SLM();
 
+
 		// @DESIGN: for performance reasons it could be convenient to store point data in AoS form
-		void rs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4],                                     int seed);
-		void gs   (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		void wgs  (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		void csgs (int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
-		void wcsgs(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+		void    rs(int n, const double x[], const double y[], const double z[],                                     int seed, bool measure = false);
+		void    gs(int n, const double x[], const double y[], const double z[], int iterations,                     int seed, bool measure = false);
+		void   wgs(int n, const double x[], const double y[], const double z[], int iterations,                     int seed, bool measure = false);
+		void  csgs(int n, const double x[], const double y[], const double z[], int iterations, double compression, int seed, bool measure = false);
+		void wcsgs(int n, const double x[], const double y[], const double z[], int iterations, double compression, int seed, bool measure = false);
+
 
 		void write_on_texture(int id);
 		void write_on_file(FILE *out);
@@ -42,6 +44,12 @@ class SLM {
 
 		double        *phase_buffer   = NULL;
 		unsigned char *texture_buffer = NULL;
+
+		void    rs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4],                                     int seed);
+		void    gs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
+		void   wgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
+		void  csgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
 };
 
 
