@@ -4,7 +4,7 @@
 #include <complex>
 
 
-SLM::SLM(int width_, int height_, double wavelength_nm_, double pixel_size_um_, double focal_length_mm_) : width(width_), height(height_), wavelength_nm(wavelength_nm_), pixel_size_um(pixel_size_um_), focal_length_mm(focal_length_mm_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
+SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : width(width_), height(height_), wavelength_um(wavelength_um_), pixel_size_um(pixel_size_um_), focal_length_mm(focal_length_mm_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 
 
@@ -15,13 +15,8 @@ void SLM::write_on_file(std::ofstream &out) {
 
 
 void SLM::rs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int seed) {
-	(void) x;
-	(void) y;
-	(void) z;
-	(void) perf;
 	(void) pitch;
-	(void) wavelength;
-	(void) seed;
+	(void) perf;
 
 	/* Before we start:
 	 *  - the first implementation will be very inefficient and explicit, also there will be many memory allocations
@@ -73,7 +68,7 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 
 		for (int j = 0; j < n; ++j) {
 			// @TODO: fill, obviously
-			const double p_phase = 1.0;
+			const double p_phase = 2.0 * M_PI / (wavelength * focal_length * 1000.0) * (x[j] * pupil_x[i] + y[j] * pupil_y[i]) + M_PI * z[j] / (wavelength * focal_length * focal_length * 1e6) * (pupil_x[i] * pupil_x[i] + pupil_y[i] * pupil_y[i]);
 
 			total_field += std::exp(IOTA * (p_phase + pists[j]));
 		}
@@ -87,5 +82,5 @@ void SLM::rs(const std::vector<double> &x, const std::vector<double> &y, const s
 	double perf[4];
 
 	// @TODO: deal with units of measure
-	rs_kernel(x.size(), x.data(), y.data(), z.data(), width, height, phase_buffer.data(), measure ? perf : NULL, focal_length_mm, pixel_size_um, wavelength_nm, seed);
+	rs_kernel(x.size(), x.data(), y.data(), z.data(), width, height, phase_buffer.data(), measure ? perf : NULL, focal_length_mm, pixel_size_um, wavelength_um, seed);
 }

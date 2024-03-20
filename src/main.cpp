@@ -8,7 +8,7 @@ const double focal_length  = 20.0;
 const int width            = 512;
 const int height           = 512;
 const double pitch         = 15.0;
-const double wavelength_nm = 488.0;
+const double wavelength_um = 0.488;
 const int npoints          = 100;
 const int iterations       = 30;
 const double compression   = 0.05;
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	SLM slm(width, height, wavelength_nm, pitch, focal_length);
+	SLM slm(width, height, wavelength_um, pitch, focal_length);
 	std::ofstream out(argv[1]);
 
 

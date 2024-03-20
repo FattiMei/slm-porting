@@ -19,7 +19,7 @@
 
 class SLM {
 	public:
-		SLM(int width_, int height_, double wavelength_nm_, double pixel_size_um_, double focal_length_mm);
+		SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm);
 
 		// @DESIGN: for performance reasons it could be convenient to store point data in AoS form
 		void    rs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z,                                     int seed, bool measure = false);
@@ -35,7 +35,7 @@ class SLM {
 	private:
 		const int width;
 		const int height;
-		const double wavelength_nm;
+		const double wavelength_um;
 		const double pixel_size_um;
 		const double focal_length_mm;
 
