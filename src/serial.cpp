@@ -37,7 +37,7 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 		std::uniform_real_distribution<double> uniform(0.0, 2.0 * M_PI);
 
 		for (int i = 0; i < n; ++i) {
-			pists.push_back(uniform(gen));
+			pists[i] = uniform(gen);
 		}
 	}
 
@@ -55,7 +55,7 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 				const double y_cand = -1.0 + static_cast<double>(j) * 2.0 / static_cast<double>(height);
 
 				if (x_cand*x_cand + y_cand*y_cand < 1.0) {
-					pupil_index.push_back(pupil_x.size());
+					pupil_index.push_back(i * width + j);
 
 					pupil_x.push_back(x_cand * focal_length * static_cast<double>(width) / 2.0);
 					pupil_y.push_back(y_cand * focal_length * static_cast<double>(height) / 2.0);
@@ -73,7 +73,7 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 
 		for (int j = 0; j < n; ++j) {
 			// @TODO: fill, obviously
-			const double p_phase = 0.0;
+			const double p_phase = 1.0;
 
 			total_field += std::exp(IOTA * (p_phase + pists[j]));
 		}

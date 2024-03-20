@@ -23,10 +23,18 @@ porting: $(obj)
 	$(CXX) -o $@ $^
 
 
+output.bin: porting
+	./$^ $@
+
+
+report: output.bin
+	$(PYTHON) python/report.py $^
+
+
 build/%.o: src/%.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -o $@ $^
 
 
 .PHONY clean:
 clean:
-	rm -f $(obj) porting
+	rm -f $(obj) porting output.bin
