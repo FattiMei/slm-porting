@@ -29,4 +29,4 @@ build/%.o: src/%.cpp
 
 .PHONY clean:
 clean:
-	rm -f $(obj)
+	rm -f $(obj) porting
