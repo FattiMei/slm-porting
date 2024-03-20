@@ -42,11 +42,11 @@ class SLM {
 		std::vector<double> phase_buffer;
 		std::vector<unsigned char> texture_buffer;
 
-		void    rs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4],                                     int seed);
-		void    gs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		void   wgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations,                     int seed);
-		void  csgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
-		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], int iterations, double compression, int seed);
+		void    rs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength,                                     int seed);
+		void    gs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations,                     int seed);
+		void   wgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations,                     int seed);
+		void  csgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations, double compression, int seed);
+		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations, double compression, int seed);
 };
 
 
