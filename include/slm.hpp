@@ -18,9 +18,9 @@
 
 
 struct Point3D {
-	const double x;
-	const double y;
-	const double z;
+	double x;
+	double y;
+	double z;
 };
 
 
@@ -32,8 +32,6 @@ struct SLMParameters {
 	const double pixel_size_um;
 	const double wavelength_um;
 
-	// @LANG: is there a way to automatically deduce the constructor?
-	// something like SLMParameters(int, int, double, double, double) = default;
 	SLMParameters(int width_, int height_, double focal_length_mm_, double pixel_size_um_, double wavelength_um_) :
 		width(width_),
 		height(height_),
@@ -56,12 +54,11 @@ class SLM {
 	public:
 		SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm);
 
-		// @DESIGN: for performance reasons it could be convenient to store point data in AoS form
-		void    rs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z,                                     int seed, bool measure = false);
-		void    gs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z, int iterations,                     int seed, bool measure = false);
-		void   wgs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z, int iterations,                     int seed, bool measure = false);
-		void  csgs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z, int iterations, double compression, int seed, bool measure = false);
-		void wcsgs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z, int iterations, double compression, int seed, bool measure = false);
+		void    rs(const std::vector<Point3D> &spots,                                     int seed, bool measure = false);
+		void    gs(const std::vector<Point3D> &spots, int iterations,                     int seed, bool measure = false);
+		void   wgs(const std::vector<Point3D> &spots, int iterations,                     int seed, bool measure = false);
+		void  csgs(const std::vector<Point3D> &spots, int iterations, double compression, int seed, bool measure = false);
+		void wcsgs(const std::vector<Point3D> &spots, int iterations, double compression, int seed, bool measure = false);
 
 		void write_on_texture(int id);
 		void write_on_file(FILE *out);
@@ -74,11 +71,11 @@ class SLM {
 		std::vector<double> phase_buffer;
 		std::vector<unsigned char> texture_buffer;
 
-		void    rs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf,                                     int seed);
-		void    gs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
-		void   wgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
-		void  csgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
-		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
+		void    rs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf,                                     int seed);
+		void    gs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
+		void   wgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
+		void  csgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
+		void wcsgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
 };
 
 

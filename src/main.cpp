@@ -42,7 +42,16 @@ int main(int argc, char *argv[]) {
 		z[i] =  10.0 * (uniform(gen) - 0.5);
 	}
 
-	slm.rs(x, y, z, 1);
+
+	std::vector<Point3D> spots(npoints);
+
+	for (int i = 0; i < npoints; ++i) {
+		spots[i].x = x[i];
+		spots[i].y = y[i];
+		spots[i].z = z[i];
+	}
+
+	slm.rs(spots, 1);
 	slm.write_on_file(out);
 
 	return 0;

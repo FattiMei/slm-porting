@@ -14,7 +14,7 @@ void SLM::write_on_file(std::ofstream &out) {
 }
 
 
-void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],  double phase[], const SLMParameters *par, Performance *perf, int seed) {
+void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int seed) {
 	/* Before we start:
 	 *  - the first implementation will be very inefficient and explicit, also there will be many memory allocations
 	 *  - also I will use C++ features (vector, complex, exp)
@@ -74,7 +74,7 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 		std::complex<double> total_field(0.0, 0.0);
 
 		for (int j = 0; j < n; ++j) {
-			const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (x[j] * pupil_x[i] + y[j] * pupil_y[i]) + M_PI * z[j] / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (pupil_x[i] * pupil_x[i] + pupil_y[i] * pupil_y[i]);
+			const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[j].x * pupil_x[i] + spots[j].y * pupil_y[i]) + M_PI * spots[j].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (pupil_x[i] * pupil_x[i] + pupil_y[i] * pupil_y[i]);
 
 			total_field += std::exp(IOTA * (p_phase + pists[j]));
 		}
@@ -84,6 +84,6 @@ void SLM::rs_kernel(int n, const double x[], const double y[], const double z[],
 }
 
 
-void SLM::rs(const std::vector<double> &x, const std::vector<double> &y, const std::vector<double> &z, int seed, bool measure) {
-	rs_kernel(x.size(), x.data(), y.data(), z.data(), phase_buffer.data(), &par, measure ? &perf : NULL, seed);
+void SLM::rs(const std::vector<Point3D> &spots, int seed, bool measure) {
+	rs_kernel(spots.size(), spots.data(), phase_buffer.data(), &par, measure ? &perf : NULL, seed);
 }
