@@ -11,10 +11,6 @@ obj = $(patsubst src/%.cpp,build/%.o,$(src))
 all: porting
 
 
-regression:
-	$(PYTHON) python/regression.py
-
-
 example:
 	$(PYTHON) python/example.py
 
@@ -25,6 +21,10 @@ porting: $(obj)
 
 output.bin: porting
 	./$^ $@
+
+
+regression: output.bin
+	diff reference.bin output.bin
 
 
 report: output.bin
