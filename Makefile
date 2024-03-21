@@ -24,11 +24,12 @@ output.bin: porting
 
 
 regression: output.bin
-	diff reference.bin output.bin
+	$(PYTHON) python/compare.py reference.bin $^
 
 
 report: output.bin
 	$(PYTHON) python/report.py $^
+
 
 
 build/%.o: src/%.cpp
