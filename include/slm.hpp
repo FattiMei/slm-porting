@@ -17,6 +17,41 @@
  */
 
 
+struct Point3D {
+	const double x;
+	const double y;
+	const double z;
+};
+
+
+// @TODO: solve the unit of measure problem
+struct SLMParameters {
+	const int width;
+	const int height;
+	const double focal_length_mm;
+	const double pixel_size_um;
+	const double wavelength_um;
+
+	// @LANG: is there a way to automatically deduce the constructor?
+	// something like SLMParameters(int, int, double, double, double) = default;
+	SLMParameters(int width_, int height_, double focal_length_mm_, double pixel_size_um_, double wavelength_um_) :
+		width(width_),
+		height(height_),
+		focal_length_mm(focal_length_mm_),
+		pixel_size_um(pixel_size_um_),
+		wavelength_um(wavelength_um_) {};
+};
+
+
+struct Performance {
+	double efficiency;
+	double uniformity;
+	double variance;
+	double time;
+};
+
+
+
 class SLM {
 	public:
 		SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm);
@@ -33,20 +68,17 @@ class SLM {
 		void write_on_file(std::ofstream &out);
 
 	private:
-		const int width;
-		const int height;
-		const double wavelength_um;
-		const double pixel_size_um;
-		const double focal_length_mm;
+		const struct SLMParameters par;
 
+		struct Performance perf;
 		std::vector<double> phase_buffer;
 		std::vector<unsigned char> texture_buffer;
 
-		void    rs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength,                                     int seed);
-		void    gs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations,                     int seed);
-		void   wgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations,                     int seed);
-		void  csgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations, double compression, int seed);
-		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], int width, int height, double phase[], double perf[4], double focal_length, double pitch, double wavelength, int iterations, double compression, int seed);
+		void    rs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf,                                     int seed);
+		void    gs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
+		void   wgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
+		void  csgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
+		void wcsgs_kernel(int n, const double x[], const double y[], const double z[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
 };
 
 
