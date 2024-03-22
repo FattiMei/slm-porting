@@ -5,6 +5,12 @@
 #include <cassert>
 
 
+// @TODO: see correct linspace implementation
+double linspace(double inf, double sup, int n, int i) {
+	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n);
+}
+
+
 SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : par(width_, height_, focal_length_mm_, pixel_size_um_, wavelength_um_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 
@@ -46,9 +52,8 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
-			// @TODO: see correct linspace implementation
-			double x = -1.0 + static_cast<double>(i) * 2.0 / static_cast<double>(WIDTH);
-			double y = -1.0 + static_cast<double>(j) * 2.0 / static_cast<double>(HEIGHT);
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double y = linspace(-1.0, 1.0, HEIGHT, j);
 
 			if (x*x + y*y < 1.0) {
 				std::complex<double> total_field(0.0, 0.0);
@@ -99,9 +104,8 @@ void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], co
 		// @POSSIBLE_BUG: look at the iteration space!
 		for (int i = 0; i < WIDTH; ++i) {
 			for (int j = 0; j < WIDTH; ++j) {
-				// @TODO: find the correct implementation of linspace
-				const double x_cand = -1.0 + static_cast<double>(i) * 2.0 / static_cast<double>(WIDTH);
-				const double y_cand = -1.0 + static_cast<double>(j) * 2.0 / static_cast<double>(HEIGHT);
+				const double x_cand = linspace(-1.0, 1.0, WIDTH,  i);
+				const double y_cand = linspace(-1.0, 1.0, HEIGHT, j);
 
 				if (x_cand*x_cand + y_cand*y_cand < 1.0) {
 					pupil_index.push_back(i * WIDTH + j);
