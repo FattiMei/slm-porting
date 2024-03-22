@@ -11,6 +11,16 @@ double linspace(double inf, double sup, int n, int i) {
 }
 
 
+void generate_random_pistons(std::vector<double> &pists, int seed) {
+	std::default_random_engine gen(seed);
+	std::uniform_real_distribution<double> uniform(0.0, 2.0 * M_PI);
+
+	for (auto &p : pists) {
+		p = uniform(gen);
+	}
+}
+
+
 SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : par(width_, height_, focal_length_mm_, pixel_size_um_, wavelength_um_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 
@@ -37,17 +47,8 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 	const std::complex<double> IOTA(0.0, 1.0);
 
 
-	// random pist generation
 	std::vector<double> pists(n);
-
-	{
-		std::default_random_engine gen(seed);
-		std::uniform_real_distribution<double> uniform(0.0, 2.0 * M_PI);
-
-		for (int i = 0; i < n; ++i) {
-			pists[i] = uniform(gen);
-		}
-	}
+	generate_random_pistons(pists, seed);
 
 
 	for (int j = 0; j < HEIGHT; ++j) {
@@ -81,17 +82,9 @@ void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], co
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
-	// random pist generation
 	std::vector<double> pists(n);
+	generate_random_pistons(pists, seed);
 
-	{
-		std::default_random_engine gen(seed);
-		std::uniform_real_distribution<double> uniform(0.0, 2.0 * M_PI);
-
-		for (int i = 0; i < n; ++i) {
-			pists[i] = uniform(gen);
-		}
-	}
 
 	// pupil coords generation
 	std::vector<double> pupil_x;
