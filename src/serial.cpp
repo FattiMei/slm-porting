@@ -44,9 +44,8 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 	}
 
 
-	// @BUG: look carefully at the iteration space, are we storing column major or row major?
-	for (int i = 0; i < WIDTH; ++i) {
-		for (int j = 0; j < HEIGHT; ++j) {
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
 			// @TODO: see correct linspace implementation
 			double x = -1.0 + static_cast<double>(i) * 2.0 / static_cast<double>(WIDTH);
 			double y = -1.0 + static_cast<double>(j) * 2.0 / static_cast<double>(HEIGHT);
@@ -56,14 +55,13 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 				x = x * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
 				y = y * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
 
-				// @TODO: find a better name for this iteration variable, we are iterating over the spots
-				for (int k = 0; k < n; ++k) {
-					const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[k].x * x + spots[k].y * y) + M_PI * spots[k].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
 
-					total_field += std::exp(IOTA * (p_phase + pists[k]));
+					total_field += std::exp(IOTA * (p_phase + pists[ispot]));
 				}
 
-				phase[i * WIDTH + j] = std::arg(total_field);
+				phase[j * WIDTH + i] = std::arg(total_field);
 			}
 		}
 	}

@@ -21,4 +21,6 @@ if __name__ == '__main__':
     ref_phase = read_binary_file(sys.argv[1])
     out_phase = read_binary_file(sys.argv[2])
 
-    print(f"Absolute difference {np.amax(np.abs(ref_phase - out_phase))}")
+    abs_diff = np.amax(np.abs(ref_phase - out_phase.transpose()))
+
+    print(f"Absolute difference {abs_diff}")
