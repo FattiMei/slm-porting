@@ -91,20 +91,18 @@ void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], co
 	std::vector<double> pupil_y;
 	std::vector<int> pupil_index;
 
-	// @OPT: make the process of selecting pupil points inside the loop below
+
 	{
-		// careful in how you iterate over the two indices
-		// @POSSIBLE_BUG: look at the iteration space!
-		for (int i = 0; i < WIDTH; ++i) {
-			for (int j = 0; j < WIDTH; ++j) {
-				const double x_cand = linspace(-1.0, 1.0, WIDTH,  i);
-				const double y_cand = linspace(-1.0, 1.0, HEIGHT, j);
+		for (int j = 0; j < HEIGHT; ++j) {
+			for (int i = 0; i < WIDTH; ++i) {
+				const double x = linspace(-1.0, 1.0, WIDTH,  i);
+				const double y = linspace(-1.0, 1.0, HEIGHT, j);
 
-				if (x_cand*x_cand + y_cand*y_cand < 1.0) {
-					pupil_index.push_back(i * WIDTH + j);
+				if (x*x + y*y < 1.0) {
+					pupil_index.push_back(j * WIDTH + i);
 
-					pupil_x.push_back(x_cand * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0);
-					pupil_y.push_back(y_cand * FOCAL_LENGTH * static_cast<double>(HEIGHT) / 2.0);
+					pupil_x.push_back(x * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0);
+					pupil_y.push_back(y * FOCAL_LENGTH * static_cast<double>(HEIGHT) / 2.0);
 				}
 			}
 		}
@@ -129,5 +127,5 @@ void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], co
 
 
 void SLM::rs(const std::vector<Point3D> &spots, int seed, bool measure) {
-	rs_kernel(spots.size(), spots.data(), phase_buffer.data(), &par, measure ? &perf : NULL, seed);
+	rs_kernel_inefficient(spots.size(), spots.data(), phase_buffer.data(), &par, measure ? &perf : NULL, seed);
 }
