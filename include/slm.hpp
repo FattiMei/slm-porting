@@ -54,14 +54,13 @@ class SLM {
 	public:
 		SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm);
 
-		void    rs(const std::vector<Point3D> &spots,                                     int seed, bool measure = false);
-		void    gs(const std::vector<Point3D> &spots, int iterations,                     int seed, bool measure = false);
-		void   wgs(const std::vector<Point3D> &spots, int iterations,                     int seed, bool measure = false);
-		void  csgs(const std::vector<Point3D> &spots, int iterations, double compression, int seed, bool measure = false);
-		void wcsgs(const std::vector<Point3D> &spots, int iterations, double compression, int seed, bool measure = false);
+		void    rs(const std::vector<Point3D> &spots, std::vector<double> &pists,                                     bool measure = false);
+		void    gs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations,                     bool measure = false);
+		void   wgs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations,                     bool measure = false);
+		void  csgs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations, double compression, bool measure = false);
+		void wcsgs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations, double compression, bool measure = false);
 
 		void write_on_texture(int id);
-		void write_on_file(FILE *out);
 		void write_on_file(std::ofstream &out);
 
 	private:
@@ -76,8 +75,6 @@ class SLM {
 		void   wgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
 		void  csgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
 		void wcsgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
-
-		void rs_kernel_inefficient(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf);
 };
 
 

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <random>
 #include "slm.hpp"
+#include "utils.hpp"
 
 
 const double focal_length  = 20.0;
@@ -51,8 +52,11 @@ int main(int argc, char *argv[]) {
 		spots[i].z = z[i];
 	}
 
-	slm.rs(spots, 1);
-	// slm.gs(spots, 30, 1);
+	std::vector<double> pists(npoints);
+	generate_random_vector(pists, 0.0, 2.0 * M_PI, 1);
+
+	slm.rs(spots, pists);
+	// slm.gs(spots, 30, pists);
 	slm.write_on_file(out);
 
 	return 0;

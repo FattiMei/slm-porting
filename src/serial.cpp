@@ -1,4 +1,5 @@
 #include "slm.hpp"
+#include "utils.hpp"
 #include <random>
 #include <cmath>
 #include <complex>
@@ -11,23 +12,12 @@ double linspace(double inf, double sup, int n, int i) {
 }
 
 
-void generate_random_pistons(std::vector<double> &pists, int seed) {
-	std::default_random_engine gen(seed);
-	std::uniform_real_distribution<double> uniform(0.0, 2.0 * M_PI);
-
-	for (auto &p : pists) {
-		p = uniform(gen);
-	}
-}
-
-
 SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : par(width_, height_, focal_length_mm_, pixel_size_um_, wavelength_um_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 
 
 void SLM::write_on_file(std::ofstream &out) {
-	out << par.width << " " << par.height << std::endl;
-	out.write(reinterpret_cast<const char *>(phase_buffer.data()), par.width * par.height * sizeof(double));
+	write_vector_on_file(phase_buffer, par.width, par.height, out);
 }
 
 
@@ -120,17 +110,11 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 }
 
 
-void SLM::rs(const std::vector<Point3D> &spots, int seed, bool measure) {
-	std::vector<double> pists(spots.size());
-	generate_random_pistons(pists, seed);
-
+void SLM::rs(const std::vector<Point3D> &spots, std::vector<double> &pists, bool measure) {
 	rs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL);
 }
 
 
-void SLM::gs(const std::vector<Point3D> &spots, int iterations, int seed, bool measure) {
-	std::vector<double> pists(spots.size());
-	generate_random_pistons(pists, seed);
-
+void SLM::gs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations, bool measure) {
 	gs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
 }
