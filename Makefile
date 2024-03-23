@@ -1,5 +1,6 @@
 CXX      = g++
 CXXFLAGS = -Wall -Wextra -Wpedantic
+OPTFLAGS = -O2
 INCLUDE  = -I ./include
 PYTHON   = python3.8
 
@@ -33,7 +34,7 @@ report: output.bin
 
 
 build/%.o: src/%.cpp
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -o $@ $^
+	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $^
 
 
 .PHONY clean:

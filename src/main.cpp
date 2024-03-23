@@ -51,7 +51,8 @@ int main(int argc, char *argv[]) {
 		spots[i].z = z[i];
 	}
 
-	slm.rs(spots, 1);
+	// slm.rs(spots, 1);
+	slm.gs(spots, 30, 1);
 	slm.write_on_file(out);
 
 	return 0;
