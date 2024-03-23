@@ -71,13 +71,13 @@ class SLM {
 		std::vector<double> phase_buffer;
 		std::vector<unsigned char> texture_buffer;
 
-		void    rs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf,                                     int seed);
-		void    gs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
-		void   wgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
-		void  csgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
-		void wcsgs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
+		void    rs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf);
+		void    gs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations);
+		void   wgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations,                     int seed);
+		void  csgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
+		void wcsgs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations, double compression, int seed);
 
-		void rs_kernel_inefficient(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int seed);
+		void rs_kernel_inefficient(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf);
 };
 
 

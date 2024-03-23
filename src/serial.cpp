@@ -57,7 +57,7 @@ void SLM::write_on_file(std::ofstream &out) {
 }
 
 
-void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int seed) {
+void SLM::rs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf) {
 	/* Before we start:
 	 *  - the first implementation will be very inefficient and explicit, also there will be many memory allocations
 	 *  - also I will use C++ features (vector, complex, exp)
@@ -71,10 +71,6 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &WAVELENGTH   = par->wavelength_um;
 	const std::complex<double> IOTA(0.0, 1.0);
-
-
-	std::vector<double> pists(n);
-	generate_random_pistons(pists, seed);
 
 
 	for (int j = 0; j < HEIGHT; ++j) {
@@ -100,17 +96,13 @@ void SLM::rs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 }
 
 
-void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int seed) {
+void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &WAVELENGTH   = par->wavelength_um;
 	const std::complex<double> IOTA(0.0, 1.0);
-
-
-	std::vector<double> pists(n);
-	generate_random_pistons(pists, seed);
 
 
 	std::vector<Point2D> pupil_points;
@@ -132,7 +124,7 @@ void SLM::rs_kernel_inefficient(int n, const Point3D spots[], double phase[], co
 }
 
 
-void SLM::gs_kernel(int n, const Point3D spots[], double phase[], const SLMParameters *par, Performance *perf, int iterations, int seed) {
+void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
@@ -142,8 +134,6 @@ void SLM::gs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 
 
 	std::vector<std::complex<double>> spot_fields(n);
-	std::vector<double> pists(n);
-	generate_random_pistons(pists, seed);
 
 
 	for (int it = 0; it < iterations; ++it) {
@@ -185,10 +175,16 @@ void SLM::gs_kernel(int n, const Point3D spots[], double phase[], const SLMParam
 
 
 void SLM::rs(const std::vector<Point3D> &spots, int seed, bool measure) {
-	rs_kernel_inefficient(spots.size(), spots.data(), phase_buffer.data(), &par, measure ? &perf : NULL, seed);
+	std::vector<double> pists(spots.size());
+	generate_random_pistons(pists, seed);
+
+	rs_kernel_inefficient(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL);
 }
 
 
 void SLM::gs(const std::vector<Point3D> &spots, int iterations, int seed, bool measure) {
-	gs_kernel(spots.size(), spots.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations, seed);
+	std::vector<double> pists(spots.size());
+	generate_random_pistons(pists, seed);
+
+	gs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
 }
