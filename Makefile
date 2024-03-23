@@ -5,7 +5,7 @@ INCLUDE  = -I ./include
 PYTHON   = python3.8
 
 
-src = src/main.cpp src/serial.cpp
+src = src/main.cpp src/serial.cpp src/utils.cpp
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
