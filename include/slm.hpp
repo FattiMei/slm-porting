@@ -21,6 +21,8 @@ struct Point3D {
 	double x;
 	double y;
 	double z;
+
+	Point3D(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {};
 };
 
 

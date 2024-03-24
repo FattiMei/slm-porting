@@ -6,12 +6,6 @@
 #include <cassert>
 
 
-// @TODO: see correct linspace implementation
-double linspace(double inf, double sup, int n, int i) {
-	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n);
-}
-
-
 SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : par(width_, height_, focal_length_mm_, pixel_size_um_, wavelength_um_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 

@@ -28,36 +28,20 @@ int main(int argc, char *argv[]) {
 	std::ofstream out(argv[1]);
 
 
-	// manually filling the random vectors
-	std::default_random_engine gen(seed);
-	std::uniform_real_distribution<double> uniform(0.0, 1.0);
-
-	std::vector<double> x(npoints);
-	std::vector<double> y(npoints);
-	std::vector<double> z(npoints);
-
-	for (int i = 0; i < npoints; ++i) {
-		// i know it's not compatible with the python version
-		x[i] = 100.0 * (uniform(gen) - 0.5);
-		y[i] = 100.0 * (uniform(gen) - 0.5);
-		z[i] =  10.0 * (uniform(gen) - 0.5);
-	}
-
-
-	std::vector<Point3D> spots(npoints);
-
-	for (int i = 0; i < npoints; ++i) {
-		spots[i].x = x[i];
-		spots[i].y = y[i];
-		spots[i].z = z[i];
-	}
-
 	std::vector<double> pists(npoints);
 	generate_random_vector(pists, 0.0, 2.0 * M_PI, 1);
 
+
+	std::vector<Point3D> spots;
+	generate_grid_spots(10, 10.0, spots);
+
+
 	slm.rs(spots, pists);
 	// slm.gs(spots, 30, pists);
+
+
 	slm.write_on_file(out);
+
 
 	return 0;
 }
