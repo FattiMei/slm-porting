@@ -1,4 +1,5 @@
-import csgs
+import csgs as legacy
+import refactor
 import numpy as np
 
 
@@ -21,42 +22,43 @@ if __name__ == "__main__":
     SEED         = 42
 
     X, Y, Z = generate_input_data(NPOINTS, np.random.default_rng(SEED))
+    SPOTS = np.array([X, Y, Z]).transpose()
 
     testing_table = [
             {
                 'name'       : "Random superposition",
-                'reference'  : lambda seed : csgs.rs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
-                'alternative': lambda seed : csgs.rs_refactored(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
+                'reference'  : lambda seed : legacy.rs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
+                'alternative': lambda seed : refactor.rs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
                 'seeds'      : [SEED]
             },
             {
                 'name'       : "Gerchberg-Saxton",
-                'reference'  : lambda seed : csgs.gs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
-                'alternative': lambda seed : csgs.gs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'reference'  : lambda seed : legacy.gs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'alternative': lambda seed : refactor.gs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
                 'seeds'      : [SEED]
             },
             {
                 'name'       : "Weighted Gerchberg-Saxton",
-                'reference'  : lambda seed : csgs.wgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
-                'alternative': lambda seed : csgs.wgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'reference'  : lambda seed : legacy.wgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'alternative': lambda seed : refactor.wgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
                 'seeds'      : [SEED]
             },
             {
                 'name'       : "Compressive Sensing Gerchberg-Saxton",
-                'reference'  : lambda seed : csgs.csgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
-                'alternative': lambda seed : csgs.csgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'reference'  : lambda seed : legacy.csgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'alternative': lambda seed : refactor.csgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
                 'seeds'      : [SEED]
             },
             {
                 'name'       : "Weighted Compressive Sensing Gerchberg-Saxton",
-                'reference'  : lambda seed : csgs.wcsgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
-                'alternative': lambda seed : csgs.wcsgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'reference'  : lambda seed : legacy.wcsgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'alternative': lambda seed : refactor.wcsgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
                 'seeds'      : [SEED]
             }
     ]
 
 
-    for test in [testing_table[0]]:
+    for test in testing_table:
         for seed in test['seeds']:
             reference,   _ = test['reference'](seed)
             alternative, _ = test['alternative'](seed)
