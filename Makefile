@@ -29,7 +29,7 @@ regression: output.bin
 
 
 report: output.bin
-	$(PYTHON) python/report.py $^
+	$(PYTHON) python/compare_with_serial.py $^
 
 
 
