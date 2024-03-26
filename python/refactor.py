@@ -25,8 +25,7 @@ def get_performance_metrics(intensities, t):
 
 # Random superposition algorithm: Fastest available algorithm, produces low quality holograms
 
-def rs(spots, f: float, d: float, lam: float, res: int, seed: int):
-    rng = np.random.default_rng(seed)
+def rs(spots, pists, f: float, d: float, lam: float, res: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -38,10 +37,6 @@ def rs(spots, f: float, d: float, lam: float, res: int, seed: int):
     # where m is the number of pixels in the pupil
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
-    #array containing the phase of the field at each created spot
-    # @shape(pists) = (n)
-    # where n is the number of desired points
-    pists=rng.random(spots.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -83,17 +78,13 @@ def rs(spots, f: float, d: float, lam: float, res: int, seed: int):
 # Standard GS algorithm: Slow, high efficiency holograms, better uniformity than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def gs(spots, f: float, d: float, lam: float, res: int, iters: int, seed: int):
-    rng = np.random.default_rng(seed)
+def gs(spots, pists, f: float, d: float, lam: float, res: int, iters: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
     
-    
-    #array containing the phase of the field at each created spot
-    pists=rng.random(spots.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0

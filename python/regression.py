@@ -21,20 +21,24 @@ if __name__ == "__main__":
     COMPRESSION  = 0.05
     SEED         = 42
 
+    rng = np.random.default_rng(SEED)
+
     X, Y, Z = generate_input_data(NPOINTS, np.random.default_rng(SEED))
     SPOTS = np.array([X, Y, Z]).transpose()
+    PISTS = 2.0 * np.pi * rng.random(NPOINTS)
+
 
     testing_table = [
             {
                 'name'       : "Random superposition",
                 'reference'  : lambda seed : legacy.rs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
-                'alternative': lambda seed : refactor.rs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,seed),
+                'alternative': lambda seed : refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS),
                 'seeds'      : [SEED]
             },
             {
                 'name'       : "Gerchberg-Saxton",
                 'reference'  : lambda seed : legacy.gs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
-                'alternative': lambda seed : refactor.gs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'alternative': lambda seed : refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS),
                 'seeds'      : [SEED]
             },
             {
