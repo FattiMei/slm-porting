@@ -15,7 +15,7 @@ void SLM::write_on_file(std::ofstream &out) {
 }
 
 
-void SLM::rs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf) {
+void SLM::rs_kernel(int n, const Point3D spots[], const double pists[], double phase[], const SLMParameters *par, Performance *perf) {
 	/* Before we start:
 	 *  - the first implementation will be very inefficient and explicit, also there will be many memory allocations
 	 *  - also I will use C++ features (vector, complex, exp)
@@ -113,12 +113,12 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 }
 
 
-void SLM::rs(const std::vector<Point3D> &spots, std::vector<double> &pists, bool measure) {
+void SLM::rs(const std::vector<Point3D> &spots, const std::vector<double> &pists, bool measure) {
 	rs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL);
 }
 
 
-void SLM::gs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations, bool measure) {
+void SLM::gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, bool measure) {
 	std::vector<double> pists_copy(pists);
 
 	gs_kernel(spots.size(), spots.data(), pists_copy.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
