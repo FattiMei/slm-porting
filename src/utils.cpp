@@ -4,7 +4,8 @@
 
 // @TODO: see correct linspace implementation
 double linspace(double inf, double sup, int n, int i) {
-	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n);
+	// return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n);
+	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n - 1);
 }
 
 
@@ -39,8 +40,6 @@ void write_vector_on_file(const std::vector<double> &x, size_t width, size_t hei
 
 	out << width << " " << height << std::endl;
 	out.write(reinterpret_cast<const char *>(x.data()), width * height * sizeof(double));
-
-	out << std::endl;
 }
 
 
@@ -49,6 +48,4 @@ void write_spots_on_file(const std::vector<Point3D> &spots, std::ofstream &out) 
 	// magic number 3 is the number of elements in the Point3D struct
 	out << spots.size() << " " << 3 << std::endl;
 	out.write(reinterpret_cast<const char *>(spots.data()), spots.size() * 3 * sizeof(double));
-
-	out << std::endl;
 }

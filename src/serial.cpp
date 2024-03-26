@@ -27,6 +27,7 @@ void SLM::rs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
 	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
 	const std::complex<double> IOTA(0.0, 1.0);
 
@@ -38,8 +39,8 @@ void SLM::rs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 
 			if (x*x + y*y < 1.0) {
 				std::complex<double> total_field(0.0, 0.0);
-				x = x * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
-				y = y * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
+				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
@@ -59,6 +60,7 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
 	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
 	const std::complex<double> IOTA(0.0, 1.0);
 
@@ -74,8 +76,8 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 
 				if (x*x + y*y < 1.0) {
 					std::complex<double> total_field(0.0, 0.0);
-					x = x * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
-					y = y * FOCAL_LENGTH * static_cast<double>(WIDTH) / 2.0;
+					x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 					for (int ispot = 0; ispot < n; ++ispot) {
 						// @OPT: replicating this computation is much better than storing the information? I have to check
@@ -91,7 +93,7 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
 
-						spot_fields[ispot] += std::exp(IOTA * (total_phase + p_phase));
+						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -110,5 +112,7 @@ void SLM::rs(const std::vector<Point3D> &spots, std::vector<double> &pists, bool
 
 
 void SLM::gs(const std::vector<Point3D> &spots, std::vector<double> &pists, int iterations, bool measure) {
-	gs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
+	std::vector<double> pists_copy(pists);
+
+	gs_kernel(spots.size(), spots.data(), pists_copy.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
 }
