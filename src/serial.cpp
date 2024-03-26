@@ -55,7 +55,8 @@ void SLM::rs_kernel(int n, const Point3D spots[], const double pists[], double p
 }
 
 
-void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[], const SLMParameters *par, Performance *perf, int iterations) {
+// @TODO: find a better name instead of pists_swap
+void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double pists_swap[], double phase[], const SLMParameters *par, Performance *perf, int iterations) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
@@ -63,10 +64,6 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
 	const std::complex<double> IOTA(0.0, 1.0);
-
-
-	// @BUG: remember to free this memory
-	double *new_pists = new double[n];
 
 
 	for (int it = 0; it < iterations; ++it) {
@@ -102,13 +99,13 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 
 
 					for (int ispot = 0; ispot < n; ++ispot) {
-						new_pists[ispot] = std::arg(spot_fields[ispot]);
+						pists_swap[ispot] = std::arg(spot_fields[ispot]);
 					}
 				}
 			}
 		}
 
-		std::swap(pists, new_pists);
+		std::swap(pists, pists_swap);
 	}
 }
 
@@ -120,6 +117,7 @@ void SLM::rs(const std::vector<Point3D> &spots, const std::vector<double> &pists
 
 void SLM::gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, bool measure) {
 	std::vector<double> pists_copy(pists);
+	std::vector<double> pists_swap(spots.size());
 
-	gs_kernel(spots.size(), spots.data(), pists_copy.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
+	gs_kernel(spots.size(), spots.data(), pists_copy.data(), pists_swap.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
 }
