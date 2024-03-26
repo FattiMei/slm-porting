@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
 	generate_grid_spots(10, 10.0, spots);
 
 
-	slm.rs(spots, pists);
-	// slm.gs(spots, 30, pists);
+	// slm.rs(spots, pists);
+	slm.gs(spots, pists, iterations);
 
 
 	slm.write_on_file(out);

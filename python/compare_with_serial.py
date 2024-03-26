@@ -40,7 +40,8 @@ if __name__ == '__main__':
     ITERATIONS   = 30
 
 
-    reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
+    # reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
+    reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
 
 
     fig, axis = plt.subplots(1,2)

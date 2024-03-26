@@ -65,10 +65,14 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 	const std::complex<double> IOTA(0.0, 1.0);
 
 
-	std::vector<std::complex<double>> spot_fields(n);
+	// @BUG: remember to free this memory
+	double *new_pists = new double[n];
 
 
 	for (int it = 0; it < iterations; ++it) {
+		// @OPT: zero this memory without reconstructing vector
+		std::vector<std::complex<double>> spot_fields(n);
+
 		for (int j = 0; j < HEIGHT; ++j) {
 			for (int i = 0; i < WIDTH; ++i) {
 				double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -96,12 +100,15 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double phase[]
 						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
 					}
 
+
 					for (int ispot = 0; ispot < n; ++ispot) {
-						pists[ispot] = std::arg(spot_fields[ispot]);
+						new_pists[ispot] = std::arg(spot_fields[ispot]);
 					}
 				}
 			}
 		}
+
+		std::swap(pists, new_pists);
 	}
 }
 
