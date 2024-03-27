@@ -41,7 +41,8 @@ if __name__ == '__main__':
 
 
     # reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
-    reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    # reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    reference, _ = refactor.wgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
 
 
     fig, axis = plt.subplots(1,2)

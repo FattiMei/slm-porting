@@ -16,20 +16,13 @@ inline double compute_p_phase(double wavelength, double focal_length, const Poin
 
 inline void compute_spot_field_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
 	for (int i = 0; i < n; ++i) {
-		ints[i] = std::sqrt(std::abs(spot_fields[i]) / static_cast<double>(pupil_point_count));
-	}
-}
-
-
-inline void compute_spot_field_square_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
-	for (int i = 0; i < n; ++i) {
 		ints[i] = std::abs(spot_fields[i] / static_cast<double>(pupil_point_count));
 	}
 }
 
 
 inline void update_weights(int n, const double ints[], double weights[]) {
-	// @OPT: I will profile this function and fuse all the operations in one linear pass
+	// @OPT: I will profile this function and fuse all the operations in one pass
 	double total_ints_sum = 0.0;
 	double total_weight_sum = 0.0;
 
