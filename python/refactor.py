@@ -119,8 +119,7 @@ def gs(spots, pists, f: float, d: float, lam: float, res: int, iters: int):
 # Standard WGS algorithm: Slow, high uniformity holograms, better efficiency than RS. The parameter "iters" is the number of GS iterations to
 # perform
 
-def wgs(spots, f: float, d: float, lam: float, res: int, iters: int, seed: int):
-    rng = np.random.default_rng(seed)
+def wgs(spots, pists, f: float, d: float, lam: float, res: int, iters: int):
     t=get_time()
 
     #creation of a list of the SLM pixels contained in the pupil
@@ -129,9 +128,6 @@ def wgs(spots, f: float, d: float, lam: float, res: int, iters: int, seed: int):
     
     #initialization of the weights, all with equal value
     weights=np.ones(spots.shape[0])/float(spots.shape[0])
-    
-    #array containing the phase of the field at each created spot
-    pists=rng.random(spots.shape[0])*2*np.pi
 
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0

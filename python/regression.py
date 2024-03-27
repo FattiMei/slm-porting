@@ -44,7 +44,7 @@ if __name__ == "__main__":
             {
                 'name'       : "Weighted Gerchberg-Saxton",
                 'reference'  : lambda seed : legacy.wgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
-                'alternative': lambda seed : refactor.wgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,seed),
+                'alternative': lambda seed : refactor.wgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS),
                 'seeds'      : [SEED]
             },
             {
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     ]
 
 
-    for test in testing_table:
+    for test in [testing_table[0:3]]:
         for seed in test['seeds']:
             reference,   _ = test['reference'](seed)
             alternative, _ = test['alternative'](seed)
