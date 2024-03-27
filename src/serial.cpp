@@ -6,6 +6,14 @@
 #include <cassert>
 
 
+inline double compute_p_phase(double wavelength, double focal_length, const Point3D spots[], int ispot, double x, double y) {
+	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
+	const double c2 = M_PI * spots[ispot].z / (wavelength * focal_length * focal_length * 1e6);
+
+	return c1 * (spots[ispot].x * x + spots[ispot].y * y) + c2 * (x * x + y * y);
+}
+
+
 SLM::SLM(int width_, int height_, double wavelength_um_, double pixel_size_um_, double focal_length_mm_) : par(width_, height_, focal_length_mm_, pixel_size_um_, wavelength_um_), phase_buffer(width_ * height_), texture_buffer(width_ * height_) {
 }
 
@@ -43,7 +51,7 @@ void SLM::rs_kernel(int n, const Point3D spots[], const double pists[], double p
 				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
+					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
 
 					total_field += std::exp(IOTA * (p_phase + pists[ispot]));
 				}
@@ -82,7 +90,7 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double pists_t
 
 					for (int ispot = 0; ispot < n; ++ispot) {
 						// @OPT: replicating this computation is much better than storing the information? I have to check
-						const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
 
 						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
 					}
@@ -92,11 +100,10 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double pists_t
 
 					for (int ispot = 0; ispot < n; ++ispot) {
 						// @OPT: we could cache the column of p_phase data
-						const double p_phase = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0) * (spots[ispot].x * x + spots[ispot].y * y) + M_PI * spots[ispot].z / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6) * (x * x + y * y);
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
 
 						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
 					}
-
 
 					for (int ispot = 0; ispot < n; ++ispot) {
 						pists_tmp_buffer[ispot] = std::arg(spot_fields[ispot]);
