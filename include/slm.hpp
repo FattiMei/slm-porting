@@ -99,11 +99,14 @@ class SLM {
 				int                  n,
 				const Point3D        spots[],
 				double               pists[],
+				double               pists_tmp_buffer[],
+				std::complex<double> spot_fields[],
+				double               ints[],
+				double               weights[],
 				double               phase[],
 				const SLMParameters* par,
 				Performance*         perf,
-				int                  iterations,
-				int                  seed
+				int                  iterations
 			       );
 
 		void csgs_kernel(
