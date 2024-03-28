@@ -3,6 +3,7 @@
 #include <random>
 #include "slm.hpp"
 #include "utils.hpp"
+#include "units.hpp"
 
 
 const double focal_length  = 20.0;
