@@ -5,7 +5,7 @@ INCLUDE  = -I ./include
 PYTHON   = python3.8
 
 
-src = src/main.cpp src/serial.cpp src/utils.cpp
+src = src/main.cpp src/serial.cpp src/utils.cpp src/units.cpp
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
@@ -33,8 +33,8 @@ report: output.bin
 
 
 
-build/%.o: src/%.cpp
-	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $^
+build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
+	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
 
 
 .PHONY clean:
