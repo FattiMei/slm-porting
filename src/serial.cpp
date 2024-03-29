@@ -57,12 +57,12 @@ void SLM::write_on_file(std::ofstream &out) {
 
 // @TODO, @FORMATTING: align better variable names
 void SLM::rs_kernel(
-	int n,
-	const Point3D spots[],
-	const double pists[],
-	double phase[],
-	const SLMParameters *par,
-	Performance *perf
+	int                  n,
+	const Point3D        spots[],
+	const double         pists[],
+	double               phase[],
+	const SLMParameters* par,
+	Performance*         perf
 ) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
@@ -97,15 +97,15 @@ void SLM::rs_kernel(
 
 
 void SLM::gs_kernel(
-	int n,
-	const Point3D spots[],
-	double pists[],
-	double pists_tmp_buffer[],
+	int                  n,
+	const Point3D        spots[],
+	double               pists[],
+	double               pists_tmp_buffer[],
 	std::complex<double> spot_fields[],
-	double phase[],
-	const SLMParameters *par,
-	Performance *perf,
-	int iterations
+	double               phase[],
+	const SLMParameters* par,
+	Performance*         perf,
+	int                  iterations
 ) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
@@ -161,17 +161,17 @@ void SLM::gs_kernel(
 
 
 void SLM::wgs_kernel(
-	int n,
-	const Point3D spots[],
-	double pists[],
-	double pists_tmp_buffer[],
+	int                  n,
+	const Point3D        spots[],
+	double               pists[],
+	double               pists_tmp_buffer[],
 	std::complex<double> spot_fields[],
-	double ints[],
-	double weights[],
-	double phase[],
-	const SLMParameters *par,
-	Performance *perf,
-	int iterations
+	double               ints[],
+	double               weights[],
+	double               phase[],
+	const SLMParameters* par,
+	Performance*         perf,
+	int                  iterations
 ) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
@@ -239,17 +239,17 @@ void SLM::wgs_kernel(
 
 // @DESIGN, @TYPE: can we encode in a type that compression has to be in [0,1]?
 void SLM::csgs_kernel(
-	int n,
-	const Point3D spots[],
-	double pists[],
-	double pists_tmp_buffer[],
+	int                  n,
+	const Point3D        spots[],
+	double               pists[],
+	double               pists_tmp_buffer[],
 	std::complex<double> spot_fields[],
-	double phase[],
-	const SLMParameters *par,
-	Performance *perf,
-	int iterations,
-	double compression,
-	int seed
+	double               phase[],
+	const SLMParameters* par,
+	Performance*         perf,
+	int                  iterations,
+	double               compression,
+	int                  seed
 ) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
@@ -309,6 +309,37 @@ void SLM::csgs_kernel(
 
 		std::swap(pists, pists_tmp_buffer);
 	}
+}
+
+
+void SLM::wcsgs_kernel(
+	int                  n,
+	const Point3D        spots[],
+	double               pists[],
+	double               pists_tmp_buffer[],
+	std::complex<double> spot_fields[],
+	double               ints[],
+	double               weights[],
+	double               phase[],
+	const SLMParameters* par,
+	Performance*         perf,
+	int                  iterations,
+	double               compression,
+	int                  seed
+) {
+	(void) n;
+	(void) spots;
+	(void) pists;
+	(void) pists_tmp_buffer;
+	(void) spot_fields;
+	(void) ints;
+	(void) weights;
+	(void) phase;
+	(void) par;
+	(void) perf;
+	(void) iterations;
+	(void) compression;
+	(void) seed;
 }
 
 
@@ -385,6 +416,33 @@ void SLM::csgs(const std::vector<Point3D> &spots, const std::vector<double> &pis
 		pists_copy.data(),
 		pists_tmp_buffer.data(),
 		spot_fields.data(),
+		phase_buffer.data(),
+		&par,
+		measure ? &perf : NULL,
+		iterations,
+		compression,
+		seed
+	);
+}
+
+
+void SLM::wcsgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed, bool measure) {
+	const int N = spots.size();
+
+	std::vector<double>               pists_copy(pists);
+	std::vector<double>               pists_tmp_buffer(N);
+	std::vector<double>               ints(N);
+	std::vector<double>               weights(N);
+	std::vector<std::complex<double>> spot_fields(N);
+
+	wcsgs_kernel(
+		N,
+		spots.data(),
+		pists_copy.data(),
+		pists_tmp_buffer.data(),
+		spot_fields.data(),
+		ints.data(),
+		weights.data(),
 		phase_buffer.data(),
 		&par,
 		measure ? &perf : NULL,

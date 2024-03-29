@@ -76,65 +76,69 @@ class SLM {
 		std::vector<unsigned char> texture_buffer;
 
 		void rs_kernel(
-				int                  n,
-				const Point3D        spots[],
-				const double         pists[],
-				double               phase[],
-				const SLMParameters* par,
-				Performance*         perf
-			      );
+			int                  n,
+			const Point3D        spots[],
+			const double         pists[],
+			double               phase[],
+			const SLMParameters* par,
+			Performance*         perf
+		);
 
 		void gs_kernel(
-				int                  n,
-				const Point3D        spots[],
-				double               pists[],
-				double               pists_tmp_buffer[],
-				std::complex<double> spot_fields[],
-				double               phase[],
-				const SLMParameters* par,
-				Performance*         perf,
-				int                  iterations
-			      );
+			int                  n,
+			const Point3D        spots[],
+			double               pists[],
+			double               pists_tmp_buffer[],
+			std::complex<double> spot_fields[],
+			double               phase[],
+			const SLMParameters* par,
+			Performance*         perf,
+			int                  iterations
+		);
 
 		void wgs_kernel(
-				int                  n,
-				const Point3D        spots[],
-				double               pists[],
-				double               pists_tmp_buffer[],
-				std::complex<double> spot_fields[],
-				double               ints[],
-				double               weights[],
-				double               phase[],
-				const SLMParameters* par,
-				Performance*         perf,
-				int                  iterations
-			       );
+			int                  n,
+			const Point3D        spots[],
+			double               pists[],
+			double               pists_tmp_buffer[],
+			std::complex<double> spot_fields[],
+			double               ints[],
+			double               weights[],
+			double               phase[],
+			const SLMParameters* par,
+			Performance*         perf,
+			int                  iterations
+		);
 
 		void csgs_kernel(
-				int                  n,
-				const Point3D        spots[],
-				double               pists[],
-				double               pists_tmp_buffer[],
-				std::complex<double> spot_fields[],
-				double               phase[],
-				const SLMParameters* par,
-				Performance*         perf,
-				int                  iterations,
-				double               compression,
-				int                  seed
-				);
+			int                  n,
+			const Point3D        spots[],
+			double               pists[],
+			double               pists_tmp_buffer[],
+			std::complex<double> spot_fields[],
+			double               phase[],
+			const SLMParameters* par,
+			Performance*         perf,
+			int                  iterations,
+			double               compression,
+			int                  seed
+		);
 
 		void wcsgs_kernel(
-				int                  n,
-				const Point3D        spots[],
-				double               pists[],
-				double               phase[],
-				const SLMParameters* par,
-				Performance*         perf,
-				int                  iterations,
-				double               compression,
-				int                  seed
-				);
+			int                  n,
+			const Point3D        spots[],
+			double               pists[],
+			double               pists_tmp_buffer[],
+			std::complex<double> spot_fields[],
+			double               ints[],
+			double               weights[],
+			double               phase[],
+			const SLMParameters* par,
+			Performance*         perf,
+			int                  iterations,
+			double               compression,
+			int                  seed
+		);
 };
 
 
