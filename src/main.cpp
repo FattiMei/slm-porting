@@ -14,9 +14,9 @@ const double compression   = 0.05;
 const int seed             = 42;
 
 
-const Length wavelength  (0.488, Unit::micrometers);
-const Length pitch       ( 15.0, Unit::micrometers);
-const Length focal_length( 20.0, Unit::millimeters);
+const Length wavelength  (0.488, Unit::Micrometers);
+const Length pitch       ( 15.0, Unit::Micrometers);
+const Length focal_length( 20.0, Unit::Millimeters);
 
 
 int main(int argc, char *argv[]) {

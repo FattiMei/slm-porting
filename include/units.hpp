@@ -4,10 +4,10 @@
 
 // cosa cambia tra enum e enum class?
 enum Unit {
-	meters      =  0,
-	millimeters = -3,
-	micrometers = -6,
-	nanometers  = -9
+	Meters      =  0,
+	Millimeters = -3,
+	Micrometers = -6,
+	Nanometers  = -9
 };
 
 
@@ -15,7 +15,7 @@ class Length {
 	public:
 		Length(const double value_, const enum Unit unit_);
 
-		double as(const enum Unit requested) const;
+		double as(const enum Unit target) const;
 
 
 	private:
