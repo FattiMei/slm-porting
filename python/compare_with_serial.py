@@ -38,11 +38,13 @@ if __name__ == '__main__':
     WAVELENGTH   = 0.488
     NPOINTS      = 100
     ITERATIONS   = 30
+    COMPRESSION  = 0.05
 
 
     # reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
     # reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
-    reference, _ = refactor.wgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    # reference, _ = refactor.wgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    reference, _ = refactor.csgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,1)
 
 
     fig, axis = plt.subplots(1,2)

@@ -50,3 +50,16 @@ The oldest file also gave me the most detailed information about the kernels, an
 ## Critical path
 Understand the relation between `csgs.py` and `slm_3dpointcloud.py`. It seems that the latter builds on top of the basic kernels, but implements them in CUDA and does obfuscated parameter passing (we'll figure it out).
 The parameter passing was an emergent behaviour, every kernel needs pretty much the same data and it's often run-time constants (e.g wavelength, pitch, focal length...), it is advisable to pass this information in a pointer to a struct. I will still need some benchmark to assess the performance difference for this new parameter passing.
+
+
+## Testing procedure
+ 1. Strip away the rng from the python kernels
+ 2. Output the random data from the cpp application
+ 3. Load such data into python kernels and compare the two implementations
+
+Unfortunately this approach falls short for compressive kernels (csgs and wcsgs) because the process of sampling pupil points is hard to port:
+ * python computes all the pupil points, shuffles them and then take chunks for computation
+ * cpp decides to accept or decline every pupil point based on a Bernoulli outcome
+
+Since I completely removed the computation of all pupil points for performance reasons (big memory footprint), I won't port the python kernels as-is. To make tests like all the other kernels I would have to modify the python implementation but such changes couldn't be tested against the original implementation (I'm talking about deterministic tests here).
+For these reasons the testing for the csgs and wcsgs kernels will be only visual, until I find some weaker tests.
