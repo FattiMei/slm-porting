@@ -349,6 +349,7 @@ def wcsgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: fl
     rng.shuffle(coordslist)
     
     #array containing the phase of the field at each created spot
+    rng = np.random.default_rng(seed)
     pists=rng.random(x.shape[0])*2*np.pi
 
     

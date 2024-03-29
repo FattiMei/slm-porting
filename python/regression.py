@@ -56,13 +56,13 @@ if __name__ == "__main__":
             {
                 'name'       : "Weighted Compressive Sensing Gerchberg-Saxton",
                 'reference'  : lambda seed : legacy.wcsgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
-                'alternative': lambda seed : refactor.wcsgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'alternative': lambda seed : refactor.wcsgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
                 'seeds'      : [SEED]
             }
     ]
 
 
-    for test in [testing_table[3]]:
+    for test in testing_table:
         for seed in test['seeds']:
             reference,   _ = test['reference'](seed)
             alternative, _ = test['alternative'](seed)

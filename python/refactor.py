@@ -228,7 +228,7 @@ def csgs(spots, pists, f: float, d: float, lam: float, res: int, iters: int, sub
 # Smaller values of sub increase the speed, with a maximum speed equal to half the speed of RS. If sub is too small, performance may be affected
 # (as a rule of thumb (res^2)*sub should be at least twice the number of spots)
 
-def wcsgs(spots, f: float, d: float, lam: float, res: int, iters: int, sub: float, seed: int):
+def wcsgs(spots, pists, f: float, d: float, lam: float, res: int, iters: int, sub: float, seed: int):
     rng = np.random.default_rng(seed)
     t=get_time()
     #creation of a list of the SLM pixels contained in the pupil
@@ -239,9 +239,6 @@ def wcsgs(spots, f: float, d: float, lam: float, res: int, iters: int, sub: floa
     coordslist=np.asarray(range(pup_coords[0].shape[0]))
     rng.shuffle(coordslist)
     
-    #array containing the phase of the field at each created spot
-    pists=rng.random(spots.shape[0])*2*np.pi
-
     
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
