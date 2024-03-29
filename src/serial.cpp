@@ -55,14 +55,14 @@ void SLM::write_on_file(std::ofstream &out) {
 }
 
 
-void SLM::rs_kernel(int n, const Point3D spots[], const double pists[], double phase[], const SLMParameters *par, Performance *perf) {
-	/* Before we start:
-	 *  - the first implementation will be very inefficient and explicit, also there will be many memory allocations
-	 *  - also I will use C++ features (vector, complex, exp)
-	 * Let's go!
-	 */
-
-
+void SLM::rs_kernel(
+	int n,
+	const Point3D spots[],
+	const double pists[],
+	double phase[],
+	const SLMParameters *par,
+	Performance *perf
+) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
@@ -95,7 +95,17 @@ void SLM::rs_kernel(int n, const Point3D spots[], const double pists[], double p
 }
 
 
-void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double pists_tmp_buffer[], std::complex<double> spot_fields[], double phase[], const SLMParameters *par, Performance *perf, int iterations) {
+void SLM::gs_kernel(
+	int n,
+	const Point3D spots[],
+	double pists[],
+	double pists_tmp_buffer[],
+	std::complex<double> spot_fields[],
+	double phase[],
+	const SLMParameters *par,
+	Performance *perf,
+	int iterations
+) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
@@ -149,7 +159,19 @@ void SLM::gs_kernel(int n, const Point3D spots[], double pists[], double pists_t
 }
 
 
-void SLM::wgs_kernel(int n, const Point3D spots[], double pists[], double pists_tmp_buffer[], std::complex<double> spot_fields[], double ints[], double weights[], double phase[], const SLMParameters *par, Performance *perf, int iterations) {
+void SLM::wgs_kernel(
+	int n,
+	const Point3D spots[],
+	double pists[],
+	double pists_tmp_buffer[],
+	std::complex<double> spot_fields[],
+	double ints[],
+	double weights[],
+	double phase[],
+	const SLMParameters *par,
+	Performance *perf,
+	int iterations
+) {
 	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
@@ -215,27 +237,60 @@ void SLM::wgs_kernel(int n, const Point3D spots[], double pists[], double pists_
 
 
 void SLM::rs(const std::vector<Point3D> &spots, const std::vector<double> &pists, bool measure) {
-	rs_kernel(spots.size(), spots.data(), pists.data(), phase_buffer.data(), &par, measure ? &perf : NULL);
+	const int N = spots.size();
+
+	rs_kernel(
+		N,
+		spots.data(),
+		pists.data(),
+		phase_buffer.data(),
+		&par,
+		measure ? &perf : NULL
+	);
 }
 
 
 void SLM::gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, bool measure) {
-	std::vector<double> pists_copy(pists);
-	std::vector<double> pists_tmp_buffer(spots.size());
-	std::vector<std::complex<double>> spot_fields(spots.size());
+	const int N = spots.size();
 
-	gs_kernel(spots.size(), spots.data(), pists_copy.data(), pists_tmp_buffer.data(), spot_fields.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
+	std::vector<double>               pists_copy(pists);
+	std::vector<double>               pists_tmp_buffer(N);
+	std::vector<std::complex<double>> spot_fields(N);
+
+	gs_kernel(
+		N,
+		spots.data(),
+		pists_copy.data(),
+		pists_tmp_buffer.data(),
+		spot_fields.data(),
+		phase_buffer.data(),
+		&par,
+		measure ? &perf : NULL,
+		iterations
+	);
 }
 
 
 void SLM::wgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, bool measure) {
-	const int n = spots.size();
+	const int N = spots.size();
 
-	std::vector<double> pists_copy(pists);
-	std::vector<double> pists_tmp_buffer(n);
-	std::vector<double> ints(n);
-	std::vector<double> weights(n);
-	std::vector<std::complex<double>> spot_fields(n);
+	std::vector<double>               pists_copy(pists);
+	std::vector<double>               pists_tmp_buffer(N);
+	std::vector<double>               ints(N);
+	std::vector<double>               weights(N);
+	std::vector<std::complex<double>> spot_fields(N);
 
-	wgs_kernel(spots.size(), spots.data(), pists_copy.data(), pists_tmp_buffer.data(), spot_fields.data(), ints.data(), weights.data(), phase_buffer.data(), &par, measure ? &perf : NULL, iterations);
+	wgs_kernel(
+		N,
+		spots.data(),
+		pists_copy.data(),
+		pists_tmp_buffer.data(),
+		spot_fields.data(),
+		ints.data(),
+		weights.data(),
+		phase_buffer.data(),
+		&par,
+		measure ? &perf : NULL,
+		iterations
+	);
 }
