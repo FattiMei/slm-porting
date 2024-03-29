@@ -59,11 +59,11 @@ class SLM {
 	public:
 		SLM(int width_, int height_, const Length &wavelength, const Length &pixel_size, const Length &focal_length);
 
-		void    rs(const std::vector<Point3D> &spots, const std::vector<double> &pists,                                     bool measure = false);
-		void    gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations,                     bool measure = false);
-		void   wgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations,                     bool measure = false);
-		void  csgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, bool measure = false);
-		void wcsgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, bool measure = false);
+		void    rs(const std::vector<Point3D> &spots, const std::vector<double> &pists,                                                   bool measure = false);
+		void    gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations,                                   bool measure = false);
+		void   wgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations,                                   bool measure = false);
+		void  csgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed = 0, bool measure = false);
+		void wcsgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed = 0, bool measure = false);
 
 		void write_on_texture(int id);
 		void write_on_file(std::ofstream &out);
@@ -114,6 +114,8 @@ class SLM {
 				int                  n,
 				const Point3D        spots[],
 				double               pists[],
+				double               pists_tmp_buffer[],
+				std::complex<double> spot_fields[],
 				double               phase[],
 				const SLMParameters* par,
 				Performance*         perf,

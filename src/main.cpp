@@ -41,7 +41,8 @@ int main(int argc, char *argv[]) {
 
 	// slm.rs(spots, pists);
 	// slm.gs(spots, pists, iterations);
-	slm.wgs(spots, pists, iterations);
+	// slm.wgs(spots, pists, iterations);
+	slm.csgs(spots, pists, iterations, compression);
 
 	slm.write_on_file(out);
 	write_vector_on_file(pists, npoints, 1, out);

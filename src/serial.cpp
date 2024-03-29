@@ -55,6 +55,7 @@ void SLM::write_on_file(std::ofstream &out) {
 }
 
 
+// @TODO, @FORMATTING: align better variable names
 void SLM::rs_kernel(
 	int n,
 	const Point3D spots[],
@@ -236,6 +237,81 @@ void SLM::wgs_kernel(
 }
 
 
+// @DESIGN, @TYPE: can we encode in a type that compression has to be in [0,1]?
+void SLM::csgs_kernel(
+	int n,
+	const Point3D spots[],
+	double pists[],
+	double pists_tmp_buffer[],
+	std::complex<double> spot_fields[],
+	double phase[],
+	const SLMParameters *par,
+	Performance *perf,
+	int iterations,
+	double compression,
+	int seed
+) {
+	(void) perf;
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+	const std::complex<double> IOTA(0.0, 1.0);
+
+
+	std::default_random_engine gen(seed);
+	std::uniform_real_distribution<double> uniform(0.0, 1.0);
+
+
+	for (int it = 0; it < iterations; ++it) {
+		for (int ispot = 0; ispot < n; ++ispot) {
+			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
+		}
+
+		for (int j = 0; j < HEIGHT; ++j) {
+			for (int i = 0; i < WIDTH; ++i) {
+				double x = linspace(-1.0, 1.0, WIDTH,  i);
+				double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+				if (x*x + y*y < 1.0) {
+					if (it < (iterations - 1) and uniform(gen) > compression) {
+						continue;
+					}
+
+					std::complex<double> total_field(0.0, 0.0);
+					x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						// @OPT: replicating this computation is much better than storing the information? I have to check
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
+
+						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+					}
+
+					const double total_phase = std::arg(total_field);
+					phase[j * WIDTH + i] = total_phase;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						// @OPT: we could cache the column of p_phase data
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
+
+						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+					}
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						pists_tmp_buffer[ispot] = std::arg(spot_fields[ispot]);
+					}
+				}
+			}
+		}
+
+		std::swap(pists, pists_tmp_buffer);
+	}
+}
+
+
 void SLM::rs(const std::vector<Point3D> &spots, const std::vector<double> &pists, bool measure) {
 	const int N = spots.size();
 
@@ -292,5 +368,28 @@ void SLM::wgs(const std::vector<Point3D> &spots, const std::vector<double> &pist
 		&par,
 		measure ? &perf : NULL,
 		iterations
+	);
+}
+
+
+void SLM::csgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed, bool measure) {
+	const int N = spots.size();
+
+	std::vector<double>               pists_copy(pists);
+	std::vector<double>               pists_tmp_buffer(N);
+	std::vector<std::complex<double>> spot_fields(N);
+
+	csgs_kernel(
+		N,
+		spots.data(),
+		pists_copy.data(),
+		pists_tmp_buffer.data(),
+		spot_fields.data(),
+		phase_buffer.data(),
+		&par,
+		measure ? &perf : NULL,
+		iterations,
+		compression,
+		seed
 	);
 }
