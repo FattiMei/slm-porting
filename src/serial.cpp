@@ -43,10 +43,10 @@ inline void update_weights(int n, const double ints[], double weights[]) {
 }
 
 
-SLM::SLM(int width_, int height_, const Length &wavelength, const Length &pixel_size, const Length &focal_length) : 
-	par(width_, height_, focal_length.as(Unit::Millimeters), pixel_size.as(Unit::Micrometers), wavelength.as(Unit::Micrometers)),
-	phase_buffer(width_ * height_),
-	texture_buffer(width_ * height_) {
+SLM::SLM(int width, int height, const Length &wavelength, const Length &pixel_size, const Length &focal_length) : 
+	par(width, height, focal_length, pixel_size, wavelength),
+	phase_buffer(width * height),
+	texture_buffer(width * height) {
 }
 
 

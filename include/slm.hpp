@@ -3,7 +3,6 @@
 
 
 #include <vector>
-#include <cstdio>
 #include <fstream>
 #include <complex>
 #include "units.hpp"
@@ -29,7 +28,6 @@ struct Point3D {
 };
 
 
-// @TODO: solve the unit of measure problem
 struct SLMParameters {
 	const int width;
 	const int height;
@@ -37,12 +35,12 @@ struct SLMParameters {
 	const double pixel_size_um;
 	const double wavelength_um;
 
-	SLMParameters(int width_, int height_, double focal_length_mm_, double pixel_size_um_, double wavelength_um_) :
+	SLMParameters(int width_, int height_, Length focal_length, Length pixel_size, Length wavelength) :
 		width(width_),
 		height(height_),
-		focal_length_mm(focal_length_mm_),
-		pixel_size_um(pixel_size_um_),
-		wavelength_um(wavelength_um_) {};
+		focal_length_mm(focal_length.as(Unit::Millimeters)),
+		pixel_size_um(pixel_size.as(Unit::Micrometers)),
+		wavelength_um(wavelength.as(Unit::Micrometers)) {};
 };
 
 
@@ -57,7 +55,7 @@ struct Performance {
 
 class SLM {
 	public:
-		SLM(int width_, int height_, const Length &wavelength, const Length &pixel_size, const Length &focal_length);
+		SLM(int width, int height, const Length &wavelength, const Length &pixel_size, const Length &focal_length);
 
 		void    rs(const std::vector<Point3D> &spots, const std::vector<double> &pists,                                                   bool measure = false);
 		void    gs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations,                                   bool measure = false);
@@ -71,6 +69,9 @@ class SLM {
 	private:
 		const struct SLMParameters par;
 
+		// @DESIGN: perf should be a characteristic of SLM or a measure of the kernel? I think it's better to leave this out
+		// in fact all of these members should be outside the class, the have no meaning since their dimension can change due to different inputs to kernels
+		// a wrapper to this class might be more friendly by pre allocating the vectors, but the invariants don't hold here
 		struct Performance perf;
 		std::vector<double> phase_buffer;
 		std::vector<unsigned char> texture_buffer;
