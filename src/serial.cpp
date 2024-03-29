@@ -327,19 +327,104 @@ void SLM::wcsgs_kernel(
 	double               compression,
 	int                  seed
 ) {
-	(void) n;
-	(void) spots;
-	(void) pists;
-	(void) pists_tmp_buffer;
-	(void) spot_fields;
-	(void) ints;
-	(void) weights;
-	(void) phase;
-	(void) par;
 	(void) perf;
-	(void) iterations;
-	(void) compression;
-	(void) seed;
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+	const std::complex<double> IOTA(0.0, 1.0);
+
+
+	int pupil_point_count = 0;
+
+
+	std::default_random_engine gen(seed);
+	std::uniform_real_distribution<double> uniform(0.0, 1.0);
+
+
+	for (int i = 0; i < n; ++i) {
+		weights[i] = 1.0 / static_cast<double>(n);
+	}
+
+
+	for (int it = 0; it < iterations; ++it) {
+		pupil_point_count = 0;
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
+		}
+
+		for (int j = 0; j < HEIGHT; ++j) {
+			for (int i = 0; i < WIDTH; ++i) {
+				double x = linspace(-1.0, 1.0, WIDTH,  i);
+				double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+				if (x*x + y*y < 1.0) {
+					++pupil_point_count;
+
+					if (it < (iterations - 1) and uniform(gen) > compression) {
+						continue;
+					}
+
+					std::complex<double> total_field(0.0, 0.0);
+					x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						// @OPT: replicating this computation is much better than storing the information? I have to check
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
+
+						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+					}
+
+					const double total_phase = std::arg(total_field);
+					phase[j * WIDTH + i] = total_phase;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						// @OPT: we could cache the column of p_phase data
+						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
+
+						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+					}
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						pists_tmp_buffer[ispot] = std::arg(spot_fields[ispot]);
+					}
+				}
+			}
+		}
+
+		std::swap(pists, pists_tmp_buffer);
+	}
+
+
+	compute_spot_field_module(n, spot_fields, pupil_point_count, ints);
+	update_weights(n, ints, weights);
+
+
+	// one last iteration of wgs
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+			if (x*x + y*y < 1.0) {
+				std::complex<double> total_field(0.0, 0.0);
+				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots, ispot, x, y);
+
+					total_field += weights[ispot] * std::exp(IOTA * (p_phase + pists[ispot]));
+				}
+
+				const double total_phase = std::arg(total_field);
+				phase[j * WIDTH + i] = total_phase;
+			}
+		}
+	}
 }
 
 
