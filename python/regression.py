@@ -50,7 +50,7 @@ if __name__ == "__main__":
             {
                 'name'       : "Compressive Sensing Gerchberg-Saxton",
                 'reference'  : lambda seed : legacy.csgs(X,Y,Z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
-                'alternative': lambda seed : refactor.csgs(SPOTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
+                'alternative': lambda seed : refactor.csgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,seed),
                 'seeds'      : [SEED]
             },
             {
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     ]
 
 
-    for test in [testing_table[0:3]]:
+    for test in [testing_table[3]]:
         for seed in test['seeds']:
             reference,   _ = test['reference'](seed)
             alternative, _ = test['alternative'](seed)

@@ -277,12 +277,16 @@ def csgs(x, y, z, f: float, d: float, lam: float, res: int, iters: int, sub: flo
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
 
-    #creation of a list of the indexes of pup_coords, shuffled in random order
-    coordslist=np.asarray(range(pup_coords[0].shape[0]))
-    rng.shuffle(coordslist)
-    
     #array containing the phase of the field at each created spot
     pists=rng.random(x.shape[0])*2*np.pi
+
+    #creation of a list of the indexes of pup_coords, shuffled in random order
+    coordslist=np.asarray(range(pup_coords[0].shape[0]))
+
+    # resetting the rng, because pist generation has affected it
+    rng = np.random.default_rng(seed)
+    rng.shuffle(coordslist)
+    
 
     
     #conversion of the coordinates arrays in microns

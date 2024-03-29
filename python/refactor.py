@@ -169,9 +169,10 @@ def wgs(spots, pists, f: float, d: float, lam: float, res: int, iters: int):
 # equal to the speed of RS. If sub is too small, performance may be affected (as a rule of thumb res^2*sub should be bigger than the
 # number of spots)
 
-def csgs(spots, f: float, d: float, lam: float, res: int, iters: int, sub: float, seed: int):
+def csgs(spots, pists, f: float, d: float, lam: float, res: int, iters: int, sub: float, seed: int):
     rng = np.random.default_rng(seed)
     t=get_time()
+
     #creation of a list of the SLM pixels contained in the pupil
     slm_xcoord,slm_ycoord=np.meshgrid(np.linspace(-1.0,1.0,res),np.linspace(-1.0,1.0,res))
     pup_coords=np.where(slm_xcoord**2+slm_ycoord**2<1.0)
@@ -179,10 +180,6 @@ def csgs(spots, f: float, d: float, lam: float, res: int, iters: int, sub: float
     #creation of a list of the indexes of pup_coords, shuffled in random order
     coordslist=np.asarray(range(pup_coords[0].shape[0]))
     rng.shuffle(coordslist)
-    
-    #array containing the phase of the field at each created spot
-    pists=rng.random(spots.shape[0])*2*np.pi
-
     
     #conversion of the coordinates arrays in microns
     slm_xcoord=slm_xcoord*d*float(res)/2.0
@@ -194,6 +191,7 @@ def csgs(spots, f: float, d: float, lam: float, res: int, iters: int, sub: float
     #main GS loop
     for n in range(iters):
         #a new set of random points is chosen on the SLM
+        # sampling of the pupil points, in a random way but that minimizes the repetitions
         coordslist=np.roll(coordslist,int(coordslist.shape[0]*sub))
         coordslist_sparse=coordslist[:int(coordslist.shape[0]*sub)]
 
