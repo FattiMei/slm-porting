@@ -6,6 +6,9 @@
 #include <cassert>
 
 
+using namespace std::complex_literals;
+
+
 // @ASSESS: putting parameters as const helps the compiler?
 inline double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
@@ -71,7 +74,6 @@ void SLM::rs_kernel(
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
-	const std::complex<double> IOTA(0.0, 1.0);
 
 
 	for (int j = 0; j < HEIGHT; ++j) {
@@ -87,7 +89,7 @@ void SLM::rs_kernel(
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-					total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+					total_field += std::exp(1.0i * (p_phase + pists[ispot]));
 				}
 
 				phase[j * WIDTH + i] = std::arg(total_field);
@@ -114,7 +116,6 @@ void SLM::gs_kernel(
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
-	const std::complex<double> IOTA(0.0, 1.0);
 
 
 	for (int it = 0; it < iterations; ++it) {
@@ -136,7 +137,7 @@ void SLM::gs_kernel(
 						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -146,7 +147,7 @@ void SLM::gs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -180,7 +181,6 @@ void SLM::wgs_kernel(
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
-	const std::complex<double> IOTA(0.0, 1.0);
 
 
 	int pupil_point_count = 0;
@@ -212,7 +212,7 @@ void SLM::wgs_kernel(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += weights[ispot] * std::exp(IOTA * (p_phase + pists[ispot]));
+						total_field += weights[ispot] * std::exp(1.0i * (p_phase + pists[ispot]));
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -221,7 +221,7 @@ void SLM::wgs_kernel(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -258,7 +258,6 @@ void SLM::csgs_kernel(
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
-	const std::complex<double> IOTA(0.0, 1.0);
 
 
 	std::default_random_engine gen(seed);
@@ -288,7 +287,7 @@ void SLM::csgs_kernel(
 						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -298,7 +297,7 @@ void SLM::csgs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -334,7 +333,6 @@ void SLM::wcsgs_kernel(
 	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
-	const std::complex<double> IOTA(0.0, 1.0);
 
 
 	int pupil_point_count = 0;
@@ -376,7 +374,7 @@ void SLM::wcsgs_kernel(
 						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(IOTA * (p_phase + pists[ispot]));
+						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -386,7 +384,7 @@ void SLM::wcsgs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(IOTA * (total_phase - p_phase));
+						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -418,7 +416,7 @@ void SLM::wcsgs_kernel(
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-					total_field += weights[ispot] * std::exp(IOTA * (p_phase + pists[ispot]));
+					total_field += weights[ispot] * std::exp(1.0i * (p_phase + pists[ispot]));
 				}
 
 				const double total_phase = std::arg(total_field);
