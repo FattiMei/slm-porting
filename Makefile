@@ -1,20 +1,22 @@
-CXX       = g++
-CXXFLAGS  = -Wall -Wextra -Wpedantic
-OPTFLAGS  = -O2
-PROFFLAGS = -pg
-INCLUDE   = -I ./include
-PYTHON    = python3.8
+CXX        = g++
+CXXFLAGS   = -Wall -Wextra -Wpedantic
+OPTFLAGS   = -O2
+PROFFLAGS  = -pg
+BENCHFLAGS = -lbenchmark -lpthread
+INCLUDE    = -I ./include
+PYTHON     = python3.8
 
 
-src = src/main.cpp src/serial.cpp src/utils.cpp src/units.cpp
-obj = $(patsubst src/%.cpp,build/%.o,$(src))
+src        = src/main.cpp src/serial.cpp src/utils.cpp src/units.cpp
+obj        = $(patsubst src/%.cpp,build/%.o,$(src))
+benchmarks = $(wildcard benchmark/*.cpp)
 
 
-all: porting
+targets += porting
+targets += $(patsubst benchmark/%.cpp,build/%,$(benchmarks))
 
 
-example:
-	$(PYTHON) python/example.py
+all: $(targets)
 
 
 porting: $(obj)
@@ -37,6 +39,11 @@ profile:
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
 
 
+build/%: benchmark/%.cpp build/serial.o build/utils.o build/units.o
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $^ $(BENCHFLAGS)
+
+
+# (INCOMPLETE) in the future this might be automatically generated
 build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
 	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
 
