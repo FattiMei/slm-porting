@@ -10,7 +10,7 @@ using namespace std::complex_literals;
 
 
 // @ASSESS: putting parameters as const helps the compiler?
-inline double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
+double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
 	const double c2 = M_PI * spot.z / (wavelength * focal_length * focal_length * 1e6);
 
@@ -18,14 +18,14 @@ inline double compute_p_phase(const double wavelength, const double focal_length
 }
 
 
-inline void compute_spot_field_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
+void compute_spot_field_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
 	for (int i = 0; i < n; ++i) {
 		ints[i] = std::abs(spot_fields[i] / static_cast<double>(pupil_point_count));
 	}
 }
 
 
-inline void update_weights(int n, const double ints[], double weights[]) {
+void update_weights(int n, const double ints[], double weights[]) {
 	// @OPT: I will profile this function and fuse all the operations in one pass
 	double total_ints_sum = 0.0;
 	double total_weight_sum = 0.0;
@@ -76,9 +76,12 @@ void SLM::rs_kernel(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
+	// @OPT: the process of filtering pupil points could be made with bisection method, or just statically
+	// we remove the painful norm check
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			// @OPT: this instruction doesn't depend on i, so we can pull it outside this for loop
 			double y = linspace(-1.0, 1.0, HEIGHT, j);
 
 			if (x*x + y*y < 1.0) {
