@@ -63,3 +63,9 @@ Unfortunately this approach falls short for compressive kernels (csgs and wcsgs)
 
 Since I completely removed the computation of all pupil points for performance reasons (big memory footprint), I won't port the python kernels as-is. To make tests like all the other kernels I would have to modify the python implementation but such changes couldn't be tested against the original implementation (I'm talking about deterministic tests here).
 For these reasons the testing for the csgs and wcsgs kernels will be only visual, until I find some weaker tests.
+
+
+## Profiling procedure
+I propose an hybrid strategy:
+ 1. `gprof` profiling for high level information, to know where the kernel spend time
+ 2. google benchmark for assessing the effects of optimizations in kernels
