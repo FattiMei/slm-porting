@@ -2,18 +2,15 @@ CXX        = g++
 CXXFLAGS   = -Wall -Wextra -Wpedantic
 OPTFLAGS   = -O2
 PROFFLAGS  = -pg
-BENCHFLAGS = -lbenchmark -lpthread
 INCLUDE    = -I ./include
 PYTHON     = python3.8
 
 
 src        = src/main.cpp src/serial.cpp src/utils.cpp src/units.cpp
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
-benchmarks = $(wildcard benchmark/*.cpp)
 
 
 targets += porting
-targets += $(patsubst benchmark/%.cpp,build/%,$(benchmarks))
 
 
 all: $(targets)
@@ -37,10 +34,6 @@ report: output.bin
 
 profile:
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
-
-
-build/%: benchmark/%.cpp build/serial.o build/utils.o build/units.o
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $^ $(BENCHFLAGS)
 
 
 # (INCOMPLETE) in the future this might be automatically generated
