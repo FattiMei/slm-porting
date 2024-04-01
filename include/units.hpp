@@ -2,8 +2,7 @@
 #define __UNITS_HPP__
 
 
-// cosa cambia tra enum e enum class?
-enum Unit {
+enum class Unit {
 	Meters      =  0,
 	Millimeters = -3,
 	Micrometers = -6,
@@ -13,14 +12,14 @@ enum Unit {
 
 class Length {
 	public:
-		Length(const double value_, const enum Unit unit_);
+		Length(const double value_, const Unit unit_);
 
-		double as(const enum Unit target) const;
+		double as(const Unit target) const;
 
 
 	private:
 		const double value;
-		const enum Unit unit;
+		const Unit unit;
 };
 
 
