@@ -9,6 +9,9 @@
 using namespace std::complex_literals;
 
 
+int slm_texture_id;
+
+
 // @ASSESS: putting parameters as const helps the compiler?
 double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);

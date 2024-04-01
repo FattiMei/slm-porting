@@ -18,6 +18,9 @@
  */
 
 
+extern int slm_texture_id;
+
+
 // @ADVICE: can we do something better with this constructor?
 struct Point3D {
 	double x;

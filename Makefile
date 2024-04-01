@@ -1,12 +1,13 @@
 CXX        = g++
 CXXFLAGS   = -Wall -Wextra -Wpedantic
-OPTFLAGS   = -O2
+OPTFLAGS   = -O0
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
 PYTHON     = python3.8
+LIBS       = -lglfw -lEGL -lGL
 
 
-src        = src/main.cpp src/serial.cpp src/utils.cpp src/units.cpp
+src        = $(wildcard src/*.cpp)
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
@@ -17,7 +18,7 @@ all: $(targets)
 
 
 porting: $(obj)
-	$(CXX) -o $@ $^
+	$(CXX) -o $@ $^ $(LIBS)
 
 
 output.bin: porting
@@ -33,10 +34,10 @@ report: output.bin
 
 
 profile:
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src) $(LIBS)
 
 
-# (INCOMPLETE) in the future this might be automatically generated
+# (INCOMPLETE) in the future this will definetely be automatically generated
 build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
 	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
 
