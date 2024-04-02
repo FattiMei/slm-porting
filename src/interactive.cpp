@@ -1,3 +1,4 @@
+#include <iostream>
 #include "slm.hpp"
 #include "utils.hpp"
 #include "units.hpp"
@@ -50,10 +51,11 @@ int main() {
 		++frames;
 
 		if (current_time - last_time >= 1.0) {
-			printf("%f ms/frame\n", 1000.0 * (current_time - last_time) / ((double) frames));
+			const double ms_per_frame = 1000.0 * (current_time - last_time) / ((double) frames);
+			std::cout << ms_per_frame << " ms/frame" << std::endl;
 
 			frames = 0;
-			last_time += 1.0;
+			last_time = current_time;
 		}
 
 		slm.rs(spots, pists);
