@@ -24,7 +24,6 @@ const Length focal_length( 20.0, Unit::Millimeters);
 
 int main() {
 	int frames = 0;
-	SLM slm(width, height, wavelength, pitch, focal_length);
 
 
 	std::vector<double> pists(npoints);
@@ -41,8 +40,8 @@ int main() {
 	}
 
 
-	render_init();
 	window_set_callbacks();
+	SLM slm(width, height, wavelength, pitch, focal_length);
 
 
 	double last_time = glfwGetTime();
@@ -59,8 +58,8 @@ int main() {
 		}
 
 		slm.rs(spots, pists);
-		slm.write_on_texture(slm_texture_id);
-		render_present();
+		slm.write_on_texture();
+		slm.render();
 
 		window_swap_buffers();
 		window_poll_events();

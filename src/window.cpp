@@ -1,8 +1,6 @@
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-// #include "render.hpp"
-// #include "slm.hpp"
 
 
 static const int default_window_hints[][2] = {
@@ -102,7 +100,7 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 static void resize_callback(GLFWwindow *window, int width, int height) {
 	(void) window;
 
-	// render_resize(width, height);
+	glViewport(0, 0, width, height);
 }
 
 
