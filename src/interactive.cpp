@@ -34,19 +34,13 @@ int main() {
 	generate_grid_spots(10, 10.0, spots);
 
 
-	if (window_init("slm application", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) != 0) {
-		window_close();
-		exit(EXIT_FAILURE);
-	}
-
-
-	window_set_callbacks();
+	Window window("slm application", DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 	SLM slm(width, height, wavelength, pitch, focal_length);
 
 
 	double last_time = glfwGetTime();
 
-	while (!window_should_close()) {
+	while (!window.should_close()) {
 		double current_time = glfwGetTime();
 		++frames;
 
@@ -62,10 +56,9 @@ int main() {
 		slm.write_on_texture();
 		slm.render();
 
-		window_swap_buffers();
-		window_poll_events();
+		window.swap_buffers();
+		window.poll_events();
 	}
 
-	window_close();
 	return 0;
 }

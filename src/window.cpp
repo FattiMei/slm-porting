@@ -43,9 +43,6 @@ static const int default_window_hints[][2] = {
 };
 
 
-GLFWwindow *window = NULL;
-
-
 static void error_callback(int error, const char* description) {
 	fprintf(stderr, "GLFW error (code %d): %s\n", error, description);
 }
@@ -104,54 +101,56 @@ static void resize_callback(GLFWwindow *window, int width, int height) {
 }
 
 
-int window_init(const char *title, int width, int height) {
+Window::Window(const char *title, int width, int height) {
 	glfwInit();
 
 	glfwSetErrorCallback(error_callback);
-	window_set_hints(default_window_hints, sizeof(default_window_hints) / (2 * sizeof(int)));
+	set_hints(default_window_hints, sizeof(default_window_hints) / (2 * sizeof(int)));
 
 	window = glfwCreateWindow(width, height, title, NULL, NULL);
 	if (window == NULL) {
+		// @DESIGN: do we need to throw an exception?
 		glfwTerminate();
-		return -1;
 	}
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(0);
 
-	return 0;
+	// @DESIGN: this might hurt in the future when we will integrate ImGUI
+	set_callbacks();
+	glViewport(0, 0, width, height);
 }
 
 
-void window_set_hints(const int hints[][2], int n) {
+void Window::set_hints(const int hints[][2], int n) {
 	for (int i = 0; i < n; ++i) {
 		glfwWindowHint(hints[i][0], hints[i][1]);
 	}
 }
 
 
-void window_set_callbacks() {
+void Window::set_callbacks() {
 	glfwSetKeyCallback            (window, key_callback);
 	glfwSetMouseButtonCallback    (window, mouse_button_callback);
 	glfwSetFramebufferSizeCallback(window, resize_callback);
 }
 
 
-int window_should_close() {
-	return glfwWindowShouldClose(window);
+bool Window::should_close() {
+	return glfwWindowShouldClose(window) != 0;
 }
 
 
-void window_swap_buffers() {
+void Window::swap_buffers() {
 	glfwSwapBuffers(window);
 }
 
 
-void window_poll_events() {
+void Window::poll_events() {
 	glfwPollEvents();
 }
 
 
-void window_close() {
+Window::~Window() {
 	glfwTerminate();
 }
