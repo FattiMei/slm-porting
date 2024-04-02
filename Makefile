@@ -1,6 +1,6 @@
 CXX        = g++
 CXXFLAGS   = -Wall -Wextra -Wpedantic
-OPTFLAGS   = -O0
+OPTFLAGS   = -O2 -march=native
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
 PYTHON     = python3.8
