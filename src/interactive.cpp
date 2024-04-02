@@ -2,7 +2,6 @@
 #include "utils.hpp"
 #include "units.hpp"
 #include "window.hpp"
-#include "render.hpp"
 
 
 #define DEFAULT_WINDOW_WIDTH  800
