@@ -1,8 +1,8 @@
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include "render.hpp"
-#include "slm.hpp"
+// #include "render.hpp"
+// #include "slm.hpp"
 
 
 static const int default_window_hints[][2] = {
@@ -33,8 +33,8 @@ static const int default_window_hints[][2] = {
 	{GLFW_STEREO			, GLFW_FALSE			},
 	{GLFW_SRGB_CAPABLE		, GLFW_FALSE			},
 	{GLFW_DOUBLEBUFFER		, GLFW_TRUE			},
-	{GLFW_CLIENT_API		, GLFW_OPENGL_ES_API		},
-	{GLFW_CONTEXT_CREATION_API	, GLFW_EGL_CONTEXT_API		},
+	{GLFW_CLIENT_API		, GLFW_OPENGL_API		},
+	{GLFW_CONTEXT_CREATION_API	, GLFW_NATIVE_CONTEXT_API	},
 	{GLFW_CONTEXT_VERSION_MAJOR	, 2				},
 	{GLFW_CONTEXT_VERSION_MINOR	, 0				},
 	{GLFW_CONTEXT_ROBUSTNESS	, GLFW_NO_ROBUSTNESS		},
@@ -102,7 +102,7 @@ static void mouse_button_callback(GLFWwindow *window, int button, int action, in
 static void resize_callback(GLFWwindow *window, int width, int height) {
 	(void) window;
 
-	render_resize(width, height);
+	// render_resize(width, height);
 }
 
 

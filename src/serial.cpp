@@ -1,7 +1,7 @@
 #include "slm.hpp"
 #include "utils.hpp"
 #include "texture.hpp"
-#include <GLES2/gl2.h>
+#include <GLFW/glfw3.h>
 #include <random>
 #include <cmath>
 #include <complex>
@@ -75,12 +75,19 @@ void SLM::write_on_texture(int id) {
 			texture_buffer[3 * (j * par.width + i) + 0] = x;
 			texture_buffer[3 * (j * par.width + i) + 1] = x;
 			texture_buffer[3 * (j * par.width + i) + 2] = x;
+
+
+			texture_buffer[3 * (j * par.width + i) + 0] = 10;
+			texture_buffer[3 * (j * par.width + i) + 1] = 10;
+			texture_buffer[3 * (j * par.width + i) + 2] = 10;
 		}
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, par.width, par.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_buffer.data());
-	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, par.width, par.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_buffer.data());
+	// glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 

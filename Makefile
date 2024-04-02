@@ -19,7 +19,7 @@ render_src = src/render.cpp src/shader.cpp src/texture.cpp src/window.cpp
 render_obj = $(patsubst src/%.cpp,build/%.o,$(render_src))
 
 
-targets += porting interactive
+targets += porting interactive legacy
 
 
 all: $(targets)
@@ -33,7 +33,11 @@ interactive: $(core_obj) $(render_obj) build/interactive.o
 	$(CXX) -o $@ $^ $(LIBS)
 
 
-run: interactive
+legacy: build/legacy.o build/texture.o build/window.o
+	$(CXX) -o $@ $^ -lglfw -lGL
+
+
+run: legacy
 	./$^
 
 
