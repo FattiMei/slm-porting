@@ -51,11 +51,6 @@ void render_present() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, slm_texture_id);
 
-	#ifdef USE_GLES2
-		glUseProgram(render_program);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-	#else
-		glUseProgram(render_program);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	#endif
+	glUseProgram(render_program);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }

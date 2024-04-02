@@ -59,6 +59,7 @@ int main() {
 		}
 
 		slm.rs(spots, pists);
+		slm.write_on_texture(slm_texture_id);
 		render_present();
 
 		window_swap_buffers();

@@ -25,8 +25,8 @@ targets += porting interactive
 all: $(targets)
 
 
-porting: $(core_obj) build/main.o
-	$(CXX) -o $@ $^
+porting: $(core_obj) build/main.o build/texture.o
+	$(CXX) -o $@ $^ $(LIBS)
 
 
 interactive: $(core_obj) $(render_obj) build/interactive.o

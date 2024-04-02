@@ -1,5 +1,7 @@
 #include "slm.hpp"
 #include "utils.hpp"
+#include "texture.hpp"
+#include <GLES2/gl2.h>
 #include <random>
 #include <cmath>
 #include <complex>
@@ -53,12 +55,32 @@ void update_weights(int n, const double ints[], double weights[]) {
 SLM::SLM(int width, int height, const Length &wavelength, const Length &pixel_size, const Length &focal_length) : 
 	par(width, height, focal_length, pixel_size, wavelength),
 	phase_buffer(width * height),
-	texture_buffer(width * height) {
+	texture_buffer(3 * width * height) {
+		// might as well create the texture without calling external functions
+		slm_texture_id = texture_create(width, height);
 }
 
 
 void SLM::write_on_file(std::ofstream &out) {
 	write_vector_on_file(phase_buffer, par.width, par.height, out);
+}
+
+
+void SLM::write_on_texture(int id) {
+	for (int j = 0; j < par.height; ++j) {
+		for (int i = 0; i < par.width; ++i) {
+			// phase is in the range [-pi, pi]
+			const unsigned char x = std::floor(255.0 * (phase_buffer[j * par.width + i] + M_PI) / (2.0 * M_PI));
+
+			texture_buffer[3 * (j * par.width + i) + 0] = x;
+			texture_buffer[3 * (j * par.width + i) + 1] = x;
+			texture_buffer[3 * (j * par.width + i) + 2] = x;
+		}
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, par.width, par.height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_buffer.data());
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, id);
 }
 
 
