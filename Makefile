@@ -4,7 +4,7 @@ OPTFLAGS   = -O0
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
 PYTHON     = python3.8
-LIBS       = -lglfw -lEGL -lGL
+LIBS       = -lglfw -lGL
 
 
 all        = $(wildcard src/*.cpp)

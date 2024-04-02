@@ -1,9 +1,11 @@
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <vector>
 
 
-static const int default_window_hints[][2] = {
+// @DESIGN: is there something better than vector?
+static const std::vector<std::pair<int, int>> default_window_hints = {
 	{GLFW_RESIZABLE			, GLFW_TRUE			},
 	{GLFW_VISIBLE			, GLFW_TRUE			},
 	{GLFW_DECORATED			, GLFW_TRUE			},
@@ -105,7 +107,7 @@ Window::Window(const char *title, int width, int height) {
 	glfwInit();
 
 	glfwSetErrorCallback(error_callback);
-	set_hints(default_window_hints, sizeof(default_window_hints) / (2 * sizeof(int)));
+	set_hints(default_window_hints);
 
 	window = glfwCreateWindow(width, height, title, NULL, NULL);
 	if (window == NULL) {
@@ -116,15 +118,15 @@ Window::Window(const char *title, int width, int height) {
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(0);
 
-	// @DESIGN: this might hurt in the future when we will integrate ImGUI
+	// @FUTURE: this might hurt in the future when we will integrate ImGUI
 	set_callbacks();
 	glViewport(0, 0, width, height);
 }
 
 
-void Window::set_hints(const int hints[][2], int n) {
-	for (int i = 0; i < n; ++i) {
-		glfwWindowHint(hints[i][0], hints[i][1]);
+void Window::set_hints(const std::vector<std::pair<int, int>> &hints) {
+	for (auto h : hints) {
+		glfwWindowHint(h.first, h.second);
 	}
 }
 

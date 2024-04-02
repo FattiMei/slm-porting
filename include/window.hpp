@@ -3,6 +3,7 @@
 
 
 #include <GLFW/glfw3.h>
+#include <vector>
 
 
 // there should only be one instance of this class
@@ -17,7 +18,7 @@ class Window {
 
 
 	private:
-		void set_hints(const int hints[][2], int n);
+		void set_hints(const std::vector<std::pair<int, int>> &hints);
 		void set_callbacks();
 
 		GLFWwindow *window = NULL;
