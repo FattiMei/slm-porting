@@ -69,3 +69,7 @@ For these reasons the testing for the csgs and wcsgs kernels will be only visual
 I propose an hybrid strategy:
  1. `gprof` profiling for high level information, to know where the kernel spend time
  2. google benchmark for assessing the effects of optimizations in kernels
+
+
+## Interactivity issues
+The kernel invocations take a very long time, it's not possible to interact with the application when the kernels are working, I proposed a multithreading solution that still needs to be researched, also to avoid compatibility with the openMP integration
