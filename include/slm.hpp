@@ -66,8 +66,6 @@ class SLM {
 		void  csgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed = 0, bool measure = false);
 		void wcsgs(const std::vector<Point3D> &spots, const std::vector<double> &pists, int iterations, double compression, int seed = 0, bool measure = false);
 
-		void write_on_texture();
-		void render();
 		void write_on_file(std::ofstream &out);
 
 	private:

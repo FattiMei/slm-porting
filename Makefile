@@ -4,37 +4,20 @@ OPTFLAGS   = -O2 -march=native
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
 PYTHON     = python3.8
-LIBS       = -lglfw -lGL
 
 
-all        = $(wildcard src/*.cpp)
-obj        = $(patsubst src/%.cpp,build/%.o,$(all))
+src        = $(wildcard src/*.cpp)
+obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-core_src   = src/serial.cpp src/units.cpp src/utils.cpp
-core_obj   = $(patsubst src/%.cpp,build/%.o,$(core_src))
-
-
-render_src = src/render.cpp src/shader.cpp src/texture.cpp src/window.cpp
-render_obj = $(patsubst src/%.cpp,build/%.o,$(render_src))
-
-
-targets += porting interactive
+targets += porting
 
 
 all: $(targets)
 
 
-porting: $(core_obj) build/main.o build/texture.o
+porting: $(obj)
 	$(CXX) -o $@ $^ $(LIBS)
-
-
-interactive: $(core_obj) $(render_obj) build/interactive.o
-	$(CXX) -o $@ $^ $(LIBS)
-
-
-run: interactive
-	./$^
 
 
 output.bin: porting

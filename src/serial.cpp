@@ -1,7 +1,5 @@
 #include "slm.hpp"
 #include "utils.hpp"
-#include "texture.hpp"
-#include <GLFW/glfw3.h>
 #include <random>
 #include <cmath>
 #include <complex>
@@ -56,58 +54,11 @@ SLM::SLM(int width, int height, const Length &wavelength, const Length &pixel_si
 	par(width, height, focal_length, pixel_size, wavelength),
 	phase_buffer(width * height),
 	texture_buffer(3 * width * height) {
-
-		glMatrixMode( GL_PROJECTION );
-		glLoadIdentity();
-
-		glMatrixMode( GL_MODELVIEW );
-		glLoadIdentity();
-
-		glClearColor(0.0f, 1.0f, 0.2f, 1.0f);
-
-		glEnable(GL_TEXTURE_2D);
-
-		// @DESIGN: might as well create the texture without calling external functions
-		slm_texture_id = texture_create(width, height);
 }
 
 
 void SLM::write_on_file(std::ofstream &out) {
 	write_vector_on_file(phase_buffer, par.width, par.height, out);
-}
-
-
-// @TODO: add a colormap
-void SLM::write_on_texture() {
-	for (int j = 0; j < par.height; ++j) {
-		for (int i = 0; i < par.width; ++i) {
-			const unsigned int x = std::floor(255.0 * (phase_buffer[j * par.width + i] + M_PI) / (2.0 * M_PI));
-
-			texture_buffer[3 * (j * par.width + i) + 0] = x;
-			texture_buffer[3 * (j * par.width + i) + 1] = x;
-			texture_buffer[3 * (j * par.width + i) + 2] = x;
-		}
-	}
-
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, par.width, par.height, GL_RGB, GL_UNSIGNED_BYTE, texture_buffer.data());
-}
-
-void SLM::render() {
-	glBindTexture(GL_TEXTURE_2D, slm_texture_id);
-	glBegin( GL_QUADS );
-
-	glVertex2f( -1.0f, -1.0f );
-	glTexCoord2f(0.0f, 0.0f);
-
-	glVertex2f(  1.0f, -1.0f );
-	glTexCoord2f(1.0f, 0.0f);
-
-	glVertex2f(  1.0f,  1.0f );
-	glTexCoord2f(1.0f, 1.0f);
-
-	glVertex2f( -1.0f,  1.0f );
-	glTexCoord2f(0.0f, 1.0f);
-	glEnd();
 }
 
 
