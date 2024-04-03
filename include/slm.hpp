@@ -13,7 +13,6 @@
  *   - kernel signature should be as primitive as possible to maximize performance portability
  *   - this interface is meant to be implemented by multiple backends (CPU, CUDA, HIP, OpenGL4 compute shaders, SYCL)
  *   - GPU implementations of this interface won't be optimal for a couple of reasons:
- *     ~ computing and rendering could be fused in a single kernel call
  *     ~ transfering point information can be costly, it would be better if data is loaded once and transformed on the device (see python/example.py)
  */
 
@@ -69,8 +68,6 @@ class SLM {
 		const struct SLMParameters par;
 
 		// @DESIGN: perf should be a characteristic of SLM or a measure of the kernel? I think it's better to leave this out
-		// in fact all of these members should be outside the class, the have no meaning since their dimension can change due to different inputs to kernels
-		// a wrapper to this class might be more friendly by pre allocating the vectors, but the invariants don't hold here
 		struct Performance perf;
 		std::vector<double> phase_buffer;
 };

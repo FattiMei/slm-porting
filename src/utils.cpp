@@ -3,6 +3,11 @@
 #include <cassert>
 
 
+static double linspace(double inf, double sup, int n, int i) {
+	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n - 1);
+}
+
+
 void generate_random_vector(std::vector<double> &x, double inf, double sup, int seed) {
 	std::default_random_engine gen(seed);
 	std::uniform_real_distribution<double> uniform(inf, sup);

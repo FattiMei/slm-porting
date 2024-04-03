@@ -73,3 +73,8 @@ I propose an hybrid strategy:
 
 ## Interactivity issues
 The kernel invocations take a very long time, it's not possible to interact with the application when the kernels are working, I proposed a multithreading solution that still needs to be researched, also to avoid compatibility with the openMP integration
+
+
+## SYCL
+https://github.com/cagnulein/sycl-benchmarks
+https://pramodkumbhar.com/2019/07/intels-one-api-what-we-know-and-how-to-get-ready/

@@ -6,8 +6,7 @@
 
 SLM::SLM(int width, int height, const Length &wavelength, const Length &pixel_size, const Length &focal_length) : 
 	par(width, height, focal_length, pixel_size, wavelength),
-	phase_buffer(width * height),
-	texture_buffer(3 * width * height) {
+	phase_buffer(width * height) {
 }
 
 
