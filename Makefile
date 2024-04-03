@@ -10,14 +10,22 @@ src        = $(wildcard src/*.cpp)
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += porting
+targets += porting benchmark
 
 
 all: $(targets)
 
 
-porting: $(obj)
-	$(CXX) -o $@ $^ $(LIBS)
+porting: build/main.o build/kernels.o build/serial.o build/units.o build/utils.o
+	$(CXX) -o $@ $^
+
+
+benchmark: build/benchmark.o build/kernels.o build/serial.o build/units.o build/utils.o
+	$(CXX) -o $@ $^
+
+
+bench: benchmark
+	./$^ | tee bench.txt
 
 
 output.bin: porting
