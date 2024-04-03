@@ -18,9 +18,6 @@
  */
 
 
-extern int slm_texture_id;
-
-
 // @ADVICE: can we do something better with this constructor?
 struct Point3D {
 	double x;
@@ -76,72 +73,6 @@ class SLM {
 		// a wrapper to this class might be more friendly by pre allocating the vectors, but the invariants don't hold here
 		struct Performance perf;
 		std::vector<double> phase_buffer;
-		std::vector<unsigned char> texture_buffer;
-
-		void rs_kernel(
-			int                  n,
-			const Point3D        spots[],
-			const double         pists[],
-			double               phase[],
-			const SLMParameters* par,
-			Performance*         perf
-		);
-
-		void gs_kernel(
-			int                  n,
-			const Point3D        spots[],
-			double               pists[],
-			double               pists_tmp_buffer[],
-			std::complex<double> spot_fields[],
-			double               phase[],
-			const SLMParameters* par,
-			Performance*         perf,
-			int                  iterations
-		);
-
-		void wgs_kernel(
-			int                  n,
-			const Point3D        spots[],
-			double               pists[],
-			double               pists_tmp_buffer[],
-			std::complex<double> spot_fields[],
-			double               ints[],
-			double               weights[],
-			double               phase[],
-			const SLMParameters* par,
-			Performance*         perf,
-			int                  iterations
-		);
-
-		void csgs_kernel(
-			int                  n,
-			const Point3D        spots[],
-			double               pists[],
-			double               pists_tmp_buffer[],
-			std::complex<double> spot_fields[],
-			double               phase[],
-			const SLMParameters* par,
-			Performance*         perf,
-			int                  iterations,
-			double               compression,
-			int                  seed
-		);
-
-		void wcsgs_kernel(
-			int                  n,
-			const Point3D        spots[],
-			double               pists[],
-			double               pists_tmp_buffer[],
-			std::complex<double> spot_fields[],
-			double               ints[],
-			double               weights[],
-			double               phase[],
-			const SLMParameters* par,
-			Performance*         perf,
-			int                  iterations,
-			double               compression,
-			int                  seed
-		);
 };
 
 
