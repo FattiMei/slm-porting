@@ -24,17 +24,11 @@ int main() {
 	std::vector<Point3D> spots;
 	generate_grid_spots(10, 10.0, spots);
 
-	std::vector<double> pists(spots.size());
-	generate_random_vector(pists, 0.0, 2.0 * M_PI, SEED);
-
-	// @DESIGN: for a reason I wrote a SLM wrapper class that allocates all the needed vectors, refactor when you have time
-	std::vector<double> phase(width * height);
-
-
+	SLMWrapper wrapper(parameters, spots);
 	for (int i = 0; i < NSAMPLES; ++i) {
 		const auto start_time = std::chrono::high_resolution_clock::now();
 
-		rs_kernel(spots.size(), spots.data(), pists.data(), phase.data(), &parameters, NULL);
+		wrapper.rs();
 
 		const auto end_time = std::chrono::high_resolution_clock::now();
 		const auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();

@@ -73,4 +73,27 @@ class SLM {
 };
 
 
+// this class could be inherited from when we will test CUDA implementation, in the constructor we could allocate memory on the GPU
+class SLMWrapper {
+	public:
+		SLMWrapper(const SLMParameters &parameters, const std::vector<Point3D> &spots);
+
+		void    rs();
+		void    gs(int iterations);
+		void   wgs(int iterations);
+		void  csgs(int iterations, double compression, int seed = 0);
+		void wcsgs(int iterations, double compression, int seed = 0);
+
+
+	private:
+		const SLMParameters &parameters;
+		const std::vector<Point3D> &spots;
+
+		// @DESIGN: these vectors won't change their dimension, should I declare them as something different that std::vector?
+		const int n;
+		std::vector<double> pists;
+		std::vector<double> phase;
+};
+
+
 #endif

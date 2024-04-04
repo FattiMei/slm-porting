@@ -16,11 +16,11 @@ targets += porting benchmark
 all: $(targets)
 
 
-porting: build/main.o build/kernels.o build/serial.o build/units.o build/utils.o
+porting: build/main.o build/kernels.o build/serial.o build/units.o build/utils.o build/slm.o
 	$(CXX) -o $@ $^
 
 
-benchmark: build/benchmark.o build/kernels.o build/serial.o build/units.o build/utils.o
+benchmark: build/benchmark.o build/kernels.o build/serial.o build/units.o build/utils.o build/slm.o
 	$(CXX) -o $@ $^
 
 
