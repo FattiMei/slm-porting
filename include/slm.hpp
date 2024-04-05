@@ -74,6 +74,9 @@ namespace SLM {
 			std::vector<double> pists;
 			std::vector<double> phase;
 	};
+
+
+	std::vector<int> generate_pupil_indices(const SLM::Parameters &parameters);
 }
 
 

@@ -5,6 +5,9 @@
 #include "slm.hpp"
 
 
+void rs_kernel(const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters &parameters);
+
+
 void rs_kernel(
 		int                  n,
 		const Point3D        spots[],

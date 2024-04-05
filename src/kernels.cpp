@@ -6,11 +6,6 @@
 using namespace std::complex_literals;
 
 
-double linspace(double inf, double sup, int n, int i) {
-	return inf + static_cast<double>(i) * (sup - inf) / static_cast<double>(n - 1);
-}
-
-
 // @ASSESS: putting parameters as const helps the compiler?
 double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
