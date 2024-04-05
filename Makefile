@@ -16,11 +16,11 @@ targets += porting benchmark
 all: $(targets)
 
 
-porting: build/main.o build/kernels.o build/serial.o build/units.o build/utils.o build/slm.o
+porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 	$(CXX) -o $@ $^
 
 
-benchmark: build/benchmark.o build/kernels.o build/serial.o build/units.o build/utils.o build/slm.o
+benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o
 	$(CXX) -o $@ $^
 
 
@@ -51,4 +51,4 @@ build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
 
 .PHONY clean:
 clean:
-	rm -f $(obj) porting profile output.bin
+	rm -f $(obj) $(targets) output.bin

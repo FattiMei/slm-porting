@@ -17,7 +17,6 @@
  */
 
 
-// @ADVICE: can we do something better with this constructor?
 struct Point3D {
 	double x;
 	double y;
@@ -76,7 +75,8 @@ namespace SLM {
 	};
 
 
-	std::vector<int> generate_pupil_indices(const SLM::Parameters &parameters);
+	std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
+	std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
 }
 
 

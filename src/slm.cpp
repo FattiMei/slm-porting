@@ -5,6 +5,7 @@
 
 // @DESIGN: I should copy the parameters structure or store the reference?
 // @DESIGN: what can I do for allocating std::vectors? resize?
+// @DESIGN (for reference problems) use std::move or unique or shared pointer
 SLM::Wrapper::Wrapper(const SLM::Parameters parameters_, const std::vector<Point3D> &spots_) :
 	parameters(parameters_),
 	spots     (spots_),
@@ -34,6 +35,44 @@ std::vector<int> generate_pupil_indices(const SLM::Parameters &parameters) {
 				result.push_back(j * WIDTH + i);
 			}
 		}
+	}
+
+	return result;
+}
+
+
+std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters) {
+	// returns [lower, upper) bounds
+
+	const int &WIDTH  = parameters.width;
+	const int &HEIGHT = parameters.height;
+	std::vector<std::pair<int,int>> result(HEIGHT);
+
+	// is there a modern and readable C++ way to solve this problem?
+	// if this approach is useful I will put more attention to it
+	for (int j = 0; j < HEIGHT; ++j) {
+		const double y = linspace(-1.0, 1.0, HEIGHT, j);
+		int lower;
+		int upper;
+
+		for (lower = 0; lower < WIDTH; ++lower) {
+			const double x = linspace(-1.0, 1.0, WIDTH, lower);
+
+			if (x*x + y*y < 1.0) {
+				break;
+			}
+		}
+
+		for (upper = WIDTH - 1; upper >= 0; --upper) {
+			const double x = linspace(-1.0, 1.0, WIDTH, upper);
+
+			if (x*x + y*y < 1.0) {
+				++upper;
+				break;
+			}
+		}
+
+		result[j] = {lower, upper};
 	}
 
 	return result;
