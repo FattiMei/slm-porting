@@ -8,13 +8,16 @@ static double linspace(double inf, double sup, int n, int i) {
 }
 
 
-void generate_random_vector(std::vector<double> &x, double inf, double sup, int seed) {
+std::vector<double> generate_random_vector(int n, double inf, double sup, int seed) {
 	std::default_random_engine gen(seed);
 	std::uniform_real_distribution<double> uniform(inf, sup);
+	std::vector<double> result(n);
 
-	for (auto &p : x) {
-		p = uniform(gen);
+	for (auto &x : result) {
+		x = uniform(gen);
 	}
+
+	return result;
 }
 
 

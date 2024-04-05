@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
 	std::ofstream out(argv[1]);
 
 
-	std::vector<double> pists(npoints);
-	generate_random_vector(pists, 0.0, 2.0 * M_PI, 1);
+	std::vector<double> pists = generate_random_vector(npoints, 0.0, 2.0 * M_PI, 1);
 
 
 	std::vector<Point3D> spots;

@@ -9,13 +9,9 @@ SLMWrapper::SLMWrapper(const SLMParameters &parameters_, const std::vector<Point
 	parameters(parameters_),
 	spots(spots_),
 	n(spots_.size()),
-	pists(spots_.size()),
 	phase(parameters_.width * parameters_.height)
 {
-	// @DESIGN: I would like to write
-	// 	pists = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 1);
-
-	generate_random_vector(pists, 0.0, 2.0 * M_PI, 1);
+	pists = generate_random_vector(n, 0.0, 2.0 * M_PI, 1);
 }
 
 
