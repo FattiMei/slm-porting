@@ -5,16 +5,16 @@
 
 // @DESIGN: I should copy the parameters structure or store the reference?
 // @DESIGN: what can I do for allocating std::vectors? resize?
-SLMWrapper::SLMWrapper(const SLMParameters &parameters_, const std::vector<Point3D> &spots_) :
+SLM::Wrapper::Wrapper(const SLM::Parameters parameters_, const std::vector<Point3D> &spots_) :
 	parameters(parameters_),
-	spots(spots_),
-	n(spots_.size()),
-	phase(parameters_.width * parameters_.height)
+	spots     (spots_),
+	n         (spots_.size()),
+	phase     (parameters_.width * parameters_.height)
 {
 	pists = generate_random_vector(n, 0.0, 2.0 * M_PI, 1);
 }
 
 
-void SLMWrapper::rs() {
+void SLM::Wrapper::rs() {
 	rs_kernel(n, spots.data(), pists.data(), phase.data(), &parameters, NULL);
 }

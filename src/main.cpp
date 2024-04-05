@@ -20,6 +20,8 @@ const Length focal_length( 20.0, Unit::Millimeters);
 
 
 int main(int argc, char *argv[]) {
+	(void) argv;
+
 	if (argc != 2) {
 		std::cerr << "Error in command line arguments" << std::endl;
 		std::cerr << "Usage: porting <output_filename>" << std::endl;
@@ -27,6 +29,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	/*
 	SLM slm(width, height, wavelength, pitch, focal_length);
 	std::ofstream out(argv[1]);
 
@@ -48,6 +51,7 @@ int main(int argc, char *argv[]) {
 	slm.write_on_file(out);
 	write_vector_on_file(pists, npoints, 1, out);
 	write_spots_on_file(spots, out);
+	*/
 
 
 	return 0;

@@ -18,13 +18,13 @@ int main() {
 	const Length wavelength       (0.488, Unit::Micrometers);
 
 
-	SLMParameters parameters(width, height, focal_length, pitch, wavelength);
+	SLM::Parameters parameters(width, height, focal_length, pitch, wavelength);
 
 	// @DESIGN: I don't like this structure, I want to generate vectors
 	std::vector<Point3D> spots;
 	generate_grid_spots(10, 10.0, spots);
 
-	SLMWrapper wrapper(parameters, spots);
+	SLM::Wrapper wrapper(parameters, spots);
 	for (int i = 0; i < NSAMPLES; ++i) {
 		const auto start_time = std::chrono::high_resolution_clock::now();
 

@@ -10,7 +10,7 @@ void rs_kernel(
 		const Point3D        spots[],
 		const double         pists[],
 		double               phase[],
-		const SLMParameters* par,
+		const SLM::Parameters* par,
 		Performance*         perf
 	      );
 
@@ -21,7 +21,7 @@ void gs_kernel(
 		double               pists_tmp_buffer[],
 		std::complex<double> spot_fields[],
 		double               phase[],
-		const SLMParameters* par,
+		const SLM::Parameters* par,
 		Performance*         perf,
 		int                  iterations
 	      );
@@ -35,7 +35,7 @@ void wgs_kernel(
 		double               ints[],
 		double               weights[],
 		double               phase[],
-		const SLMParameters* par,
+		const SLM::Parameters* par,
 		Performance*         perf,
 		int                  iterations
 	       );
@@ -47,7 +47,7 @@ void csgs_kernel(
 		double               pists_tmp_buffer[],
 		std::complex<double> spot_fields[],
 		double               phase[],
-		const SLMParameters* par,
+		const SLM::Parameters* par,
 		Performance*         perf,
 		int                  iterations,
 		double               compression,
@@ -63,7 +63,7 @@ void wcsgs_kernel(
 		double               ints[],
 		double               weights[],
 		double               phase[],
-		const SLMParameters* par,
+		const SLM::Parameters* par,
 		Performance*         perf,
 		int                  iterations,
 		double               compression,

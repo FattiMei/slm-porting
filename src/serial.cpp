@@ -4,6 +4,7 @@
 #include <complex>
 
 
+/*
 SLM::SLM(int width, int height, const Length &wavelength, const Length &pixel_size, const Length &focal_length) : 
 	par(width, height, focal_length, pixel_size, wavelength),
 	phase_buffer(width * height) {
@@ -125,3 +126,4 @@ void SLM::wcsgs(const std::vector<Point3D> &spots, const std::vector<double> &pi
 		seed
 	);
 }
+*/
