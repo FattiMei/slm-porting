@@ -15,6 +15,7 @@ double compute_p_phase(const double wavelength, const double focal_length, const
 }
 
 
+// @ADVICE: put const into parameters
 void compute_spot_field_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
 	for (int i = 0; i < n; ++i) {
 		ints[i] = std::abs(spot_fields[i] / static_cast<double>(pupil_point_count));
@@ -40,6 +41,115 @@ void update_weights(int n, const double ints[], double weights[]) {
 
 	for (int i = 0; i < n; ++i) {
 		weights[i] /= total_weight_sum;
+	}
+}
+
+
+void rs_kernel_naive(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+			if (x*x + y*y < 1.0) {
+				std::complex<double> total_field(0.0, 0.0);
+				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+					total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+				}
+
+				phase[j * WIDTH + i] = std::arg(total_field);
+			}
+		}
+	}
+}
+
+
+void rs_kernel_pupil_indices(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	int			pupil_count,
+	const	int			pupil_indices[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int index = 0; index < pupil_count; ++index) {
+		const int i = pupil_indices[index] % WIDTH;
+		const int j = pupil_indices[index] / WIDTH;
+
+		const double x = PIXEL_SIZE * linspace(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+		const double y = PIXEL_SIZE * linspace(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+		std::complex<double> total_field(0.0, 0.0);
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+			total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+		}
+
+		phase[j * WIDTH + i] = std::arg(total_field);
+	}
+}
+
+
+void rs_kernel_pupil_index_bounds(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	std::pair<int,int>	pupil_index_bounds[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+			std::complex<double> total_field(0.0, 0.0);
+			x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+			y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+			for (int ispot = 0; ispot < n; ++ispot) {
+				const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+				total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+			}
+
+			phase[j * WIDTH + i] = std::arg(total_field);
+		}
 	}
 }
 
