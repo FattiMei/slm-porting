@@ -75,9 +75,11 @@ namespace SLM {
 	};
 
 
-	std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
-	std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
 }
+
+
+std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
+std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
 
 
 #endif
