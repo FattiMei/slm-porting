@@ -22,15 +22,14 @@ std::vector<double> generate_random_vector(int n, double inf, double sup, int se
 
 
 std::vector<Point3D> generate_grid_spots(int n, double size) {
-	std::vector<Point3D> result;
-	result.reserve(n * n);
+	std::vector<Point3D> result(n * n);
 
 	for (int i = 0; i < n; ++i) {
 		for (int j = 0; j < n; ++j) {
-			const double x = linspace(-0.5 * size, 0.5 * size, size, i);
-			const double y = linspace(-0.5 * size, 0.5 * size, size, j);
+			const double x = linspace(-0.5 * size, 0.5 * size, n, i);
+			const double y = linspace(-0.5 * size, 0.5 * size, n, j);
 
-			result.push_back(Point3D(x, y, 0.0));
+			result[i * n + j] = Point3D(x, y, 0.0);
 		}
 	}
 

@@ -3,6 +3,7 @@
 
 
 #include "slm.hpp"
+#include <complex>
 
 
 void rs_kernel_naive              (const int n, const Point3D spots[], const double pists[], double phase[],                                                                     const SLM::Parameters *par);

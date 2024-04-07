@@ -171,7 +171,7 @@ void rs_kernel_static_index_bounds(
 	for (int j = 0; j < HEIGHT; ++j) {
 		double y = linspace(-1.0, 1.0, HEIGHT, j);
 
-		const int upper = std::ceil(0.5 * (1.0 + std::sqrt(1.0 - y*y)) * static_cast<double>(WIDTH - 1));
+		const int upper = static_cast<int>(std::ceil(0.5 * (1.0 + std::sqrt(1.0 - y*y)) * static_cast<double>(WIDTH - 1)));
 		const int lower = WIDTH - upper;
 
 		y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;

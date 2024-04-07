@@ -1,5 +1,5 @@
 CXX        = g++
-CXXFLAGS   = -Wall -Wextra -Wpedantic
+WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Warith-conversion -Wbool-compare -Wconversion -Wdeprecated
 OPTFLAGS   = -O2 -march=native
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
@@ -20,8 +20,8 @@ porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 	$(CXX) -o $@ $^
 
 
-benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o
-	$(CXX) -o $@ $^
+benchmark: src/benchmark.cpp src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp
+	$(CXX) $(WARNINGS) $(OPTFLAGS) -o $@ $^
 
 
 bench: benchmark
@@ -41,12 +41,12 @@ report: output.bin
 
 
 profile:
-	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
+	$(CXX) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
 
 
 # (INCOMPLETE) in the future this will definetely be automatically generated
 build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
-	$(CXX) -c $(CXXFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
+	$(CXX) -c $(WARNINGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
 
 
 .PHONY clean:

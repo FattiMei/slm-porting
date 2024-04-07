@@ -3,8 +3,6 @@
 
 
 #include <vector>
-#include <fstream>
-#include <complex>
 #include "units.hpp"
 
 
@@ -22,6 +20,7 @@ struct Point3D {
 	double y;
 	double z;
 
+	Point3D() {};
 	Point3D(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {};
 };
 
@@ -36,11 +35,11 @@ struct Performance {
 
 namespace SLM {
 	struct Parameters {
-		const int width;
-		const int height;
-		const double focal_length_mm;
-		const double pixel_size_um;
-		const double wavelength_um;
+		const int	width;
+		const int	height;
+		const double	focal_length_mm;
+		const double	pixel_size_um;
+		const double	wavelength_um;
 
 		Parameters(int width_, int height_, Length focal_length, Length pixel_size, Length wavelength) :
 			width(width_),
@@ -80,6 +79,7 @@ namespace SLM {
 
 std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
 std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
+// @TODO: add generation of index bounds with formula
 
 
 #endif
