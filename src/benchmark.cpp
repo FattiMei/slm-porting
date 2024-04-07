@@ -5,7 +5,7 @@
 #include "kernels.hpp"
 
 
-#define NSAMPLES 1000
+#define NSAMPLES 200
 #define SEED     1
 
 
@@ -57,6 +57,19 @@ int main() {
 		const auto start_time = std::chrono::high_resolution_clock::now();
 
 		rs_kernel_pupil_index_bounds(spots.size(), spots.data(), pists.data(), phase.data(), pupil_index_bounds.data(), &parameters);
+
+		const auto end_time = std::chrono::high_resolution_clock::now();
+		const auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+		std::cout << delta << std::endl;
+	}
+
+
+	std::cout << "# rs kernel runtime computed pupil index bounds (ms)" << std::endl;
+	for (int i = 0; i < NSAMPLES; ++i) {
+		const auto start_time = std::chrono::high_resolution_clock::now();
+
+		rs_kernel_static_index_bounds(spots.size(), spots.data(), pists.data(), phase.data(), &parameters);
 
 		const auto end_time = std::chrono::high_resolution_clock::now();
 		const auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
