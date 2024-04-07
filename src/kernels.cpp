@@ -154,6 +154,47 @@ void rs_kernel_pupil_index_bounds(
 }
 
 
+void rs_kernel_static_index_bounds(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int j = 0; j < HEIGHT; ++j) {
+		double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+		// @TODO: complete the calculation
+		const int lower = 0;
+		const int upper = 0;
+
+		y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+		for (int i = lower; i < upper; ++i) {
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+
+			std::complex<double> total_field(0.0, 0.0);
+
+			for (int ispot = 0; ispot < n; ++ispot) {
+				const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+				total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+			}
+
+			phase[j * WIDTH + i] = std::arg(total_field);
+		}
+	}
+}
+
+
 // @TODO, @FORMATTING: align better variable names
 void rs_kernel(
 	int                  n,

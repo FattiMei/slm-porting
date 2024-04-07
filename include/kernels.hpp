@@ -5,9 +5,10 @@
 #include "slm.hpp"
 
 
-void rs_kernel_naive             (const int n, const Point3D spots[], const double pists[], double phase[],                                                                     const SLM::Parameters *par);
-void rs_kernel_pupil_indices     (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[],                   const SLM::Parameters *par);
-void rs_kernel_pupil_index_bounds(const int n, const Point3D spots[], const double pists[], double phase[],                        const std::pair<int,int> pupil_index_bounds[], const SLM::Parameters *par);
+void rs_kernel_naive              (const int n, const Point3D spots[], const double pists[], double phase[],                                                                     const SLM::Parameters *par);
+void rs_kernel_pupil_indices      (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[],                   const SLM::Parameters *par);
+void rs_kernel_pupil_index_bounds (const int n, const Point3D spots[], const double pists[], double phase[],                        const std::pair<int,int> pupil_index_bounds[], const SLM::Parameters *par);
+void rs_kernel_static_index_bounds(const int n, const Point3D spots[], const double pists[], double phase[],                                                                     const SLM::Parameters *par);
 
 
 void rs_kernel(

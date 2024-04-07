@@ -6,8 +6,14 @@ From the profiling I see too many calls to linspace, in the double nested for lo
 
 ## Filtering of pupil points
 Approximately 21% of iterations don't compute any data because the corresponding pixel point is outside the pupil. The check for norm <= 1 is quite expensive (called WIDTH * HEIGHT times). I propose a solution to statically compute the indexes of pupil points:
- 1. Compute pupil points indeces in the constructor of SLM class and store them in memory (BAD, but I still have to assess it)
- 2. Compute in a clever way the range of x indeces for any given y index (CLEVER, but there could be numerical instability)
+ 1. Compute pupil points indices and store them in memory
+ 2. Store only the ranges for every row
+ 3. At every kernel call statically compute the range
+
+These variants are implemented in:
+ 1. `rs_kernel_pupil_indices`
+ 2. `rs_kernel_pupil_index_bounds`
+ 3. `rs_kernel_static_index_bounds`
 
 
 ## Caching
