@@ -1,5 +1,5 @@
 CXX        = g++
-WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Warith-conversion -Wbool-compare -Wconversion -Wdeprecated
+WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Wbool-compare -Wconversion -Wdeprecated
 OPTFLAGS   = -O2 -march=native
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
@@ -21,7 +21,7 @@ porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 
 
 benchmark: src/benchmark.cpp src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp
-	$(CXX) $(WARNINGS) $(OPTFLAGS) -o $@ $^
+	$(CXX) $(INCLUDE) $(WARNINGS) $(OPTFLAGS) -o $@ $^
 
 
 bench: benchmark
