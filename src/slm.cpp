@@ -48,14 +48,13 @@ std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameter
 	const int &HEIGHT = parameters.height;
 	std::vector<std::pair<int,int>> result(HEIGHT);
 
-	// is there a modern and readable C++ way to solve this problem?
-	// if this approach is useful I will put more attention to it
+	// @ADVICE: is there a modern and readable C++ way to solve this problem?
 	for (int j = 0; j < HEIGHT; ++j) {
 		const double y = linspace(-1.0, 1.0, HEIGHT, j);
 		int lower;
 		int upper;
 
-		for (lower = 0; lower < WIDTH; ++lower) {
+		for (lower = 0; lower < WIDTH / 2; ++lower) {
 			const double x = linspace(-1.0, 1.0, WIDTH, lower);
 
 			if (x*x + y*y < 1.0) {
@@ -63,7 +62,7 @@ std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameter
 			}
 		}
 
-		for (upper = WIDTH - 1; upper >= 0; --upper) {
+		for (upper = WIDTH - 1; upper > WIDTH / 2; --upper) {
 			const double x = linspace(-1.0, 1.0, WIDTH, upper);
 
 			if (x*x + y*y < 1.0) {
