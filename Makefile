@@ -10,7 +10,7 @@ src        = $(wildcard src/*.cpp)
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += porting benchmark
+targets += porting benchmark analysis
 
 
 all: $(targets)
@@ -22,6 +22,10 @@ porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 
 benchmark: src/benchmark.cpp src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp
 	$(CXX) $(INCLUDE) $(WARNINGS) $(OPTFLAGS) -o $@ $^
+
+
+analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o
+	$(CXX) -o $@ $^
 
 
 bench: benchmark

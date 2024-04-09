@@ -77,3 +77,22 @@ std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameter
 
 	return result;
 }
+
+
+std::vector<std::pair<int,int>> compute_pupil_index_bounds(const SLM::Parameters &parameters) {
+	// returns [lower, upper) bounds
+
+	const int &WIDTH  = parameters.width;
+	const int &HEIGHT = parameters.height;
+	std::vector<std::pair<int,int>> result(HEIGHT);
+
+	for (int j = 0; j < HEIGHT; ++j) {
+		const double y = linspace(-1.0, 1.0, HEIGHT, j);
+		const int upper = static_cast<int>(std::ceil(0.5 * (1.0 + std::sqrt(1.0 - y*y)) * static_cast<double>(WIDTH - 1)));
+		const int lower = WIDTH - upper;
+
+		result[j] = {lower, upper};
+	}
+
+	return result;
+}
