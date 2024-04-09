@@ -285,6 +285,9 @@ void gs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
+						// @OPT: there is a possibility of reordering, exp of sums is product of exp, total phase is constant and can be pulled outside
+						// the sum, now spot fields depends only on p_phase and this operation can be fused in the loop above
+						// the last rescaling, when total phase value is actually known will be done in the loop below just before the arg
 						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
