@@ -10,7 +10,7 @@ src        = $(wildcard src/*.cpp)
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += porting benchmark analysis
+targets += porting benchmark analysis regression
 
 
 all: $(targets)
@@ -28,16 +28,16 @@ analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units
 	$(CXX) -o $@ $^
 
 
+regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o
+	$(CXX) -o $@ $^
+
+
 bench: benchmark
 	./$^ | tee bench.txt
 
 
 output.bin: porting
 	./$^ $@
-
-
-regression: output.bin
-	$(PYTHON) python/compare.py reference.bin $^
 
 
 report: output.bin

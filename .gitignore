@@ -2,6 +2,7 @@ __pycache__/
 build/
 porting
 benchmark
+regression
 analysis
 output.bin
 bench.txt

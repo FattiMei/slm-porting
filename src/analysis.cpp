@@ -13,6 +13,7 @@ int main() {
 	);
 
 	// @ADVICE: can we make the computation of such bounds at compile time? constexpr can be of use in this case
+	// @TODO: see constexpr
 	const auto reference   = generate_pupil_index_bounds(parameters);
 	const auto alternative =  compute_pupil_index_bounds(parameters);
 
