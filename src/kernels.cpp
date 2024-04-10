@@ -194,61 +194,16 @@ void rs_kernel_static_index_bounds(
 }
 
 
-// @TODO, @FORMATTING: align better variable names
-void rs_kernel(
-	int                  n,
-	const Point3D        spots[],
-	const double         pists[],
-	double               phase[],
-	const SLM::Parameters* par,
-	Performance*         perf
+void gs_kernel_naive(
+	const	int			n,
+	const	Point3D			spots[],
+		double			pists[],
+		double			pists_copy_buffer[],
+		std::complex<double>	spot_fields[],
+		double			phase[],
+	const	SLM::Parameters*	par,
+	const	int			iterations
 ) {
-	(void) perf;
-	const int    &WIDTH        = par->width;
-	const int    &HEIGHT       = par->height;
-	const double &FOCAL_LENGTH = par->focal_length_mm;
-	const double &PIXEL_SIZE   = par->pixel_size_um;
-	const double &WAVELENGTH   = par->wavelength_um;
-
-
-	// @OPT: the process of filtering pupil points could be made with bisection method, or just statically
-	// we remove the painful norm check
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = 0; i < WIDTH; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH,  i);
-			// @OPT: this instruction doesn't depend on i, so we can pull it outside this for loop
-			double y = linspace(-1.0, 1.0, HEIGHT, j);
-
-			if (x*x + y*y < 1.0) {
-				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
-				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
-
-				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-
-					total_field += std::exp(1.0i * (p_phase + pists[ispot]));
-				}
-
-				phase[j * WIDTH + i] = std::arg(total_field);
-			}
-		}
-	}
-}
-
-
-void gs_kernel(
-	int                  n,
-	const Point3D        spots[],
-	double               pists[],
-	double               pists_tmp_buffer[],
-	std::complex<double> spot_fields[],
-	double               phase[],
-	const SLM::Parameters* par,
-	Performance*         perf,
-	int                  iterations
-) {
-	(void) perf;
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
 	const double &FOCAL_LENGTH = par->focal_length_mm;
@@ -272,7 +227,6 @@ void gs_kernel(
 					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 					for (int ispot = 0; ispot < n; ++ispot) {
-						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
 						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
@@ -282,23 +236,19 @@ void gs_kernel(
 					phase[j * WIDTH + i] = total_phase;
 
 					for (int ispot = 0; ispot < n; ++ispot) {
-						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						// @OPT: there is a possibility of reordering, exp of sums is product of exp, total phase is constant and can be pulled outside
-						// the sum, now spot fields depends only on p_phase and this operation can be fused in the loop above
-						// the last rescaling, when total phase value is actually known will be done in the loop below just before the arg
 						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
-						pists_tmp_buffer[ispot] = std::arg(spot_fields[ispot]);
+						pists_copy_buffer[ispot] = std::arg(spot_fields[ispot]);
 					}
 				}
 			}
 		}
 
-		std::swap(pists, pists_tmp_buffer);
+		std::swap(pists, pists_copy_buffer);
 	}
 }
 

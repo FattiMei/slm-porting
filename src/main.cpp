@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	std::ofstream out(argv[1]);
 
 
-	rs_kernel(nspots, spots.data(), pists.data(), phase.data(), &parameters, NULL);
+	rs_kernel_naive(nspots, spots.data(), pists.data(), phase.data(), &parameters);
 	// gs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), phase.data(), &parameters, NULL, iterations);
 	// wgs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), ints.data(), weights.data(), phase.data(), &parameters, NULL, iterations);
 	// csgs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), phase.data(), &parameters, NULL, iterations, compression, seed);
