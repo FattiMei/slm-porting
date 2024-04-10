@@ -35,19 +35,24 @@ int main(int argc, char *argv[]) {
 	const std::vector<Point3D> spots = generate_grid_spots(10, 10.0);
 	const int nspots = spots.size();
 
-	std::vector<double> pists = generate_random_vector(nspots, 0.0, 2.0 * M_PI, 1);
+	const std::vector<double> pists = generate_random_vector(nspots, 0.0, 2.0 * M_PI, 1);
 	std::vector<double> pists_tmp(nspots);
 	std::vector<double> weights(nspots);
 	std::vector<double> phase(parameters.width * parameters.height);
 	std::vector<double> ints(nspots);
-	std::vector<std::complex<double>> spot_fields;
+	std::vector<std::complex<double>> spot_fields(nspots);
+	std::vector<double> p_phase_cache(nspots);
 
 
 	std::ofstream out(argv[1]);
 
 
-	rs_kernel_naive(nspots, spots.data(), pists.data(), phase.data(), &parameters);
-	// gs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), phase.data(), &parameters, NULL, iterations);
+	std::vector<double> pists_copy = pists;
+
+
+	// rs_kernel_naive(nspots, spots.data(), pists.data(), phase.data(), &parameters);
+	// gs_kernel_naive(nspots, spots.data(), pists_copy.data(), pists_tmp.data(), spot_fields.data(), phase.data(), &parameters, iterations);
+	gs_kernel_cached(nspots, spots.data(), pists_copy.data(), p_phase_cache.data(), spot_fields.data(), phase.data(), &parameters, iterations);
 	// wgs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), ints.data(), weights.data(), phase.data(), &parameters, NULL, iterations);
 	// csgs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), phase.data(), &parameters, NULL, iterations, compression, seed);
 	// wcsgs_kernel(nspots, spots.data(), pists.data(), pists_tmp.data(), spot_fields.data(), ints.data(), weights.data(), phase.data(), &parameters, NULL, iterations, compression, seed);

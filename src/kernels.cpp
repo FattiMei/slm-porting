@@ -250,6 +250,61 @@ void gs_kernel_naive(
 }
 
 
+void gs_kernel_cached(
+	const	int			n,
+	const	Point3D			spots[],
+		double			pists[],
+		double			p_phase_cache[],
+		std::complex<double>	spot_fields[],
+		double			phase[],
+	const	SLM::Parameters*	par,
+	const	int			iterations
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int it = 0; it < iterations; ++it) {
+		for (int ispot = 0; ispot < n; ++ispot) {
+			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
+		}
+
+		for (int j = 0; j < HEIGHT; ++j) {
+			for (int i = 0; i < WIDTH; ++i) {
+				double x = linspace(-1.0, 1.0, WIDTH,  i);
+				double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+				if (x*x + y*y < 1.0) {
+					std::complex<double> total_field(0.0, 0.0);
+					x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						p_phase_cache[ispot] = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+						total_field += std::exp(1.0i * (p_phase_cache[ispot] + pists[ispot]));
+					}
+
+					const double total_phase = std::arg(total_field);
+					phase[j * WIDTH + i] = total_phase;
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase_cache[ispot]));
+					}
+				}
+			}
+		}
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			pists[ispot] = std::arg(spot_fields[ispot]);
+		}
+	}
+}
+
+
 void wgs_kernel(
 	int                  n,
 	const Point3D        spots[],
