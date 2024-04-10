@@ -66,6 +66,22 @@ int main() {
 	}
 
 
+	std::vector<double> pists_mutable = pists;
+	std::vector<double> pists_copy_buffer(spots.size());
+	std::vector<std::complex<double>> spot_fields(spots.size());
+
+	gs_kernel_naive(spots.size(), spots.data(), pists_mutable.data(), pists_copy_buffer.data(), spot_fields.data(), reference.data(), &parameters, 30);
+	{
+		pists_mutable = pists;
+		gs_kernel_loop_fusion(spots.size(), spots.data(), pists_mutable.data(), pists_copy_buffer.data(), spot_fields.data(), alternative.data(), &parameters, 30);
+
+		const Difference diff = compare_outputs(reference, alternative);
+
+		std::cout << "gs_kernel_loop_fusion" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+	}
+
+
 	return 0;
 }
 
