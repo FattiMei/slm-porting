@@ -5,9 +5,10 @@
 #include "slm.hpp"
 #include "utils.hpp"
 #include "kernels.hpp"
+#include "templated.hpp"
 
 
-#define NSAMPLES 200
+#define NSAMPLES 5
 #define SEED     1
 
 
@@ -29,17 +30,20 @@ void benchmark(int samples, const std::string &name, Run run_cmd) {
 
 
 int main() {
-	SLM::Parameters parameters(
-		512,
-		512,
+	constexpr int N      = 100;
+	constexpr int WIDTH  = 512;
+	constexpr int HEIGHT = 512;
+	const SLM::Parameters parameters(
+		WIDTH,
+		HEIGHT,
 		Length(20.0, Unit::Millimeters),
 		Length(15.0, Unit::Micrometers),
 		Length(488.0, Unit::Nanometers)
 	);
 
-	const auto spots = generate_grid_spots(10, 10.0);
-	const int  N	 = spots.size();
-	auto pists = generate_random_vector(N, 0.0, 2.0 * M_PI, 1);
+	const auto		spots = generate_grid_spots(10, 10.0);
+	auto      		pists = generate_random_vector(N, 0.0, 2.0 * M_PI, 1);
+	std::vector<double>	phase(parameters.width * parameters.height);
 
 	// specific for rs testing
 	const auto pupil_indices      = generate_pupil_indices(parameters);
@@ -48,8 +52,6 @@ int main() {
 	// specific for gs testing
 	std::vector<std::complex<double>> spot_fields(N);
 	std::vector<double> p_phase_cache(N);
-
-	std::vector<double> phase(parameters.width * parameters.height);
 
 
 	const auto rs_naive_invocation = [&] {
@@ -68,6 +70,11 @@ int main() {
 		rs_kernel_static_index_bounds(N, spots.data(), pists.data(), phase.data(), &parameters);
 	};
 
+	// does templating on size parameters affect the performance? From the benchmarks no
+	const auto rs_templated_invocation = [&] {
+		rs_kernel_templated<N, WIDTH, HEIGHT>(spots.data(), pists.data(), phase.data(), &parameters);
+	};
+
 	// i know that these invocations will modify pists data, it shouldn't be a problem since here we are testing only performance and the algorithms are static
 	const auto gs_naive_invocation = [&] {
 		gs_kernel_naive(N, spots.data(), pists.data(), spot_fields.data(), phase.data(), &parameters, 30);
@@ -83,6 +90,7 @@ int main() {
 
 
 	benchmark(NSAMPLES, "rs naive",				rs_naive_invocation);
+	benchmark(NSAMPLES, "rs templated",                     rs_templated_invocation);
 	benchmark(NSAMPLES, "rs precomputed pupil indices",	rs_pupil_indices_invocation);
 	benchmark(NSAMPLES, "rs precomputed index bounds",	rs_pupil_index_bounds_invocation);
 	benchmark(NSAMPLES, "rs runtime computed index bounds", rs_static_index_bounds_invocation);
