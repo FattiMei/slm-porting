@@ -1,6 +1,7 @@
 CXX        = g++
 WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Wbool-compare -Wconversion -Wdeprecated
 OPTFLAGS   = -O2 -march=native
+OMPFLAGS   = -fopenmp
 PROFFLAGS  = -pg
 INCLUDE    = -I ./include
 PYTHON     = python3.8
@@ -17,19 +18,19 @@ all: $(targets)
 
 
 porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
-	$(CXX) -o $@ $^
+	$(CXX) $(OMPFLAGS) -o $@ $^
 
 
 benchmark: src/benchmark.cpp src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp
-	$(CXX) $(INCLUDE) $(WARNINGS) $(OPTFLAGS) -o $@ $^
+	$(CXX) $(INCLUDE) $(WARNINGS) $(OPTFLAGS) $(OMPFLAGS) -o $@ $^
 
 
 analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o
-	$(CXX) -o $@ $^
+	$(CXX) $(OMPFLAGS) -o $@ $^
 
 
 regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o
-	$(CXX) -o $@ $^
+	$(CXX) $(OMPFLAGS) -o $@ $^
 
 
 bench: benchmark
@@ -45,12 +46,12 @@ report: output.bin
 
 
 profile:
-	$(CXX) $(OPTFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
+	$(CXX) $(OPTFLAGS) $(OMPFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
 
 
 # (INCOMPLETE) in the future this will definetely be automatically generated
 build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
-	$(CXX) -c $(WARNINGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
+	$(CXX) -c $(WARNINGS) $(OMPFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
 
 
 .PHONY clean:

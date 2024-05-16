@@ -57,6 +57,7 @@ void rs_kernel_naive(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
+#pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -80,6 +81,45 @@ void rs_kernel_naive(
 }
 
 
+// replicate the same memory access patterns, but use simple arithmetic operations
+// it's the best performance we could expect from this system
+void rs_upper_bound(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+#pragma omp parallel for
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double y = linspace(-1.0, 1.0, HEIGHT, j);
+
+			if (x*x + y*y < 1.0) {
+				std::complex<double> total_field(0.0, 0.0);
+				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double useless = x * spots[ispot].x + y * spots[ispot].y + spots[ispot].z;
+
+					total_field += std::complex<double>(0.0, useless);
+				}
+
+				phase[j * WIDTH + i] = std::abs(total_field);
+			}
+		}
+	}
+}
+
+
 void rs_kernel_pupil_indices(
 	const	int			n,
 	const	Point3D			spots[],
@@ -96,6 +136,7 @@ void rs_kernel_pupil_indices(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
+#pragma omp parallel for
 	for (int index = 0; index < pupil_count; ++index) {
 		const int i = pupil_indices[index] % WIDTH;
 		const int j = pupil_indices[index] / WIDTH;
@@ -131,6 +172,7 @@ void rs_kernel_pupil_index_bounds(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
+#pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
 			double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -166,6 +208,7 @@ void rs_kernel_static_index_bounds(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
+#pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		double y = linspace(-1.0, 1.0, HEIGHT, j);
 
@@ -213,6 +256,7 @@ void gs_kernel_naive(
 			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
 		}
 
+#pragma omp parallel for
 		for (int j = 0; j < HEIGHT; ++j) {
 			for (int i = 0; i < WIDTH; ++i) {
 				double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -270,6 +314,7 @@ void gs_kernel_cached(
 			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
 		}
 
+#pragma omp parallel for
 		for (int j = 0; j < HEIGHT; ++j) {
 			for (int i = 0; i < WIDTH; ++i) {
 				double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -326,6 +371,7 @@ void gs_kernel_reordered(
 
 
 	for (int it = 0; it < iterations; ++it) {
+#pragma omp parallel for
 		for (int j = 0; j < HEIGHT; ++j) {
 			for (int i = 0; i < WIDTH; ++i) {
 				double x = linspace(-1.0, 1.0, WIDTH,  i);

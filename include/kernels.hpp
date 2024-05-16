@@ -13,6 +13,8 @@ void rs_kernel_pupil_index_bounds (const int n, const Point3D spots[], const dou
 void rs_kernel_static_index_bounds(const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 
 
+void rs_upper_bound               (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
+
 // optimizations related to caching results and reordering operations
 void gs_kernel_naive    (const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const SLM::Parameters *par, const int iterations);
 void gs_kernel_cached   (const int n, const Point3D spots[], double pists[], double p_phase_cache[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters *par, const int iterations);
