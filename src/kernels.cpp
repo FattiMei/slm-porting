@@ -6,8 +6,7 @@
 using namespace std::complex_literals;
 
 
-// @ASSESS: putting parameters as const helps the compiler?
-double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
+inline double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
 	const double c2 = M_PI * spot.z / (wavelength * focal_length * focal_length * 1e6);
 
@@ -15,8 +14,7 @@ double compute_p_phase(const double wavelength, const double focal_length, const
 }
 
 
-// @ADVICE: put const into parameters
-void compute_spot_field_module(int n, const std::complex<double> spot_fields[], int pupil_point_count, double ints[]) {
+void compute_spot_field_module(const int n, const std::complex<double> spot_fields[], const int pupil_point_count, double ints[]) {
 	for (int i = 0; i < n; ++i) {
 		ints[i] = std::abs(spot_fields[i] / static_cast<double>(pupil_point_count));
 	}
