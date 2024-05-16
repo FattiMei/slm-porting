@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <fstream>
-#include "slm.hpp"
+#include "point.hpp"
 
 
 double linspace(double inf, double sup, int n, int i);

@@ -3,7 +3,9 @@
 
 
 #include <vector>
+#include "point.hpp"
 #include "units.hpp"
+
 
 
 /*
@@ -13,16 +15,6 @@
  *   - GPU implementations of this interface won't be optimal for a couple of reasons:
  *     ~ transfering point information can be costly, it would be better if data is loaded once and transformed on the device (see python/example.py)
  */
-
-
-struct Point3D {
-	double x;
-	double y;
-	double z;
-
-	Point3D() {};
-	Point3D(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {};
-};
 
 
 struct Performance {
