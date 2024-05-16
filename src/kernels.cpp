@@ -106,10 +106,12 @@ void rs_kernel_manual(
 				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
 				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
+				// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 					const double arg     = p_phase + pists[ispot];
 
+					// https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
 					total_field += std::complex<double>(std::cos(arg), std::sin(arg));
 				}
 

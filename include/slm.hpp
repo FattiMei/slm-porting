@@ -50,6 +50,24 @@ namespace SLM {
 	};
 
 
+	class PupilIterator {
+		public:
+			PupilIterator(SLM::Parameters &parameters_);
+
+			std::pair<double, double>* operator*();
+			PupilIterator&             operator++();
+			bool                       operator!=(PupilIterator &other);
+
+
+		private:
+			SLM::Parameters parameters;
+			std::pair<double, double> cache;
+			std::vector<int> pupil_indices;
+			std::vector<int>::iterator current_index;
+			bool empty = false;
+	};
+
+
 	// this class could be inherited from when we will test CUDA implementation, in the constructor we could allocate memory on the GPU
 	// I don't like this approach, for now I will do my testing in an imperative way
 	class Wrapper {
@@ -67,7 +85,6 @@ namespace SLM {
 			const SLM::Parameters parameters;
 			const std::vector<Point3D> &spots;
 
-			// @DESIGN: these vectors won't change their dimension, should I declare them as something different that std::vector?
 			const int n;
 			std::vector<double> pists;
 			std::vector<double> phase;
@@ -79,7 +96,7 @@ namespace SLM {
 
 std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
 std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
-std::vector<std::pair<int,int>>  compute_pupil_index_bounds(const SLM::Parameters &parameters);
+std::vector<std::pair<int,int>> compute_pupil_index_bounds(const SLM::Parameters &parameters);
 
 
 #endif
