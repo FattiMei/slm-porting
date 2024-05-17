@@ -1,5 +1,5 @@
-CXX        = g++
-WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Wbool-compare -Wconversion -Wdeprecated
+CXX        = g++ -std=c++2a
+WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -Wdeprecated
 OPTFLAGS   = -O2 -march=native
 OMPFLAGS   = -fopenmp
 PROFFLAGS  = -pg

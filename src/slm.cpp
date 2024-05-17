@@ -109,29 +109,20 @@ compute_pupil_index_bounds(const SLM::Parameters &parameters) {
 }
 
 
-SLM::PupilIterator::PupilIterator(SLM::Parameters &parameters_) : parameters(parameters_) {
-	pupil_indices = generate_pupil_indices(parameters);
-	current_index = pupil_indices.begin();
+SLM::PupilIterator::PupilIterator(const SLM::Parameters &parameters_) {
+	pupil_coordinates = generate_pupil_coordinates(parameters_);
+	current_point = pupil_coordinates.begin();
 }
 
 
-std::pair<double, double>* SLM::PupilIterator::operator*() {
-	// this operation has many vulnerabilities: the PupilIterator class has to live longer than this returned pointer
-	const int i = *current_index % parameters.width;
-	const int j = *current_index / parameters.width;
-
-	cache = std::make_pair(
-		parameters.pixel_size_um * linspace(-1.0, 1.0, parameters.width,  i) * static_cast<double>(parameters.width)  / 2.0,
-		parameters.pixel_size_um * linspace(-1.0, 1.0, parameters.height, j) * static_cast<double>(parameters.height) / 2.0
-	);
-
-	return &cache;
+Point2D SLM::PupilIterator::operator*() {
+	return *current_point;
 }
 
 
 SLM::PupilIterator& SLM::PupilIterator::operator++() {
-	++current_index;
-	empty = (current_index == pupil_indices.end());
+	++current_point;
+	empty = (current_point == pupil_coordinates.end());
 
 	return *this;
 }

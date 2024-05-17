@@ -44,19 +44,17 @@ namespace SLM {
 
 	class PupilIterator {
 		public:
-			PupilIterator(SLM::Parameters &parameters_);
+			PupilIterator(const SLM::Parameters &parameters);
 
-			std::pair<double, double>* operator*();
-			PupilIterator&             operator++();
-			bool                       operator!=(PupilIterator &other);
+			Point2D        operator*();
+			PupilIterator& operator++();
+			bool           operator!=(PupilIterator &other);
 
+			bool empty = false;
 
 		private:
-			SLM::Parameters parameters;
-			std::pair<double, double> cache;
-			std::vector<int> pupil_indices;
-			std::vector<int>::iterator current_index;
-			bool empty = false;
+			std::vector<Point2D> pupil_coordinates;
+			std::vector<Point2D>::iterator current_point;
 	};
 
 
