@@ -4,7 +4,7 @@ INCLUDE    = -I ./include
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
 PYTHON     = python3.8
-CONFIG     = -DREMOVE_EXP
+CONFIG     = -DREMOVE_EXP -DINLINE_LINSPACE -DINLINE_COMPUTE_PHASE
 
 
 src        = $(wildcard src/*.cpp)
@@ -47,7 +47,7 @@ report: output.bin
 
 # for now don't include header file dependencies
 build/%.o: src/%.cpp
-	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(OPT) $(CONFIG) -o $@ $<
+	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
 
 
 .PHONY clean:

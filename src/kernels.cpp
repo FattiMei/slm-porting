@@ -3,14 +3,16 @@
 #include <random>
 
 
-using namespace std::complex_literals;
-
-
-// @TODO: find a better name for this function
+// https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
 #ifdef REMOVE_EXP
 #define cexp(x) std::complex<double>(std::cos(x), std::sin(x))
 #else
-#define cexp(x) std::exp(1.0i * (x))
+#define cexp(x) std::exp(std::complex<double>(0.0, 1.0) * (x))
+#endif
+
+
+#ifdef INLINE_LINSPACE
+#define linspace(inf, sup, n, i) (inf + (sup - inf) * static_cast<double>(i) / static_cast<double>(n - 1))
 #endif
 
 
@@ -20,6 +22,11 @@ inline double compute_p_phase(const double wavelength, const double focal_length
 
 	return c1 * (spot.x * x + spot.y * y) + c2 * (x * x + y * y);
 }
+
+
+#ifdef INLINE_COMPUTE_PHASE
+#define compute_p_phase(w, f, spot, x, y) ((2.0 * M_PI / (w * f * 1000.0)) * (spot.x * x + spot.y * y) + (M_PI * spot.z / (w * f * f * 1e6)) * (x * x + y * y))
+#endif
 
 
 void compute_spot_field_module(const int n, const std::complex<double> spot_fields[], const int pupil_point_count, double ints[]) {
@@ -68,7 +75,7 @@ void rs_kernel_naive(
 #pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH,  i);
+			double x = linspace(-1.0, 1.0, WIDTH, i);
 			double y = linspace(-1.0, 1.0, HEIGHT, j);
 
 			if (x*x + y*y < 1.0) {
@@ -106,7 +113,7 @@ void rs_kernel_manual(
 #pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
-			double x = -1.0 + 2.0 * static_cast<double>(i) / static_cast<double>(WIDTH - 1);
+			double x = -1.0 + 2.0 * static_cast<double>(i) / static_cast<double>(WIDTH  - 1);
 			double y = -1.0 + 2.0 * static_cast<double>(j) / static_cast<double>(HEIGHT - 1);
 
 			if (x*x + y*y < 1.0) {
@@ -206,6 +213,41 @@ void rs_kernel_pupil_indices(
 }
 
 
+void rs_kernel_pupil_coordinates(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	int			pupil_count,
+	const	Point2D			pupil_coordinates[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+#pragma omp parallel for
+	for (int i = 0; i < pupil_count; ++i) {
+		const double x = pupil_coordinates[i].x;
+		const double y = pupil_coordinates[i].y;
+		std::complex<double> total_field(0.0, 0.0);
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+			total_field += cexp(p_phase + pists[ispot]);
+		}
+
+		// the pupil coordinates don't give information about where to store the results
+		// for preliminary testing I will write them contiguously, but it's unrealistic
+		phase[i] = std::arg(total_field);
+	}
+}
+
+
 void rs_kernel_pupil_index_bounds(
 	const	int			n,
 	const	Point3D			spots[],
@@ -224,12 +266,10 @@ void rs_kernel_pupil_index_bounds(
 #pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH,  i);
-			double y = linspace(-1.0, 1.0, HEIGHT, j);
+			const double x = linspace(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+			const double y = linspace(-1.0, 1.0, HEIGHT, j) * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 			std::complex<double> total_field(0.0, 0.0);
-			x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
-			y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 			for (int ispot = 0; ispot < n; ++ispot) {
 				const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
@@ -267,8 +307,8 @@ void rs_kernel_static_index_bounds(
 		y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 		for (int i = lower; i < upper; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH,  i);
-			x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+			const double x = linspace(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+			const double y = linspace(-1.0, 1.0, HEIGHT, j) * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 			std::complex<double> total_field(0.0, 0.0);
 

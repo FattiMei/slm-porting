@@ -1,7 +1,5 @@
 #include <iostream>
 #include <chrono>
-#include <string>
-#include <complex>
 #include "slm.hpp"
 #include "utils.hpp"
 #include "kernels.hpp"
@@ -42,6 +40,7 @@ int main() {
 	auto pists = generate_random_vector(N, 0.0, 2.0 * M_PI, 1);
 
 	// specific for rs testing
+	const auto pupil_coordinates  = generate_pupil_coordinates(parameters);
 	const auto pupil_indices      = generate_pupil_indices(parameters);
 	const auto pupil_index_bounds = generate_pupil_index_bounds(parameters);
 
@@ -62,6 +61,10 @@ int main() {
 
 	const auto rs_upper_bound_invocation = [&] {
 		rs_upper_bound(N, spots.data(), pists.data(), phase.data(), &parameters);
+	};
+
+	const auto rs_pupil_coordinates_invocation = [&] {
+		rs_kernel_pupil_coordinates(N, spots.data(), pists.data(), phase.data(), pupil_coordinates.size(), pupil_coordinates.data(), &parameters);
 	};
 
 	const auto rs_pupil_indices_invocation = [&] {
@@ -92,10 +95,11 @@ int main() {
 
 	benchmark(NSAMPLES, "rs upper bound",                   rs_upper_bound_invocation);
 	benchmark(NSAMPLES, "rs naive",				rs_naive_invocation);
+	benchmark(NSAMPLES, "rs all manual/inlined functions",  rs_manual_invocation);
+	benchmark(NSAMPLES, "rs precomputed pupil coordinates", rs_pupil_coordinates_invocation);
 	benchmark(NSAMPLES, "rs precomputed pupil indices",	rs_pupil_indices_invocation);
 	benchmark(NSAMPLES, "rs precomputed index bounds",	rs_pupil_index_bounds_invocation);
 	benchmark(NSAMPLES, "rs runtime computed index bounds", rs_static_index_bounds_invocation);
-	benchmark(NSAMPLES, "rs all manual/inlined functions",  rs_manual_invocation);
 
 #if 0
 	benchmark(1, "gs naive",	gs_naive_invocation);
