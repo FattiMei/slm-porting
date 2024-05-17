@@ -14,7 +14,7 @@ void rs_kernel_pupil_index_bounds (const int n, const Point3D spots[], const dou
 void rs_kernel_static_index_bounds(const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 
 
-void rs_kernel_manual             (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
+// useful for estimation of performance across multiple architectures
 void rs_upper_bound               (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 
 

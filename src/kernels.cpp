@@ -12,7 +12,7 @@
 
 
 #ifdef INLINE_LINSPACE
-#define linspace(inf, sup, n, i) (inf + (sup - inf) * static_cast<double>(i) / static_cast<double>(n - 1))
+#define linspace(inf, sup, n, i) ((inf) + ((sup) - (inf)) * static_cast<double>(i) / static_cast<double>((n) - 1))
 #endif
 
 
@@ -75,59 +75,19 @@ void rs_kernel_naive(
 #pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH, i);
+			double x = linspace(-1.0, 1.0, WIDTH,  i);
 			double y = linspace(-1.0, 1.0, HEIGHT, j);
 
 			if (x*x + y*y < 1.0) {
 				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
-				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
-
-				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-
-					total_field += cexp(p_phase + pists[ispot]);
-				}
-
-				phase[j * WIDTH + i] = std::arg(total_field);
-			}
-		}
-	}
-}
-
-
-void rs_kernel_manual(
-	const	int			n,
-	const	Point3D			spots[],
-	const	double			pists[],
-		double			phase[],
-	const	SLM::Parameters*	par
-) {
-	const int    &WIDTH        = par->width;
-	const int    &HEIGHT       = par->height;
-	const double &FOCAL_LENGTH = par->focal_length_mm;
-	const double &PIXEL_SIZE   = par->pixel_size_um;
-	const double &WAVELENGTH   = par->wavelength_um;
-
-
-#pragma omp parallel for
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = 0; i < WIDTH; ++i) {
-			double x = -1.0 + 2.0 * static_cast<double>(i) / static_cast<double>(WIDTH  - 1);
-			double y = -1.0 + 2.0 * static_cast<double>(j) / static_cast<double>(HEIGHT - 1);
-
-			if (x*x + y*y < 1.0) {
-				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+				x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
 				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 				// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-					const double arg     = p_phase + pists[ispot];
 
-					// https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
-					total_field += std::complex<double>(std::cos(arg), std::sin(arg));
+					total_field += cexp(p_phase + pists[ispot]);
 				}
 
 				phase[j * WIDTH + i] = std::arg(total_field);
@@ -760,5 +720,3 @@ void wcsgs_kernel(
 		}
 	}
 }
-
-
