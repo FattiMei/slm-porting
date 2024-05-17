@@ -1,10 +1,10 @@
-CXX        = g++ -std=c++2a
+CXX        = g++
 WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -Wdeprecated
-OPTFLAGS   = -O2 -march=native
-OMPFLAGS   = -fopenmp
-PROFFLAGS  = -pg
 INCLUDE    = -I ./include
+OPT        = -O2 -march=native
+OPENMP     = -fopenmp
 PYTHON     = python3.8
+CONFIG     = -DREMOVE_EXP
 
 
 src        = $(wildcard src/*.cpp)
@@ -18,19 +18,19 @@ all: $(targets)
 
 
 porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
-	$(CXX) $(OMPFLAGS) -o $@ $^
+	$(CXX) $(OPENMP) -o $@ $^
 
 
-benchmark: src/benchmark.cpp src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp
-	$(CXX) $(INCLUDE) $(WARNINGS) $(OPTFLAGS) $(OMPFLAGS) -o $@ $^
+benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o
+	$(CXX) $(OPENMP) -o $@ $^
 
 
 analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o
-	$(CXX) $(OMPFLAGS) -o $@ $^
+	$(CXX) $(OPENMP) -o $@ $^
 
 
 regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o
-	$(CXX) $(OMPFLAGS) -o $@ $^
+	$(CXX) $(OPENMP) -o $@ $^
 
 
 bench: benchmark
@@ -45,13 +45,9 @@ report: output.bin
 	$(PYTHON) python/compare_with_serial.py $^
 
 
-profile:
-	$(CXX) $(OPTFLAGS) $(OMPFLAGS) $(PROFFLAGS) $(INCLUDE) -o $@ $(src)
-
-
-# (INCOMPLETE) in the future this will definetely be automatically generated
-build/%.o: src/%.cpp include/utils.hpp include/slm.hpp include/units.hpp
-	$(CXX) -c $(WARNINGS) $(OMPFLAGS) $(OPTFLAGS) $(INCLUDE) -o $@ $<
+# for now don't include header file dependencies
+build/%.o: src/%.cpp
+	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(OPT) -o $@ $<
 
 
 .PHONY clean:
