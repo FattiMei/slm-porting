@@ -55,10 +55,6 @@ int main() {
 		rs_kernel_naive(N, spots.data(), pists.data(), phase.data(), &parameters);
 	};
 
-	const auto rs_manual_invocation = [&] {
-		rs_kernel_manual(N, spots.data(), pists.data(), phase.data(), &parameters);
-	};
-
 	const auto rs_upper_bound_invocation = [&] {
 		rs_upper_bound(N, spots.data(), pists.data(), phase.data(), &parameters);
 	};
@@ -95,7 +91,6 @@ int main() {
 
 	benchmark(NSAMPLES, "rs upper bound",                   rs_upper_bound_invocation);
 	benchmark(NSAMPLES, "rs naive",				rs_naive_invocation);
-	benchmark(NSAMPLES, "rs all manual/inlined functions",  rs_manual_invocation);
 	benchmark(NSAMPLES, "rs precomputed pupil coordinates", rs_pupil_coordinates_invocation);
 	benchmark(NSAMPLES, "rs precomputed pupil indices",	rs_pupil_indices_invocation);
 	benchmark(NSAMPLES, "rs precomputed index bounds",	rs_pupil_index_bounds_invocation);
