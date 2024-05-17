@@ -47,7 +47,7 @@ report: output.bin
 
 # for now don't include header file dependencies
 build/%.o: src/%.cpp
-	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(OPT) -o $@ $<
+	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(OPT) $(CONFIG) -o $@ $<
 
 
 .PHONY clean:
