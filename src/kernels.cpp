@@ -6,6 +6,14 @@
 using namespace std::complex_literals;
 
 
+// @TODO: find a better name for this function
+#ifdef REMOVE_EXP
+#define cexp(x) std::complex<double>(std::cos(x), std::sin(x))
+#else
+#define cexp(x) std::exp(1.0i * (x))
+#endif
+
+
 inline double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
 	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
 	const double c2 = M_PI * spot.z / (wavelength * focal_length * focal_length * 1e6);
@@ -71,7 +79,7 @@ void rs_kernel_naive(
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-					total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+					total_field += cexp(p_phase + pists[ispot]);
 				}
 
 				phase[j * WIDTH + i] = std::arg(total_field);
@@ -190,7 +198,7 @@ void rs_kernel_pupil_indices(
 		for (int ispot = 0; ispot < n; ++ispot) {
 			const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-			total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+			total_field += cexp(p_phase + pists[ispot]);
 		}
 
 		phase[j * WIDTH + i] = std::arg(total_field);
@@ -226,7 +234,7 @@ void rs_kernel_pupil_index_bounds(
 			for (int ispot = 0; ispot < n; ++ispot) {
 				const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-				total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+				total_field += cexp(p_phase + pists[ispot]);
 			}
 
 			phase[j * WIDTH + i] = std::arg(total_field);
@@ -267,7 +275,7 @@ void rs_kernel_static_index_bounds(
 			for (int ispot = 0; ispot < n; ++ispot) {
 				const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-				total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+				total_field += cexp(p_phase + pists[ispot]);
 			}
 
 			phase[j * WIDTH + i] = std::arg(total_field);
@@ -311,7 +319,7 @@ void gs_kernel_naive(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+						total_field += cexp(p_phase + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -320,7 +328,7 @@ void gs_kernel_naive(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
+						spot_fields[ispot] += cexp(total_phase - p_phase);
 					}
 				}
 			}
@@ -369,14 +377,14 @@ void gs_kernel_cached(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						p_phase_cache[ispot] = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(1.0i * (p_phase_cache[ispot] + pists[ispot]));
+						total_field += cexp(p_phase_cache[ispot] + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
 					phase[j * WIDTH + i] = total_phase;
 
 					for (int ispot = 0; ispot < n; ++ispot) {
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase_cache[ispot]));
+						spot_fields[ispot] += cexp(total_phase - p_phase_cache[ispot]);
 					}
 				}
 			}
@@ -426,7 +434,7 @@ void gs_kernel_reordered(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+						total_field += cexp(p_phase + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -435,7 +443,7 @@ void gs_kernel_reordered(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
+						spot_fields[ispot] += cexp(total_phase - p_phase);
 					}
 				}
 			}
@@ -499,7 +507,7 @@ void wgs_kernel(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += weights[ispot] * std::exp(1.0i * (p_phase + pists[ispot]));
+						total_field += weights[ispot] * cexp(p_phase + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -508,7 +516,7 @@ void wgs_kernel(
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
+						spot_fields[ispot] += cexp(total_phase - p_phase);
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -574,7 +582,7 @@ void csgs_kernel(
 						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+						total_field += cexp(p_phase + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -584,7 +592,7 @@ void csgs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
+						spot_fields[ispot] += cexp(total_phase - p_phase);
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -661,7 +669,7 @@ void wcsgs_kernel(
 						// @OPT: replicating this computation is much better than storing the information? I have to check
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += std::exp(1.0i * (p_phase + pists[ispot]));
+						total_field += cexp(p_phase + pists[ispot]);
 					}
 
 					const double total_phase = std::arg(total_field);
@@ -671,7 +679,7 @@ void wcsgs_kernel(
 						// @OPT: we could cache the column of p_phase data
 						const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						spot_fields[ispot] += std::exp(1.0i * (total_phase - p_phase));
+						spot_fields[ispot] += cexp(total_phase - p_phase);
 					}
 
 					for (int ispot = 0; ispot < n; ++ispot) {
@@ -703,7 +711,7 @@ void wcsgs_kernel(
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-					total_field += weights[ispot] * std::exp(1.0i * (p_phase + pists[ispot]));
+					total_field += weights[ispot] * cexp(p_phase + pists[ispot]);
 				}
 
 				const double total_phase = std::arg(total_field);
