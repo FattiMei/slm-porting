@@ -3,6 +3,9 @@
 #include <random>
 
 
+// @TODO: coding style, macros are upper case everything else lowercase
+
+
 // https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
 #ifdef REMOVE_EXP
 #define cexp(x) std::complex<double>(std::cos(x), std::sin(x))
@@ -72,7 +75,9 @@ void rs_kernel_naive(
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
-#pragma omp parallel for
+#pragma omp parallel for schedule (dynamic)
+	// dynamic scheduling compensate the fact that some iterations have more points in the pupil
+	// this could be expanded into a static scheduling with careful math
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = linspace(-1.0, 1.0, WIDTH,  i);
@@ -96,6 +101,8 @@ void rs_kernel_naive(
 	}
 }
 
+// https://stackoverflow.com/questions/49723192/openmp-custom-scheduling
+// add different implementations about scheduling
 
 // replicate the same memory access patterns, but use simple arithmetic operations
 // it's the best performance we could expect from this system
@@ -108,9 +115,7 @@ void rs_upper_bound(
 ) {
 	const int    &WIDTH        = par->width;
 	const int    &HEIGHT       = par->height;
-	const double &FOCAL_LENGTH = par->focal_length_mm;
 	const double &PIXEL_SIZE   = par->pixel_size_um;
-	const double &WAVELENGTH   = par->wavelength_um;
 
 #pragma omp parallel for
 	for (int j = 0; j < HEIGHT; ++j) {
@@ -126,7 +131,7 @@ void rs_upper_bound(
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double useless = x * spots[ispot].x + y * spots[ispot].y + spots[ispot].z;
 
-					total_field += std::complex<double>(0.0, useless);
+					total_field += std::complex<double>(pists[ispot], useless);
 				}
 
 				phase[j * WIDTH + i] = std::abs(total_field);
@@ -173,6 +178,45 @@ void rs_kernel_pupil_indices(
 }
 
 
+void rs_kernel_pupil_indices_dual(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	int			pupil_count,
+	const	int			pupil_indices[],
+	const	SLM::Parameters*	par
+) {
+	const int    &WIDTH        = par->width;
+	const int    &HEIGHT       = par->height;
+	const double &FOCAL_LENGTH = par->focal_length_mm;
+	const double &PIXEL_SIZE   = par->pixel_size_um;
+	const double &WAVELENGTH   = par->wavelength_um;
+
+
+	for (int index = 0; index < pupil_count; ++index) {
+		const int i = pupil_indices[index] % WIDTH;
+		const int j = pupil_indices[index] / WIDTH;
+
+		const double x = PIXEL_SIZE * linspace(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+		const double y = PIXEL_SIZE * linspace(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+		std::complex<double> total_field(0.0, 0.0);
+
+		// https://www.reddit.com/r/cpp_questions/comments/rd12o9/openmp_reduction_not_working_with_complex_vector/
+		#pragma omp declare reduction(+: std::complex<double>: omp_out += omp_in) initializer(omp_priv = omp_orig)
+		#pragma omp parallel for reduction(+: total_field)
+		for (int ispot = 0; ispot < n; ++ispot) {
+			const double p_phase = compute_p_phase(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+			total_field += cexp(p_phase + pists[ispot]);
+		}
+
+		phase[j * WIDTH + i] = std::arg(total_field);
+	}
+}
+
+
 void rs_kernel_pupil_coordinates(
 	const	int			n,
 	const	Point3D			spots[],
@@ -182,10 +226,7 @@ void rs_kernel_pupil_coordinates(
 	const	Point2D			pupil_coordinates[],
 	const	SLM::Parameters*	par
 ) {
-	const int    &WIDTH        = par->width;
-	const int    &HEIGHT       = par->height;
 	const double &FOCAL_LENGTH = par->focal_length_mm;
-	const double &PIXEL_SIZE   = par->pixel_size_um;
 	const double &WAVELENGTH   = par->wavelength_um;
 
 
@@ -305,7 +346,6 @@ void gs_kernel_naive(
 			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
 		}
 
-#pragma omp parallel for
 		for (int j = 0; j < HEIGHT; ++j) {
 			for (int i = 0; i < WIDTH; ++i) {
 				double x = linspace(-1.0, 1.0, WIDTH,  i);
