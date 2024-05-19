@@ -102,6 +102,37 @@ void rs_kernel_naive(
 	}
 }
 
+
+void rs_kernel_branchless(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+#pragma omp parallel for
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
+			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
+			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+			std::complex<double> total_field(0.0, 0.0);
+
+			const double norm = std::floor(x*x + y*y);
+
+			x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+			y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+			for (int ispot = 0; ispot < n; ++ispot) {
+				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+				total_field += CEXP(p_phase + pists[ispot]);
+			}
+
+			phase[j * WIDTH + i] = norm * std::arg(total_field);
+		}
+	}
+}
+
 // https://stackoverflow.com/questions/49723192/openmp-custom-scheduling
 // add different implementations about scheduling
 
@@ -236,7 +267,7 @@ void rs_kernel_pupil_index_bounds(
 	const	std::pair<int,int>	pupil_index_bounds[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for
+#pragma omp parallel for schedule (dynamic)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
 			const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
@@ -263,7 +294,7 @@ void rs_kernel_static_index_bounds(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for
+#pragma omp parallel for schedule (dynamic)
 	for (int j = 0; j < HEIGHT; ++j) {
 		double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
 

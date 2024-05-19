@@ -7,6 +7,11 @@ PYTHON     = python3.8
 CONFIG     = -DREMOVE_EXP -DINLINE_LINSPACE -DINLINE_COMPUTE_PHASE
 
 
+# requires installation of https://github.com/google/benchmark
+GOOGLE_BENCHMARK_INC_DIR = /home/matteo/hpc/programs/benchmark/include
+GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
+
+
 src        = $(wildcard src/*.cpp)
 obj        = $(patsubst src/%.cpp,build/%.o,$(src))
 
@@ -22,7 +27,7 @@ porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 
 
 benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o
-	$(CXX) $(OPENMP) -o $@ $^
+	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
 analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o
@@ -34,7 +39,7 @@ regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/u
 
 
 bench: benchmark
-	./$^ | tee bench.txt
+	./$^
 
 
 output.bin: porting
@@ -48,6 +53,10 @@ report: output.bin
 # for now don't include header file dependencies
 build/%.o: src/%.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
+
+
+build/benchmark.o: src/benchmark.cpp
+	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
 .PHONY clean:

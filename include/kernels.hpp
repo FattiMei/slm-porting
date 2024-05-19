@@ -8,8 +8,10 @@
 
 // optimizations related to iterating over pupil points (should be exact)
 void rs_kernel_naive              (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
+void rs_kernel_branchless         (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 void rs_kernel_pupil_coordinates  (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const Point2D            pupil_coordinates[],  const SLM::Parameters *par);
 void rs_kernel_pupil_indices      (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int                pupil_indices[],      const SLM::Parameters *par);
+void rs_kernel_pupil_indices_dual (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int                pupil_indices[],      const SLM::Parameters *par);
 void rs_kernel_pupil_index_bounds (const int n, const Point3D spots[], const double pists[], double phase[],                        const std::pair<int,int> pupil_index_bounds[], const SLM::Parameters *par);
 void rs_kernel_static_index_bounds(const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 
