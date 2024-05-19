@@ -22,7 +22,7 @@ int main() {
 	std::vector<double> alternative(parameters.width * parameters.height);
 
 
-	rs_kernel_naive(spots.size(), spots.data(), pists.data(), reference.data(), &parameters);
+	rs_kernel_static_scheduling(spots.size(), spots.data(), pists.data(), reference.data(), &parameters);
 
 	{
 		rs_kernel_pupil_indices(spots.size(), spots.data(), pists.data(), alternative.data(), pupil_indices.size(), pupil_indices.data(), &parameters);

@@ -21,6 +21,16 @@ std::vector<double> generate_random_vector(int n, double inf, double sup, int se
 }
 
 
+void random_fill(int n, double mem[], double inf, double sup, int seed) {
+	std::default_random_engine gen(seed);
+	std::uniform_real_distribution<double> uniform(inf, sup);
+
+	for (int i = 0; i < n; ++i) {
+		mem[i] = uniform(gen);
+	}
+}
+
+
 std::vector<Point3D> generate_grid_spots(int n, double size) {
 	std::vector<Point3D> result(n * n);
 

@@ -14,6 +14,9 @@ void write_vector_on_file(const std::vector<double> &x, size_t width, size_t hei
 void write_spots_on_file(const std::vector<Point3D> &spots, std::ofstream &out);
 
 
+void random_fill(int n, double mem[], double inf, double sup, int seed);
+
+
 struct Difference {
 	const double linf_norm;
 	const double l2_norm;
