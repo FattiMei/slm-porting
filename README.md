@@ -78,3 +78,9 @@ The kernel invocations take a very long time, it's not possible to interact with
 ## SYCL
 https://github.com/cagnulein/sycl-benchmarks
 https://pramodkumbhar.com/2019/07/intels-one-api-what-we-know-and-how-to-get-ready/
+
+
+## Presentation points
+Remove calls to exp function: a principle about doing only the essential computation
+Engineering analysis about improvement on performance on rs kernel, measures and estimation of improvement on gs kernel (extrapolation, ahmdal's law)
+linspace - inline or not? Does it matter?
