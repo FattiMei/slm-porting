@@ -63,14 +63,12 @@ void write_spots_on_file(const std::vector<Point3D> &spots, std::ofstream &out) 
 }
 
 
-struct Difference compare_outputs(const std::vector<double> &reference, const std::vector<double> &alternative) {
+struct Difference compare_outputs(const int width, const int height, const double reference[], const double alternative[]) {
 	double max_absolute_difference = 0.0;
 	double sum_of_squares = 0.0;
 
-	assert(reference.size() == alternative.size());
 
-
-	for (size_t i = 0; i < reference.size(); ++i) {
+	for (int i = 0; i < width * height; ++i) {
 		const double difference = std::abs(reference[i] - alternative[i]);
 
 		if (i == 0 || difference > max_absolute_difference) {
@@ -80,5 +78,5 @@ struct Difference compare_outputs(const std::vector<double> &reference, const st
 		sum_of_squares += difference * difference;
 	}
 
-	return Difference(max_absolute_difference, sum_of_squares / static_cast<double>(reference.size()));
+	return Difference(max_absolute_difference, sum_of_squares / static_cast<double>(width * height));
 }

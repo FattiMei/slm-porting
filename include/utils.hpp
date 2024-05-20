@@ -25,7 +25,7 @@ struct Difference {
 };
 
 
-struct Difference compare_outputs(const std::vector<double> &reference, const std::vector<double> &alternative);
+struct Difference compare_outputs(const int width, const int height, const double reference[], const double alternative[]);
 
 
 #endif

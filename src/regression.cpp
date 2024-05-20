@@ -4,80 +4,56 @@
 #include "kernels.hpp"
 
 
+constexpr int n      = 100;
+constexpr int width  = 512;
+constexpr int height = 512;
+
+
+Point3D spots[n];
+double  pists[n];
+double  reference[width * height];
+double  alternative[width * height];
+
+
+extern const int pupil_count;
+extern const int pupil_indices[];
+
+
 int main() {
-	SLM::Parameters parameters(
-		512,
-		512,
+	const SLM::Parameters parameters(
+		width,
+		height,
 		Length(20.0, Unit::Millimeters),
 		Length(15.0, Unit::Micrometers),
 		Length(488.0, Unit::Nanometers)
 	);
 
-	const auto spots              = generate_grid_spots(10, 10.0);
-	const auto pists              = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 1);
-	const auto pupil_indices      = generate_pupil_indices(parameters);
-	const auto pupil_index_bounds = generate_pupil_index_bounds(parameters);
 
-	std::vector<double> reference  (parameters.width * parameters.height);
-	std::vector<double> alternative(parameters.width * parameters.height);
+	random_fill(3 * n, (double *) spots, -5.0, 5.0, 0);
+	random_fill(n, pists, 0.0, 2.0 * M_PI, 0);
 
 
-	rs_kernel_static_scheduling(spots.size(), spots.data(), pists.data(), reference.data(), &parameters);
-
+	// reference implementation
+	rs_kernel_static_scheduling(n, spots, pists, reference, &parameters);
 	{
-		rs_kernel_pupil_indices(spots.size(), spots.data(), pists.data(), alternative.data(), pupil_indices.size(), pupil_indices.data(), &parameters);
+		rs_kernel_dynamic_scheduling(n, spots, pists, reference, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
 
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "rs_kernel_pupil_indices" << std::endl;
+		std::cout << "rs_kernel_dynamic_scheduling" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
-		rs_kernel_pupil_index_bounds(spots.size(), spots.data(), pists.data(), alternative.data(), pupil_index_bounds.data(), &parameters);
+		rs_kernel_branchless(n, spots, pists, reference, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
 
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "rs_kernel_pupil_indices" << std::endl;
+		std::cout << "rs_kernel_branchless" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
-		rs_kernel_pupil_indices(spots.size(), spots.data(), pists.data(), alternative.data(), pupil_indices.size(), pupil_indices.data(), &parameters);
+		rs_kernel_branch_delay_slot(n, spots, pists, reference, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
 
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "rs_kernel_pupil_indices" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-	}
-	{
-		rs_kernel_pupil_index_bounds(spots.size(), spots.data(), pists.data(), alternative.data(), pupil_index_bounds.data(), &parameters);
-
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "rs_kernel_pupil_index_bounds" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-	}
-	{
-		rs_kernel_static_index_bounds(spots.size(), spots.data(), pists.data(), alternative.data(), &parameters);
-
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "rs_kernel_static_index_bounds" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-	}
-
-
-	std::vector<double> pists_mutable = pists;
-	std::vector<double> p_phase_cache(spots.size());
-	std::vector<std::complex<double>> spot_fields(spots.size());
-
-	gs_kernel_naive(spots.size(), spots.data(), pists_mutable.data(), spot_fields.data(), reference.data(), &parameters, 30);
-	{
-		pists_mutable = pists;
-		gs_kernel_cached(spots.size(), spots.data(), pists_mutable.data(), p_phase_cache.data(), spot_fields.data(), alternative.data(), &parameters, 30);
-
-		const Difference diff = compare_outputs(reference, alternative);
-
-		std::cout << "gs_kernel_loop_fusion" << std::endl;
+		std::cout << "rs_kernel_branch_delay_slot" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 
