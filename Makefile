@@ -63,6 +63,11 @@ build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
+# in the future this generation will be conditioned to the global parameters, probably put in its own file
+src/pupil.cpp:
+	$(PYTHON) python/pupil_index_generator.py > $@
+
+
 .PHONY clean:
 clean:
-	rm -f $(obj) $(targets) output.bin
+	rm -f $(obj) $(targets) output.bin src/pupil.cpp

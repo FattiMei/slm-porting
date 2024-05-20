@@ -1,5 +1,6 @@
 __pycache__/
 build/
+src/pupil.cpp
 porting
 benchmark
 regression
