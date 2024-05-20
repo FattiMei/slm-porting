@@ -26,7 +26,7 @@ porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o
+benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o build/pupil.o
 	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
