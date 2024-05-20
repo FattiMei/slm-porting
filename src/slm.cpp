@@ -3,32 +3,6 @@
 #include "utils.hpp"
 
 
-std::vector<Point2D>
-generate_pupil_coordinates(const SLM::Parameters &parameters) {
-	std::vector<Point2D> result;
-
-	const int    &WIDTH      = parameters.width;
-	const int    &HEIGHT     = parameters.height;
-	const double &PIXEL_SIZE = parameters.pixel_size_um;
-
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = 0; i < WIDTH; ++i) {
-			double x = linspace(-1.0, 1.0, WIDTH,  i);
-			double y = linspace(-1.0, 1.0, HEIGHT, j);
-
-			if (x*x + y*y < 1.0) {
-				result.push_back({
-					x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0,
-					y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0
-				});
-			}
-		}
-	}
-
-	return result;
-}
-
-
 std::vector<int>
 generate_pupil_indices(const SLM::Parameters &parameters) {
 	std::vector<int> result;
@@ -110,7 +84,7 @@ compute_pupil_index_bounds(const SLM::Parameters &parameters) {
 
 
 SLM::PupilIterator::PupilIterator(const SLM::Parameters &parameters_) {
-	pupil_coordinates = generate_pupil_coordinates(parameters_);
+	// pupil_coordinates = generate_pupil_coordinates(parameters_);
 	current_point = pupil_coordinates.begin();
 }
 

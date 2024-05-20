@@ -297,34 +297,6 @@ void rs_kernel_pupil_indices_dual(
 }
 
 
-void rs_kernel_pupil_coordinates(
-	const	int			n,
-	const	Point3D			spots[],
-	const	double			pists[],
-		double			phase[],
-	const	int			pupil_count,
-	const	Point2D			pupil_coordinates[],
-	const	SLM::Parameters*	par
-) {
-#pragma omp parallel for
-	for (int i = 0; i < pupil_count; ++i) {
-		const double x = pupil_coordinates[i].x;
-		const double y = pupil_coordinates[i].y;
-		std::complex<double> total_field(0.0, 0.0);
-
-		for (int ispot = 0; ispot < n; ++ispot) {
-			const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-
-			total_field += CEXP(p_phase + pists[ispot]);
-		}
-
-		// the pupil coordinates don't give information about where to store the results
-		// for preliminary testing I will write them contiguously, but it's unrealistic
-		phase[i] = std::arg(total_field);
-	}
-}
-
-
 void rs_kernel_pupil_index_bounds(
 	const	int			n,
 	const	Point3D			spots[],
