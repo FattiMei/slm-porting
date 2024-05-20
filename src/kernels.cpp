@@ -117,7 +117,6 @@ void rs_kernel_dynamic_scheduling(
 }
 
 
-// @TODO: assess the correctness of this kernel
 void rs_kernel_branchless(
 	const	int			n,
 	const	Point3D			spots[],
@@ -132,7 +131,7 @@ void rs_kernel_branchless(
 			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
 			std::complex<double> total_field(0.0, 0.0);
 
-			const double norm = std::floor(x*x + y*y);
+			const bool is_inside_pupil = (x*x + y*y < 1.0);
 
 			x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
 			y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
@@ -143,13 +142,12 @@ void rs_kernel_branchless(
 				total_field += CEXP(p_phase + pists[ispot]);
 			}
 
-			phase[j * WIDTH + i] = norm * std::arg(total_field);
+			phase[j * WIDTH + i] = is_inside_pupil * std::arg(total_field);
 		}
 	}
 }
 
 
-// @TODO: assess the correctness of this kernel
 // @TODO: compare the assembly code of rs_kernel_branchless and rs_kernel_branch_delay_slot
 void rs_kernel_branch_delay_slot(
 	const	int			n,
