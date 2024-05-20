@@ -4,7 +4,7 @@ INCLUDE    = -I ./include
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
 PYTHON     = python3.8
-CONFIG     = -DREMOVE_EXP -DINLINE_LINSPACE -DINLINE_COMPUTE_PHASE
+CONFIG     = -DREMOVE_EXP
 
 
 # requires installation of https://github.com/google/benchmark
@@ -48,6 +48,10 @@ output.bin: porting
 
 report: output.bin
 	$(PYTHON) python/compare_with_serial.py $^
+
+
+godbolt: src/kernels.cpp include/kernels.hpp include/utils.hpp
+	$(CXX) -E $(INCLUDE) $< -o $@
 
 
 # for now don't include header file dependencies

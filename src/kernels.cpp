@@ -1,6 +1,5 @@
-#include "kernels.hpp"
-#include "utils.hpp"
 #include <random>
+#include "kernels.hpp"
 
 
 // https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
@@ -11,18 +10,8 @@
 #endif
 
 
-#ifdef INLINE_LINSPACE
 #define LINSPACE(inf, sup, n, i) ((inf) + ((sup) - (inf)) * static_cast<double>(i) / static_cast<double>((n) - 1))
-#else
-#define LINSPACE(inf, sup, n, i) (linspace(inf, sup, n, i))
-#endif
-
-
-#ifdef INLINE_COMPUTE_PHASE
 #define COMPUTE_P_PHASE(w, f, spot, x, y) ((2.0 * M_PI / (w * f * 1000.0)) * (spot.x * x + spot.y * y) + (M_PI * spot.z / (w * f * f * 1e6)) * (x * x + y * y))
-#else
-#define COMPUTE_P_PHASE(w, f, spot, x, y) (compute_p_phase(w, f, spot, x, y))
-#endif
 
 
 #define WIDTH        (par->width)
@@ -30,14 +19,6 @@
 #define FOCAL_LENGTH (par->focal_length_mm)
 #define PIXEL_SIZE   (par->pixel_size_um)
 #define WAVELENGTH   (par->wavelength_um)
-
-
-inline double compute_p_phase(const double wavelength, const double focal_length, const Point3D spot, const double x, const double y) {
-	const double c1 = 2.0 * M_PI / (wavelength * focal_length * 1000.0);
-	const double c2 = M_PI * spot.z / (wavelength * focal_length * focal_length * 1e6);
-
-	return c1 * (spot.x * x + spot.y * y) + c2 * (x * x + y * y);
-}
 
 
 void compute_spot_field_module(const int n, const std::complex<double> spot_fields[], const int pupil_point_count, double ints[]) {
@@ -169,6 +150,7 @@ void rs_kernel_branchless(
 
 
 // @TODO: assess the correctness of this kernel
+// @TODO: compare the assembly code of rs_kernel_branchless and rs_kernel_branch_delay_slot
 void rs_kernel_branch_delay_slot(
 	const	int			n,
 	const	Point3D			spots[],
