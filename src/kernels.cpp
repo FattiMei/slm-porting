@@ -1,4 +1,5 @@
 #include <random>
+#include <omp.h>
 #include "kernels.hpp"
 
 
@@ -82,8 +83,6 @@ void rs_kernel_static_scheduling(
 }
 
 
-// https://stackoverflow.com/questions/49723192/openmp-custom-scheduling
-// add different implementations about scheduling
 void rs_kernel_dynamic_scheduling(
 	const	int			n,
 	const	Point3D			spots[],
@@ -92,7 +91,6 @@ void rs_kernel_dynamic_scheduling(
 	const	SLM::Parameters*	par
 ) {
 	// dynamic scheduling compensate the fact that some iterations have more points in the pupil
-	// this could be expanded into a static scheduling with careful math
 	#pragma omp parallel for schedule (dynamic)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
@@ -111,6 +109,44 @@ void rs_kernel_dynamic_scheduling(
 				}
 
 				phase[j * WIDTH + i] = std::arg(total_field);
+			}
+		}
+	}
+}
+
+
+// https://stackoverflow.com/questions/49723192/openmp-custom-scheduling
+void rs_kernel_custom_scheduling(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+	#pragma omp parallel
+	{
+		extern const int for_loop_bounds[];
+		const int thread = omp_get_thread_num();
+
+		for (int j = for_loop_bounds[thread]; j < for_loop_bounds[thread + 1]; ++j) {
+			for (int i = 0; i < WIDTH; ++i) {
+				double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
+				double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+
+				if (x*x + y*y < 1.0) {
+					std::complex<double> total_field(0.0, 0.0);
+					x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+					// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
+					for (int ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					phase[j * WIDTH + i] = std::arg(total_field);
+				}
 			}
 		}
 	}

@@ -9,6 +9,7 @@
 // optimizations related to iterating over pupil points (should be exact)
 void rs_kernel_static_scheduling  (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 void rs_kernel_dynamic_scheduling (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
+void rs_kernel_custom_scheduling  (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 void rs_kernel_branchless         (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 void rs_kernel_branch_delay_slot  (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 void rs_kernel_pupil_indices      (const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int                pupil_indices[],      const SLM::Parameters *par);

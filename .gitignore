@@ -1,6 +1,7 @@
 __pycache__/
 build/
 src/pupil.cpp
+src/scheduling.cpp
 porting
 benchmark
 regression

@@ -22,24 +22,24 @@ targets += porting benchmark analysis regression
 all: $(targets)
 
 
-porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o
+porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o build/scheduling.o
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o build/pupil.o
+benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o build/pupil.o build/scheduling.o
 	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
-analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o
+analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o
+regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o
 	$(CXX) $(OPENMP) -o $@ $^
 
 
 bench: benchmark
-	./$^
+	OMP_NUM_THREADS=4 ./$^
 
 
 output.bin: porting
@@ -64,12 +64,12 @@ build/benchmark.o: src/benchmark.cpp
 
 
 # in the future this generation will be conditioned to the global parameters, probably put in its own file
-src/pupil.cpp:
-	$(PYTHON) generator/pupil_index_generator.py > $@
+src/pupil.cpp: generator/pupil_index_generator.py
+	$(PYTHON) $^ > $@
 
 
-src/scheduling.cpp:
-	$(PYTHON) generator/scheduling.py > $@
+src/scheduling.cpp: generator/scheduling.py
+	$(PYTHON) $^ > $@
 
 
 .PHONY clean:

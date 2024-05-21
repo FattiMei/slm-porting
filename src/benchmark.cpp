@@ -35,6 +35,14 @@ static void rs_dynamic_scheduling(benchmark::State &state) {
 }
 
 
+static void rs_custom_scheduling(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		rs_kernel_custom_scheduling(n, spots, pists, phase, &parameters);
+	}
+}
+
+
 static void rs_branchless(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
@@ -62,6 +70,7 @@ static void rs_pupil_indices(benchmark::State &state) {
 // @TODO: set the time unit in the command invocation
 BENCHMARK(rs_static_scheduling)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_dynamic_scheduling)->Unit(benchmark::kMillisecond);
+BENCHMARK(rs_custom_scheduling)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_pupil_indices)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_branchless)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_branch_delay_slot)->Unit(benchmark::kMillisecond);

@@ -15,7 +15,7 @@ def reverse_search(ordered, x):
 
 
 def format_bounds(bounds):
-    print('const int for_loop_bounds[] = {')
+    print('extern const int for_loop_bounds[] = {')
 
     for x in bounds:
         print(f'\t{x},')
@@ -31,9 +31,6 @@ if __name__ == '__main__':
 
     points_in_line = np.sum((xx ** 2 + yy ** 2) < 1.0, axis=1)
     cumulative     = np.cumsum(points_in_line, dtype = np.float64)
-
-    print(cumulative)
-    print(np.linspace(cumulative[0], cumulative[-1], OMP_NUM_THREADS + 1))
 
     bounds = [reverse_search(cumulative, alpha) for alpha in np.linspace(cumulative[0], cumulative[-1], OMP_NUM_THREADS + 1)]
     format_bounds(bounds)
