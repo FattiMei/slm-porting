@@ -65,7 +65,11 @@ build/benchmark.o: src/benchmark.cpp
 
 # in the future this generation will be conditioned to the global parameters, probably put in its own file
 src/pupil.cpp:
-	$(PYTHON) python/pupil_index_generator.py > $@
+	$(PYTHON) generator/pupil_index_generator.py > $@
+
+
+src/scheduling.cpp:
+	$(PYTHON) generator/scheduling.py > $@
 
 
 .PHONY clean:
