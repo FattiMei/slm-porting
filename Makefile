@@ -1,6 +1,6 @@
 CXX        = g++
 WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -Wdeprecated
-INCLUDE    = -I ./include
+INCLUDE    = -I ./include -I ./generator
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
 # TODO: automatically detect python version
@@ -12,14 +12,11 @@ GOOGLE_BENCHMARK_INC_DIR = /home/matteo/hpc/programs/benchmark/include
 GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
 
 
-# program specific configuration, to be put in separate file
-CONFIG          = -DREMOVE_EXP
-RESOLUTION      = 512
-OMP_NUM_THREADS = 8
+CONFIG = -DREMOVE_EXP
 
 
-src        = $(wildcard src/*.cpp)
-obj        = $(patsubst src/%.cpp,build/%.o,$(src))
+src = $(wildcard src/*.cpp)
+obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
 targets += porting benchmark analysis regression
@@ -45,7 +42,7 @@ regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/u
 
 
 bench: benchmark
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) ./$^
+	./$^
 
 
 output.bin: porting
@@ -57,7 +54,7 @@ report: output.bin
 
 
 godbolt: src/kernels.cpp include/kernels.hpp include/utils.hpp
-	$(CXX) -E $(INCLUDE) $< -o $@
+	$(CXX) -S $(INCLUDE) $< -o $@
 
 
 # for now don't include header file dependencies
@@ -65,17 +62,21 @@ build/%.o: src/%.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
 
 
-build/benchmark.o: src/benchmark.cpp
+build/kernels.o: src/kernels.cpp generator/config.py
+	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
+
+
+build/benchmark.o: src/benchmark.cpp generator/config.py
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
 # don't exclude to have in the future only a python driver/compiler
-src/pupil.cpp: generator/pupil_index_generator.py
-	RESOLUTION=$(RESOLUTION) OMP_NUM_THREADS=$(OMP_NUM_THREADS) $(PYTHON) $^ > $@
+src/pupil.cpp: generator/pupil_index_generator.py generator/config.py
+	$(PYTHON) $< > $@
 
 
-src/scheduling.cpp: generator/scheduling.py
-	RESOLUTION=$(RESOLUTION) OMP_NUM_THREADS=$(OMP_NUM_THREADS) $(PYTHON) $^ > $@
+src/scheduling.cpp: generator/scheduling.py generator/config.py
+	$(PYTHON) $< > $@
 
 
 .PHONY clean:

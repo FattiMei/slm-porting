@@ -1,6 +1,7 @@
 #include <random>
 #include <omp.h>
 #include "kernels.hpp"
+#include "config.py"
 
 
 // https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
@@ -58,7 +59,7 @@ void rs_kernel_static_scheduling(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel for
+	#pragma omp parallel for num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
@@ -91,7 +92,7 @@ void rs_kernel_dynamic_scheduling(
 	const	SLM::Parameters*	par
 ) {
 	// dynamic scheduling compensate the fact that some iterations have more points in the pupil
-	#pragma omp parallel for schedule (dynamic)
+	#pragma omp parallel for schedule (dynamic) num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
@@ -123,7 +124,7 @@ void rs_kernel_custom_scheduling(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel
+	#pragma omp parallel num_threads(omp_num_threads)
 	{
 		extern const int for_loop_bounds[];
 		const int thread = omp_get_thread_num();
@@ -160,7 +161,7 @@ void rs_kernel_branchless(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel for
+	#pragma omp parallel for num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
@@ -192,7 +193,7 @@ void rs_kernel_branch_delay_slot(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel for
+	#pragma omp parallel for num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
@@ -227,7 +228,7 @@ void rs_upper_bound(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = 0; i < WIDTH; ++i) {
 			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
@@ -260,7 +261,7 @@ void rs_kernel_pupil_indices(
 	const	int			pupil_indices[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(omp_num_threads)
 	for (int index = 0; index < pupil_count; ++index) {
 		const int i = pupil_indices[index] % WIDTH;
 		const int j = pupil_indices[index] / WIDTH;
@@ -301,7 +302,7 @@ void rs_kernel_pupil_indices_dual(
 
 		// https://www.reddit.com/r/cpp_questions/comments/rd12o9/openmp_reduction_not_working_with_complex_vector/
 		#pragma omp declare reduction(+: std::complex<double>: omp_out += omp_in) initializer(omp_priv = omp_orig)
-		#pragma omp parallel for reduction(+: total_field)
+		#pragma omp parallel for reduction(+: total_field) num_threads(omp_num_threads)
 		for (int ispot = 0; ispot < n; ++ispot) {
 			const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
@@ -321,7 +322,7 @@ void rs_kernel_pupil_index_bounds(
 	const	std::pair<int,int>	pupil_index_bounds[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for schedule (dynamic)
+#pragma omp parallel for schedule (dynamic) num_threads(omp_num_threads)
 	for (int j = 0; j < HEIGHT; ++j) {
 		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
 			const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
@@ -349,7 +350,7 @@ void rs_kernel_static_index_bounds(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel
+	#pragma omp parallel num_threads(omp_num_threads)
 	{
 		extern const int for_loop_bounds[];
 		const int thread = omp_get_thread_num();
