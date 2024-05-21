@@ -341,6 +341,7 @@ void rs_kernel_pupil_index_bounds(
 }
 
 
+// @TODO: use custom scheduling also for this kernel
 void rs_kernel_static_index_bounds(
 	const	int			n,
 	const	Point3D			spots[],
@@ -348,28 +349,32 @@ void rs_kernel_static_index_bounds(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for schedule (dynamic)
-	for (int j = 0; j < HEIGHT; ++j) {
-		double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+	#pragma omp parallel
+	{
+		extern const int for_loop_bounds[];
+		const int thread = omp_get_thread_num();
 
-		const int upper = static_cast<int>(std::ceil(0.5 * (1.0 + std::sqrt(1.0 - y*y)) * static_cast<double>(WIDTH - 1)));
-		const int lower = WIDTH - upper;
+		for (int j = for_loop_bounds[thread]; j < for_loop_bounds[thread + 1]; ++j) {
+			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
 
-		y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+			const int upper = static_cast<int>(std::ceil(0.5 * (1.0 + std::sqrt(1.0 - y*y)) * static_cast<double>(WIDTH - 1)));
+			const int lower = WIDTH - upper;
 
-		for (int i = lower; i < upper; ++i) {
-			const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+			y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-			std::complex<double> total_field(0.0, 0.0);
+			for (int i = lower; i < upper; ++i) {
+				const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
 
-			for (int ispot = 0; ispot < n; ++ispot) {
-				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+				std::complex<double> total_field(0.0, 0.0);
 
-				total_field += CEXP(p_phase + pists[ispot]);
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+					total_field += CEXP(p_phase + pists[ispot]);
+				}
+
+				phase[j * WIDTH + i] = std::arg(total_field);
 			}
-
-			phase[j * WIDTH + i] = std::arg(total_field);
 		}
 	}
 }

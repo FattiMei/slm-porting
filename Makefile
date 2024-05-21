@@ -40,7 +40,7 @@ analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o
+regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o build/pupil.o
 	$(CXX) $(OPENMP) -o $@ $^
 
 
