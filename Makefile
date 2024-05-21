@@ -3,13 +3,19 @@ WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -W
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
+# TODO: automatically detect python version
 PYTHON     = python3.8
-CONFIG     = -DREMOVE_EXP
 
 
 # requires installation of https://github.com/google/benchmark
 GOOGLE_BENCHMARK_INC_DIR = /home/matteo/hpc/programs/benchmark/include
 GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
+
+
+# program specific configuration, to be put in separate file
+CONFIG          = -DREMOVE_EXP
+RESOLUTION      = 512
+OMP_NUM_THREADS = 8
 
 
 src        = $(wildcard src/*.cpp)
@@ -39,7 +45,7 @@ regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/u
 
 
 bench: benchmark
-	OMP_NUM_THREADS=4 ./$^
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) ./$^
 
 
 output.bin: porting
@@ -63,15 +69,15 @@ build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
-# in the future this generation will be conditioned to the global parameters, probably put in its own file
+# don't exclude to have in the future only a python driver/compiler
 src/pupil.cpp: generator/pupil_index_generator.py
-	$(PYTHON) $^ > $@
+	RESOLUTION=$(RESOLUTION) OMP_NUM_THREADS=$(OMP_NUM_THREADS) $(PYTHON) $^ > $@
 
 
 src/scheduling.cpp: generator/scheduling.py
-	$(PYTHON) $^ > $@
+	RESOLUTION=$(RESOLUTION) OMP_NUM_THREADS=$(OMP_NUM_THREADS) $(PYTHON) $^ > $@
 
 
 .PHONY clean:
 clean:
-	rm -f $(obj) $(targets) output.bin src/pupil.cpp
+	rm -f $(obj) $(targets) output.bin src/pupil.cpp src/scheduling.cpp

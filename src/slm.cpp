@@ -81,27 +81,3 @@ compute_pupil_index_bounds(const SLM::Parameters &parameters) {
 
 	return result;
 }
-
-
-SLM::PupilIterator::PupilIterator(const SLM::Parameters &parameters_) {
-	// pupil_coordinates = generate_pupil_coordinates(parameters_);
-	current_point = pupil_coordinates.begin();
-}
-
-
-Point2D SLM::PupilIterator::operator*() {
-	return *current_point;
-}
-
-
-SLM::PupilIterator& SLM::PupilIterator::operator++() {
-	++current_point;
-	empty = (current_point == pupil_coordinates.end());
-
-	return *this;
-}
-
-
-bool SLM::PupilIterator::operator!=(SLM::PupilIterator &other) {
-	return empty and other.empty;
-}

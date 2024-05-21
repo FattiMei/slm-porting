@@ -1,9 +1,9 @@
 import numpy as np
 import sys
+import os
 
 
-WIDTH  = 512
-HEIGHT = 512
+RESOLUTION = int(os.environ.get("RESOLUTION"))
 
 
 def format_indices(indices):
@@ -19,8 +19,8 @@ def format_indices(indices):
 
 if __name__ == '__main__':
     xx, yy = np.meshgrid(
-        np.linspace(-1, 1, WIDTH),
-        np.linspace(-1, 1, HEIGHT)
+        np.linspace(-1, 1, RESOLUTION),
+        np.linspace(-1, 1, RESOLUTION)
     )
 
     indices = []

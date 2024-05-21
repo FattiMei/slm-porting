@@ -1,8 +1,9 @@
 import numpy as np
+import os
 
 
-RESOLUTION      = 512
-OMP_NUM_THREADS = 4
+RESOLUTION      = int(os.environ.get("RESOLUTION"))
+OMP_NUM_THREADS = int(os.environ.get("OMP_NUM_THREADS"))
 
 
 # lame search but it works
