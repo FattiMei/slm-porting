@@ -77,14 +77,13 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
-		rs_kernel_static_index_bounds(n, spots, pists, alternative, &parameters);
+		rs_kernel_computed_index_bounds(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
-		std::cout << "rs_kernel_static_index_bounds" << std::endl;
+		std::cout << "rs_kernel_computed_index_bounds" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 
 
 	return 0;
 }
-

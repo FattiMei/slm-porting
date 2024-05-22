@@ -314,7 +314,7 @@ void rs_kernel_pupil_indices_dual(
 }
 
 
-void rs_kernel_pupil_index_bounds(
+void rs_kernel_static_index_bounds(
 	const	int			n,
 	const	Point3D			spots[],
 	const	double			pists[],
@@ -342,8 +342,7 @@ void rs_kernel_pupil_index_bounds(
 }
 
 
-// @TODO: use custom scheduling also for this kernel
-void rs_kernel_static_index_bounds(
+void rs_kernel_computed_index_bounds(
 	const	int			n,
 	const	Point3D			spots[],
 	const	double			pists[],
