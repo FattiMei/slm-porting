@@ -1,9 +1,8 @@
 CXX        = g++
 WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -Wdeprecated
-INCLUDE    = -I ./include -I ./generator
+INCLUDE    = -I ./include
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
-# TODO: automatically detect python version
 PYTHON     = python3.8
 
 
@@ -15,34 +14,34 @@ GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
 CONFIG = -DREMOVE_EXP
 
 
-src = $(wildcard src/*.cpp)
+src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/scheduling.cpp
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += porting benchmark analysis regression
+targets += benchmark regression
 
 
 all: $(targets)
 
 
-porting: build/main.o build/kernels.o build/units.o build/utils.o build/slm.o build/scheduling.o
-	$(CXX) $(OPENMP) -o $@ $^
-
-
-benchmark: build/benchmark.o build/kernels.o build/units.o build/utils.o build/slm.o build/pupil.o build/scheduling.o
+benchmark: build/benchmark.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
-analysis: build/analysis.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o
-	$(CXX) $(OPENMP) -o $@ $^
-
-
-regression: build/regression.o build/slm.o build/kernels.o build/utils.o build/units.o build/scheduling.o build/pupil.o
+regression: build/regression.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
 bench: benchmark
 	./$^
+
+
+generator/pupil: build/pupil.gen.o build/slm.o build/utils.o
+	$(CXX) -o $@ $^
+
+
+generator/scheduling: build/scheduling.gen.o build/slm.o build/utils.o
+	$(CXX) -o $@ $^
 
 
 output.bin: porting
@@ -53,30 +52,20 @@ report: output.bin
 	$(PYTHON) python/compare_with_serial.py $^
 
 
-godbolt: src/kernels.cpp include/kernels.hpp include/utils.hpp
-	$(CXX) -S $(INCLUDE) $< -o $@
-
-
-# for now don't include header file dependencies
-build/%.o: src/%.cpp
+build/%.o: src/%.cpp include/config.hpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
 
 
-build/kernels.o: src/kernels.cpp generator/config.py
-	$(CXX) -c $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o $@ $<
-
-
-build/benchmark.o: src/benchmark.cpp generator/config.py
+build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
-# don't exclude to have in the future only a python driver/compiler
-src/pupil.cpp: generator/pupil_index_generator.py generator/config.py
-	$(PYTHON) $< > $@
+src/pupil.cpp: generator/pupil
+	$< > $@
 
 
-src/scheduling.cpp: generator/scheduling.py generator/config.py
-	$(PYTHON) $< > $@
+src/scheduling.cpp: generator/scheduling
+	$< > $@
 
 
 .PHONY clean:

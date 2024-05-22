@@ -1,8 +1,6 @@
 #include "slm.hpp"
 #include "kernels.hpp"
 #include "utils.hpp"
-#include "config.py"
-#include <array>
 
 
 std::vector<int>
@@ -26,7 +24,7 @@ generate_pupil_indices(const int resolution) {
 
 std::vector<std::pair<int,int>>
 generate_pupil_index_bounds(const int resolution) {
-	std::vector<std::pair<int,int>> result;
+	std::vector<std::pair<int,int>> result(resolution);
 
 	for (int j = 0; j < resolution; ++j) {
 		const double y = linspace(-1.0, 1.0, resolution, j);

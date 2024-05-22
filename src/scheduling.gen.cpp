@@ -11,7 +11,7 @@ int main() {
 
 	// in this simple model, the cost of a row is the number of pupil points in that row
 	// this is accurate for kernels that don't do any filtering like rs_kernel_static_index_bounds
-	for (int row = 0; row < RESOLUTION; ++row) {
+	for (int i = 0; i < RESOLUTION; ++i) {
 		cost_per_row[i] = index_bounds[i].second - index_bounds[i].first;
 		total_cost += cost_per_row[i];
 	}
@@ -23,7 +23,7 @@ int main() {
 	// this is the lamest solution I could think of (and implement)
 	int acc = 0;
 	for (int i = 0, acc = 0; i < RESOLUTION; ++i) {
-		acc += cost;
+		acc += cost_per_row[i];
 
 		if (acc >= cost_per_thread) {
 			acc = 0;

@@ -4,6 +4,9 @@
 
 
 int main() {
+	printf("#include <utility>\n\n");
+
+
 	// Exporting array of pupil indices -------------------------------------------
 
 	const auto pupil_indices = generate_pupil_indices(RESOLUTION);
@@ -21,7 +24,7 @@ int main() {
 
 	const auto pupil_index_bounds = generate_pupil_index_bounds(RESOLUTION);
 
-	printf("extern const int pupil_index_bounds[%d] = {\n", RESOLUTION);
+	printf("extern const std::pair<int,int> pupil_index_bounds[%d] = {\n", RESOLUTION);
 
 	for (const auto pair : pupil_index_bounds) {
 		printf("\t{%d, %d},\n", pair.first, pair.second);
