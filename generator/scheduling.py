@@ -12,15 +12,6 @@ def reverse_search(ordered, x):
     return len(ordered)
 
 
-def format_bounds(bounds):
-    print('extern const int for_loop_bounds[] = {')
-
-    for x in bounds:
-        print(f'\t{x},')
-
-    print('};')
-
-
 if __name__ == '__main__':
     xx, yy = np.meshgrid(
         np.linspace(-1, 1, config.RESOLUTION),
@@ -31,4 +22,10 @@ if __name__ == '__main__':
     cumulative     = np.cumsum(points_in_line, dtype = np.float64)
 
     bounds = [reverse_search(cumulative, alpha) for alpha in np.linspace(cumulative[0], cumulative[-1], config.OMP_NUM_THREADS + 1)]
-    format_bounds(bounds)
+
+    print(f'extern const int for_loop_bounds[{len(bounds)}] = {{')
+
+    for x in bounds:
+        print(f'\t{x},')
+
+    print('};')

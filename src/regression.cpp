@@ -17,6 +17,7 @@ double  alternative[width * height];
 
 extern const int pupil_count;
 extern const int pupil_indices[];
+extern const std::pair<int, int> pupil_index_bounds[];
 
 
 int main() {
@@ -74,6 +75,13 @@ int main() {
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
 		std::cout << "rs_kernel_pupil_indices" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+	}
+	{
+		rs_kernel_static_index_bounds(n, spots, pists, alternative, pupil_index_bounds, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
+
+		std::cout << "rs_kernel_static_index_bounds" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{

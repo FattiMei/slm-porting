@@ -322,21 +322,26 @@ void rs_kernel_static_index_bounds(
 	const	std::pair<int,int>	pupil_index_bounds[],
 	const	SLM::Parameters*	par
 ) {
-#pragma omp parallel for schedule (dynamic) num_threads(omp_num_threads)
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
-			const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+	#pragma omp parallel num_threads(omp_num_threads)
+	{
+		extern const int for_loop_bounds[];
+		const int thread = omp_get_thread_num();
 
-			std::complex<double> total_field(0.0, 0.0);
+		for (int j = for_loop_bounds[thread]; j < for_loop_bounds[thread + 1]; ++j) {
+			for (int i = pupil_index_bounds[j].first; i < pupil_index_bounds[j].second; ++i) {
+				const double x = LINSPACE(-1.0, 1.0, WIDTH,  i) * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+				const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-			for (int ispot = 0; ispot < n; ++ispot) {
-				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+				std::complex<double> total_field(0.0, 0.0);
 
-				total_field += CEXP(p_phase + pists[ispot]);
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+					total_field += CEXP(p_phase + pists[ispot]);
+				}
+
+				phase[j * WIDTH + i] = std::arg(total_field);
 			}
-
-			phase[j * WIDTH + i] = std::arg(total_field);
 		}
 	}
 }
