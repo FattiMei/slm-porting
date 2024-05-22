@@ -3,9 +3,8 @@
 
 
 #include <vector>
-#include "point.hpp"
 #include "units.hpp"
-
+#include "utils.hpp"
 
 
 /*
@@ -40,53 +39,12 @@ namespace SLM {
 			pixel_size_um(pixel_size.as(Unit::Micrometers)),
 			wavelength_um(wavelength.as(Unit::Micrometers)) {};
 	};
-
-
-	class PupilIterator {
-		public:
-			PupilIterator(const SLM::Parameters &parameters);
-
-			Point2D        operator*();
-			PupilIterator& operator++();
-			bool           operator!=(PupilIterator &other);
-
-			bool empty = false;
-
-		private:
-			std::vector<Point2D> pupil_coordinates;
-			std::vector<Point2D>::iterator current_point;
-	};
-
-
-	// this class could be inherited from when we will test CUDA implementation, in the constructor we could allocate memory on the GPU
-	// I don't like this approach, for now I will do my testing in an imperative way
-	class Wrapper {
-		public:
-			Wrapper(const SLM::Parameters parameters, const std::vector<Point3D> &spots);
-
-			void    rs();
-			void    gs(int iterations);
-			void   wgs(int iterations);
-			void  csgs(int iterations, double compression, int seed = 0);
-			void wcsgs(int iterations, double compression, int seed = 0);
-
-
-		private:
-			const SLM::Parameters parameters;
-			const std::vector<Point3D> &spots;
-
-			const int n;
-			std::vector<double> pists;
-			std::vector<double> phase;
-	};
-
-
 }
 
 
-std::vector<int>                generate_pupil_indices     (const SLM::Parameters &parameters);
-std::vector<std::pair<int,int>> generate_pupil_index_bounds(const SLM::Parameters &parameters);
-std::vector<std::pair<int,int>>  compute_pupil_index_bounds(const SLM::Parameters &parameters);
+std::vector<std::pair<int,int>> generate_pupil_index_bounds(const int resolution);
+std::vector<std::pair<int,int>>  compute_pupil_index_bounds(const int resolution);
+std::vector<int> generate_pupil_indices(const int resolution);
 
 
 #endif
