@@ -220,6 +220,8 @@ void rs_kernel_branch_delay_slot(
 
 
 // compares with rs_kernel_static_scheduling
+// @TODO: add aggressive optimizations about linspace calculations
+// @TODO: apply this scheme to all kernels
 void rs_kernel_math_cache(
 	const	int			n,
 	const	Point3D			spots[],
@@ -233,12 +235,13 @@ void rs_kernel_math_cache(
 
 	#pragma omp parallel for num_threads(OMP_NUM_THREADS)
 	for (int j = 0; j < HEIGHT; ++j) {
-		double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+		const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+		const double cut = radius - y*y;
 
 		for (int i = 0; i < WIDTH; ++i) {
 			const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-			if (x*x + y*y < radius) {
+			if (x*x < cut) {
 				std::complex<double> total_field(0.0, 0.0);
 
 				for (int ispot = 0; ispot < n; ++ispot) {
