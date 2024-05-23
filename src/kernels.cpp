@@ -229,20 +229,18 @@ void rs_kernel_math_cache(
 ) {
 	const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
 	const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
+	const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
 	#pragma omp parallel for num_threads(OMP_NUM_THREADS)
 	for (int j = 0; j < HEIGHT; ++j) {
-		double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+		double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
 
 		for (int i = 0; i < WIDTH; ++i) {
-			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
+			const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-			if (x*x + y*y < 1.0) {
+			if (x*x + y*y < radius) {
 				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-				// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
 				for (int ispot = 0; ispot < n; ++ispot) {
 					const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
 

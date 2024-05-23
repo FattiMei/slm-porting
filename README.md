@@ -84,3 +84,6 @@ https://pramodkumbhar.com/2019/07/intels-one-api-what-we-know-and-how-to-get-rea
 Remove calls to exp function: a principle about doing only the essential computation
 Engineering analysis about improvement on performance on rs kernel, measures and estimation of improvement on gs kernel (extrapolation, ahmdal's law)
 linspace - inline or not? Does it matter?
+
+// replicate the same memory access patterns, but use simple arithmetic operations
+// it's the best performance we could expect from this system
