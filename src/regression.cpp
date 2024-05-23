@@ -91,6 +91,13 @@ int main() {
 		std::cout << "rs_kernel_computed_index_bounds" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
+	{
+		rs_kernel_math_cache(n, spots, pists, alternative, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
+
+		std::cout << "rs_kernel_math_cache" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+	}
 
 
 	return 0;

@@ -1,5 +1,5 @@
 CXX        = g++
-WARNINGS   = -Wall -Wextra -Wpedantic # -Waddress -Wbool-compare -Wconversion -Wdeprecated
+WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Wbool-compare -Wconversion -Wdeprecated
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native
 OPENMP     = -fopenmp
@@ -50,6 +50,10 @@ output.bin: porting
 
 report: output.bin
 	$(PYTHON) python/compare_with_serial.py $^
+
+
+asm: src/kernels.cpp include/config.hpp
+	$(CXX) -S $(WARNINGS) $(INCLUDE) $(OPT) $(OPENMP) $(CONFIG) -o kernels.asm $<
 
 
 build/%.o: src/%.cpp include/config.hpp
