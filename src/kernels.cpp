@@ -59,25 +59,31 @@ void rs_kernel_static_scheduling(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	#pragma omp parallel for num_threads(OMP_NUM_THREADS)
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = 0; i < WIDTH; ++i) {
-			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
-			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
+	{
+		const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
+		const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
+		const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-			if (x*x + y*y < 1.0) {
-				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+		#pragma omp for
+		for (int j = 0; j < HEIGHT; ++j) {
+			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+			const double cut = radius - y*y;
 
-				// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
-				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+			for (int i = 0; i < WIDTH; ++i) {
+				const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-					total_field += CEXP(p_phase + pists[ispot]);
+				if (x*x < cut) {
+					std::complex<double> total_field(0.0, 0.0);
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
+
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					phase[j * WIDTH + i] = std::arg(total_field);
 				}
-
-				phase[j * WIDTH + i] = std::arg(total_field);
 			}
 		}
 	}
@@ -92,24 +98,31 @@ void rs_kernel_dynamic_scheduling(
 	const	SLM::Parameters*	par
 ) {
 	// dynamic scheduling compensate the fact that some iterations have more points in the pupil
-	#pragma omp parallel for schedule (dynamic) num_threads(OMP_NUM_THREADS)
-	for (int j = 0; j < HEIGHT; ++j) {
-		for (int i = 0; i < WIDTH; ++i) {
-			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
-			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
+	{
+		const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
+		const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
+		const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-			if (x*x + y*y < 1.0) {
-				std::complex<double> total_field(0.0, 0.0);
-				x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-				y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+		#pragma omp for schedule(dynamic)
+		for (int j = 0; j < HEIGHT; ++j) {
+			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+			const double cut = radius - y*y;
 
-				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+			for (int i = 0; i < WIDTH; ++i) {
+				const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-					total_field += CEXP(p_phase + pists[ispot]);
+				if (x*x < cut) {
+					std::complex<double> total_field(0.0, 0.0);
+
+					for (int ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
+
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					phase[j * WIDTH + i] = std::arg(total_field);
 				}
-
-				phase[j * WIDTH + i] = std::arg(total_field);
 			}
 		}
 	}
@@ -126,22 +139,25 @@ void rs_kernel_custom_scheduling(
 ) {
 	#pragma omp parallel num_threads(OMP_NUM_THREADS)
 	{
+		const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
+		const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
+		const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
 		extern const int thread_schedule_bounds[];
 		const int thread = omp_get_thread_num();
 
 		for (int j = thread_schedule_bounds[thread]; j < thread_schedule_bounds[thread + 1]; ++j) {
+			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+			const double cut = radius - y*y;
+
 			for (int i = 0; i < WIDTH; ++i) {
-				double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
-				double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+				const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-				if (x*x + y*y < 1.0) {
+				if (x*x < cut) {
 					std::complex<double> total_field(0.0, 0.0);
-					x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-					// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
 					for (int ispot = 0; ispot < n; ++ispot) {
-						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+						const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
 
 						total_field += CEXP(p_phase + pists[ispot]);
 					}
