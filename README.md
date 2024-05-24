@@ -87,3 +87,8 @@ linspace - inline or not? Does it matter?
 
 // replicate the same memory access patterns, but use simple arithmetic operations
 // it's the best performance we could expect from this system
+
+
+## SIMD
+Finally I implemented SIMD into rs kernel, but I've got a problem with spawning threads. If I spawn as much threads as cores, SIMD give me a good speedup. If I spawn double the threads SIMD is slightly worse. The explanation I give is that each kernel has only one vectorized unit to be shared by the two threads.
+Of course I need to experiment with SIMD_LANE_SIZE, and really try to convince the compiler to store x[] and y[] vectors only into registers and not into memory. It may involve writing directly assembly.

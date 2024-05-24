@@ -303,9 +303,9 @@ void rs_kernel_pupil_indices_simd(
 	const	int			pupil_indices[],
 	const	SLM::Parameters*	par
 ) {
-	// for this proof of concept we discard a small number of pupil points
 	const int chunk_size  = SIMD_LANE_SIZE;
 	const int chunk_count = pupil_count / chunk_size;
+	const int remainder   = pupil_count - chunk_size * chunk_count;
 
 	#pragma omp parallel for schedule(static)
 	for (int chunk = 0; chunk < chunk_count; ++chunk) {
@@ -341,6 +341,39 @@ void rs_kernel_pupil_indices_simd(
 
 			phase[index] = std::arg(total_field[i]);
 		}
+	}
+
+	// deal with the remaining elements left from the last chunk
+	double x[chunk_size];
+	double y[chunk_size];
+	std::complex<double> total_field[chunk_size];
+
+	for (int i = 0; i < remainder; ++i) {
+		const int index = pupil_indices[chunk_count * chunk_size + i];
+		const int row = index % WIDTH;
+		const int col = index / WIDTH;
+
+		x[i] = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  row) * static_cast<double>(WIDTH)  / 2.0;
+		y[i] = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, col) * static_cast<double>(HEIGHT) / 2.0;
+
+		total_field[i] = std::complex<double>(0.0, 0.0);
+	}
+
+	for (int ispot = 0; ispot < n; ++ispot) {
+		const Point3D cached_spot = spots[ispot];
+		const double  cached_pist = pists[ispot];
+
+		for (int i = 0; i < remainder; ++i) {
+			const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, cached_spot, x[i], y[i]);
+
+			total_field[i] += CEXP(p_phase + cached_pist);
+		}
+	}
+
+	for (int i = 0; i < remainder; ++i) {
+		const int index = pupil_indices[chunk_count * chunk_size + i];
+
+		phase[index] = std::arg(total_field[i]);
 	}
 }
 
