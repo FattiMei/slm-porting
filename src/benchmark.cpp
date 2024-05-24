@@ -19,6 +19,13 @@ extern const int pupil_indices[];
 extern const std::pair<int, int> pupil_index_bounds[];
 
 
+static void rs_upper_bound(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		rs_kernel_upper_bound(n, spots, pists, phase, &parameters);
+	}
+}
+
 
 static void rs_static_scheduling(benchmark::State &state) {
 	for (auto _ : state) {
@@ -93,6 +100,7 @@ static void rs_math_cache(benchmark::State &state) {
 
 
 // @TODO: set the time unit in the command invocation
+BENCHMARK(rs_upper_bound)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_static_scheduling)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_dynamic_scheduling)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_custom_scheduling)->Unit(benchmark::kMillisecond);

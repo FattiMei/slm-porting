@@ -262,7 +262,7 @@ void rs_kernel_math_cache(
 
 // replicate the same memory access patterns, but use simple arithmetic operations
 // it's the best performance we could expect from this system
-void rs_upper_bound(
+void rs_kernel_upper_bound(
 	const	int			n,
 	const	Point3D			spots[],
 	const	double			pists[],

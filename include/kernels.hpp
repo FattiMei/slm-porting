@@ -30,7 +30,7 @@ void rs_kernel_computed_index_bounds(const int n, const Point3D spots[], const d
 
 
 // useful for estimation of performance across multiple architectures
-void rs_upper_bound               (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
+void rs_kernel_upper_bound               (const int n, const Point3D spots[], const double pists[], double phase[],                                                                       const SLM::Parameters *par);
 
 
 // optimizations related to caching results and reordering operations
