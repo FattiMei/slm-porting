@@ -18,7 +18,7 @@ src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += benchmark regression
+targets += benchmark regression porting
 
 
 all: $(targets)
@@ -29,6 +29,10 @@ benchmark: build/benchmark.o $(obj)
 
 
 regression: build/regression.o $(obj)
+	$(CXX) $(OPENMP) -o $@ $^
+
+
+porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
