@@ -36,13 +36,14 @@ int main() {
 
 	for (int i = 0; i < width * height; ++i) {
 		reference[i] = 0.0;
-		alternative[i] = 0.0;
 	}
 
 
 	// reference implementation
 	rs_kernel_static_scheduling(n, spots, pists, reference, &parameters);
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_dynamic_scheduling(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -50,6 +51,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_custom_scheduling(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -57,6 +60,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_branchless(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -64,6 +69,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_branch_delay_slot(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -71,6 +78,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_pupil_indices(n, spots, pists, alternative, pupil_count, pupil_indices, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -78,6 +87,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_static_index_bounds(n, spots, pists, alternative, pupil_index_bounds, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -85,6 +96,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_computed_index_bounds(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
@@ -92,6 +105,8 @@ int main() {
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_math_cache(n, spots, pists, alternative, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
