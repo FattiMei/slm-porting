@@ -229,28 +229,31 @@ void rs_kernel_math_cache(
 		double			phase[],
 	const	SLM::Parameters*	par
 ) {
-	const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
-	const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
-	const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
+	{
+		const double C1 = 2.0 * M_PI / (WAVELENGTH * FOCAL_LENGTH * 1000.0);
+		const double C2 = M_PI / (WAVELENGTH * FOCAL_LENGTH * FOCAL_LENGTH * 1e6);
+		const double radius = PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-	#pragma omp parallel for num_threads(OMP_NUM_THREADS)
-	for (int j = 0; j < HEIGHT; ++j) {
-		const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
-		const double cut = radius - y*y;
+		#pragma omp for
+		for (int j = 0; j < HEIGHT; ++j) {
+			const double y = LINSPACE(-1.0, 1.0, HEIGHT, j) * radius;
+			const double cut = radius*radius - y*y;
 
-		for (int i = 0; i < WIDTH; ++i) {
-			const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
+			for (int i = 0; i < WIDTH; ++i) {
+				const double x = LINSPACE(-1.0, 1.0, WIDTH, i) * radius;
 
-			if (x*x < cut) {
-				std::complex<double> total_field(0.0, 0.0);
+				if (x*x < cut) {
+					std::complex<double> total_field(0.0, 0.0);
 
-				for (int ispot = 0; ispot < n; ++ispot) {
-					const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
+					for (int ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = C1 * (spots[ispot].x * x + spots[ispot].y * y) + C2 * spots[ispot].z * (x*x + y*y);
 
-					total_field += CEXP(p_phase + pists[ispot]);
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					phase[j * WIDTH + i] = std::arg(total_field);
 				}
-
-				phase[j * WIDTH + i] = std::arg(total_field);
 			}
 		}
 	}
