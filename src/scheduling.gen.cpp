@@ -21,7 +21,6 @@ int main() {
 	const int cost_per_thread = total_cost / OMP_NUM_THREADS;
 
 	// this is the lamest solution I could think of (and implement)
-	int acc = 0;
 	for (int i = 0, acc = 0; i < RESOLUTION; ++i) {
 		acc += cost_per_row[i];
 

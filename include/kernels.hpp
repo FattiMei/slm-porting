@@ -18,6 +18,7 @@ void rs_kernel_branch_delay_slot    (const int n, const Point3D spots[], const d
 
 
 // math operations variants
+void rs_kernel_cache_constants      (const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters *par);
 void rs_kernel_math_cache           (const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters *par);
 
 

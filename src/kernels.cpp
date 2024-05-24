@@ -219,6 +219,40 @@ void rs_kernel_branch_delay_slot(
 }
 
 
+void rs_kernel_cache_constants(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	SLM::Parameters*	par
+) {
+	const double radius = PIXEL_SIZE * static_cast<double>(WIDTH) / 2.0;
+
+	#pragma omp parallel for num_threads(OMP_NUM_THREADS)
+	for (int j = 0; j < HEIGHT; ++j) {
+		for (int i = 0; i < WIDTH; ++i) {
+			double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
+			double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+
+			if (x*x + y*y < 1.0) {
+				std::complex<double> total_field(0.0, 0.0);
+				x = x * radius;
+				y = y * radius;
+
+				// @ASSESS, @HARD: unroll this loop to give vectorization a chance?
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+					total_field += CEXP(p_phase + pists[ispot]);
+				}
+
+				phase[j * WIDTH + i] = std::arg(total_field);
+			}
+		}
+	}
+}
+
+
 // compares with rs_kernel_static_scheduling
 // @TODO: add aggressive optimizations about linspace calculations
 // @TODO: apply this scheme to all kernels
