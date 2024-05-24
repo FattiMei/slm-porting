@@ -20,6 +20,10 @@ const SLM::Parameters parameters(
 );
 
 
+extern const int pupil_count;
+extern const int pupil_indices[];
+
+
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
 		std::cerr << "Error in command line arguments" << std::endl;
@@ -34,7 +38,7 @@ int main(int argc, char *argv[]) {
 	      std::vector<double>  phase(parameters.width * parameters.height);
 	std::ofstream out(argv[1]);
 
-	rs_kernel_math_cache(spots.size(), spots.data(), pists.data(), phase.data(), &parameters);
+	rs_kernel_pupil_indices_simd(spots.size(), spots.data(), pists.data(), phase.data(), pupil_count, pupil_indices, &parameters);
 
 	write_vector_on_file(phase, parameters.width, parameters.height, out);
 	write_vector_on_file(pists, spots.size(), 1, out);

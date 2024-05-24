@@ -89,6 +89,15 @@ int main() {
 	{
 		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
 
+		rs_kernel_pupil_indices_simd(n, spots, pists, alternative, pupil_count, pupil_indices, &parameters);
+		const Difference diff = compare_outputs(width, height, reference, alternative);
+
+		std::cout << "rs_kernel_pupil_indices_simd" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+	}
+	{
+		for (int i = 0; i < width * height; ++i) alternative[i] = 0.0;
+
 		rs_kernel_static_index_bounds(n, spots, pists, alternative, pupil_index_bounds, &parameters);
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 

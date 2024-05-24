@@ -13,7 +13,7 @@
 
 
 #define LINSPACE(inf, sup, n, i) ((inf) + ((sup) - (inf)) * static_cast<double>(i) / static_cast<double>((n) - 1))
-#define COMPUTE_P_PHASE(w, f, spot, x, y) ((2.0 * M_PI / (w * f * 1000.0)) * (spot.x * x + spot.y * y) + (M_PI * spot.z / (w * f * f * 1e6)) * (x * x + y * y))
+#define COMPUTE_P_PHASE(w, f, spot, pup_x, pup_y) ((2.0 * M_PI / ((w) * (f) * 1000.0)) * ((spot.x) * (pup_x) + (spot.y) * (pup_y)) + (M_PI * (spot.z) / ((w) * (f) * (f) * 1e6)) * ((pup_x) * (pup_x) + (pup_y) * (pup_y)))
 
 
 #define WIDTH        (par->width)
@@ -289,6 +289,57 @@ void rs_kernel_math_cache(
 					phase[j * WIDTH + i] = std::arg(total_field);
 				}
 			}
+		}
+	}
+}
+
+
+void rs_kernel_pupil_indices_simd(
+	const	int			n,
+	const	Point3D			spots[],
+	const	double			pists[],
+		double			phase[],
+	const	int			pupil_count,
+	const	int			pupil_indices[],
+	const	SLM::Parameters*	par
+) {
+	// for this proof of concept we discard a small number of pupil points
+	const int chunk_size  = SIMD_LANE_SIZE;
+	const int chunk_count = pupil_count / chunk_size;
+
+	#pragma omp parallel for schedule(static)
+	for (int chunk = 0; chunk < chunk_count; ++chunk) {
+		// we hope to put this memory into vector registers
+		double x[chunk_size];
+		double y[chunk_size];
+		std::complex<double> total_field[chunk_size];
+
+		for (int i = 0; i < chunk_size; ++i) {
+			const int index = pupil_indices[chunk * chunk_size + i];
+			const int row = index % WIDTH;
+			const int col = index / WIDTH;
+
+			x[i] = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  row) * static_cast<double>(WIDTH)  / 2.0;
+			y[i] = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, col) * static_cast<double>(HEIGHT) / 2.0;
+
+			total_field[i] = std::complex<double>(0.0, 0.0);
+		}
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			const Point3D cached_spot = spots[ispot];
+			const double  cached_pist = pists[ispot];
+
+			for (int i = 0; i < chunk_size; ++i) {
+				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, cached_spot, x[i], y[i]);
+
+				total_field[i] += CEXP(p_phase + cached_pist);
+			}
+		}
+
+		for (int i = 0; i < chunk_size; ++i) {
+			const int index = pupil_indices[chunk * chunk_size + i];
+
+			phase[index] = std::arg(total_field[i]);
 		}
 	}
 }
