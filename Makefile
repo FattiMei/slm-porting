@@ -1,8 +1,8 @@
-CXX        = g++
+CXX        = icpx
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize
-OPENMP     = -fopenmp
+OPENMP     = -qopenmp
 PYTHON     = python3.8
 
 
