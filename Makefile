@@ -1,7 +1,7 @@
-CXX        = g++
+CXX        = g++-13
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
-OPT        = -O2 -march=native -ftree-vectorize
+OPT        = -O2 -march=native -ftree-vectorize -ffast-math
 OPENMP     = -fopenmp
 PYTHON     = python3.8
 
