@@ -26,7 +26,7 @@ int main() {
 
 	printf("extern const std::pair<int,int> pupil_index_bounds[%d] = {\n", RESOLUTION);
 
-	for (const auto pair : pupil_index_bounds) {
+	for (const auto &pair : pupil_index_bounds) {
 		printf("\t{%d, %d},\n", pair.first, pair.second);
 	}
 

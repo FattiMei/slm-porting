@@ -1,7 +1,7 @@
 CXX        = g++
-WARNINGS   = -Wall -Wextra -Wpedantic -Waddress -Wbool-compare -Wconversion -Wdeprecated
+WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
-OPT        = -O2 -march=native
+OPT        = -O2 -march=native -ftree-vectorize
 OPENMP     = -fopenmp
 PYTHON     = python3.8
 
@@ -78,4 +78,4 @@ src/scheduling.cpp: generator/scheduling
 
 .PHONY clean:
 clean:
-	rm -f $(obj) $(targets) output.bin src/pupil.cpp src/scheduling.cpp
+	rm -f build/*.o $(targets) output.bin src/pupil.cpp src/scheduling.cpp
