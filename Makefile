@@ -1,4 +1,5 @@
 CXX        = g++-13
+SYCLCC     = acpp
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math
@@ -18,7 +19,7 @@ src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += benchmark regression porting
+targets += benchmark regression porting test
 
 
 all: $(targets)
@@ -36,6 +37,10 @@ porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
+test: build/sycl.o build/units.o build/utils.o build/pupil.o
+	$(SYCLCC) -o $@ $^
+
+
 bench: benchmark
 	./$^
 
@@ -48,7 +53,7 @@ generator/scheduling: build/scheduling.gen.o build/slm.o build/utils.o
 	$(CXX) -o $@ $^
 
 
-output.bin: porting
+output.bin: test
 	./$^ $@
 
 
@@ -66,6 +71,10 @@ build/%.o: src/%.cpp include/config.hpp
 
 build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
+
+
+build/sycl.o: src/sycl.cpp
+	$(SYCLCC) $(INCLUDE) -O3 -c -o $@ $^
 
 
 src/pupil.cpp: generator/pupil
