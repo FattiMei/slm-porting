@@ -48,8 +48,6 @@ int main(int argc, char* argv[]) {
 	std::ofstream out(argv[1]);
 
 
-	std::cout << "First element of phase " << phase[0] << std::endl;
-
 	// SYCL code here...
 	cl::sycl::queue q;
 
@@ -59,12 +57,12 @@ int main(int argc, char* argv[]) {
 		cl::sycl::buffer<int>     buff_pupil(pupil_indices, pupil_count);
 		cl::sycl::buffer<double>  buff_phase(phase.data(), phase.size());
 
-		cl::sycl::range<1> work_items{phase.size()};
+		cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 
 		q.submit([&](cl::sycl::handler& cgh) {
 			auto access_spots = buff_spots.get_access<cl::sycl::access::mode::read>(cgh);
 			auto access_pists = buff_pists.get_access<cl::sycl::access::mode::read>(cgh);
-			auto access_pupil = buff_pupil.get_access<cl::sycl::access::mode::read>(cgh);
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
 			auto access_phase = buff_phase.get_access<cl::sycl::access::mode::write>(cgh);
 
 			cgh.parallel_for<class test>(
@@ -85,19 +83,14 @@ int main(int argc, char* argv[]) {
 						total_field += CEXP(p_phase + access_pists[ispot]);
 					}
 
-					// INDEX SHOULD NEVER BE ZERO!!!! WHY THIS HAPPENS?
-					if (index != 0) {
-						// std::arg is not working!
-						access_phase[index] = std::atan2(total_field.imag(), total_field.real());
-					}
+					// std::arg is not working!
+					access_phase[index] = std::atan2(total_field.imag(), total_field.real());
 				}
 			);
 		});
 	}
 
 	q.wait();
-
-	std::cout << "First element of phase " << phase[0] << std::endl;
 
 	write_vector_on_file(phase, parameters.width, parameters.height, out);
 	write_vector_on_file(pists, spots.size(), 1, out);
