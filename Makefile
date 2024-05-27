@@ -37,8 +37,8 @@ porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-test: build/sycl.o build/units.o build/utils.o build/pupil.o
-	$(SYCLCC) -o $@ $^
+test: src/sycl.cpp src/units.cpp src/utils.cpp src/pupil.cpp
+	$(SYCLCC) $(INCLUDE) -O3 -o $@ $^
 
 
 bench: benchmark

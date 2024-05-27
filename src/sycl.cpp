@@ -44,8 +44,11 @@ int main(int argc, char* argv[]) {
 
 	const std::vector<Point3D> spots = generate_grid_spots(10, 10.0);
 	const std::vector<double>  pists = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 2);
-	      std::vector<double>  phase(parameters.width * parameters.height);
+	      std::vector<double>  phase(parameters.width * parameters.height, 0.0);
 	std::ofstream out(argv[1]);
+
+
+	std::cout << "First element of phase " << phase[0] << std::endl;
 
 	// SYCL code here...
 	cl::sycl::queue q;
@@ -67,8 +70,9 @@ int main(int argc, char* argv[]) {
 			cgh.parallel_for<class test>(
 				work_items,
 				[=](cl::sycl::id<1> tid) {
-					const int i = access_pupil[tid] % width;
-					const int j = access_pupil[tid] / width;
+					const int index = access_pupil[tid];
+					const int i = index % width;
+					const int j = index / width;
 
 					const double x = parameters.pixel_size_um * LINSPACE(-1.0, 1.0, width,  i) * static_cast<double>(width)  / 2.0;
 					const double y = parameters.pixel_size_um * LINSPACE(-1.0, 1.0, height, j) * static_cast<double>(height) / 2.0;
@@ -81,15 +85,19 @@ int main(int argc, char* argv[]) {
 						total_field += CEXP(p_phase + access_pists[ispot]);
 					}
 
-					// std::arg is not working!
-					// access_phase[access_pupil[tid]] = std::arg(total_field);
-					access_phase[access_pupil[tid]] = std::atan2(total_field.imag(), total_field.real());
+					// INDEX SHOULD NEVER BE ZERO!!!! WHY THIS HAPPENS?
+					if (index != 0) {
+						// std::arg is not working!
+						access_phase[index] = std::atan2(total_field.imag(), total_field.real());
+					}
 				}
 			);
 		});
 	}
 
 	q.wait();
+
+	std::cout << "First element of phase " << phase[0] << std::endl;
 
 	write_vector_on_file(phase, parameters.width, parameters.height, out);
 	write_vector_on_file(pists, spots.size(), 1, out);
