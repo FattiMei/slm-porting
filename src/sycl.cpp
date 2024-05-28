@@ -5,33 +5,17 @@
 #include "utils.hpp"
 #include "units.hpp"
 #include <CL/sycl.hpp>
-
-
-// https://stackoverflow.com/questions/2683588/what-is-the-fastest-way-to-compute-sin-and-cos-together
-#define CEXP(x) std::complex<double>(std::cos(x), std::sin(x))
-
-
-#define LINSPACE(inf, sup, n, i) ((inf) + ((sup) - (inf)) * static_cast<double>(i) / static_cast<double>((n) - 1))
-#define COMPUTE_P_PHASE(w, f, spot, pup_x, pup_y) ((2.0 * M_PI / ((w) * (f) * 1000.0)) * ((spot.x) * (pup_x) + (spot.y) * (pup_y)) + (M_PI * (spot.z) / ((w) * (f) * (f) * 1e6)) * ((pup_x) * (pup_x) + (pup_y) * (pup_y)))
+#include "kernels.sycl.hpp"
 
 
 int main(int argc, char* argv[]) {
-	constexpr int n      = 100;
-	constexpr int width  = 512;
-	constexpr int height = 512;
-
-
 	const SLM::Parameters parameters(
-		width,
-		height,
+		512,
+		512,
 		Length(20.0, Unit::Millimeters),
 		Length(15.0, Unit::Micrometers),
 		Length(488.0, Unit::Nanometers)
 	);
-
-
-	extern const int pupil_count;
-	extern const int pupil_indices[];
 
 
 	if (argc != 2) {
@@ -43,7 +27,7 @@ int main(int argc, char* argv[]) {
 
 
 	const std::vector<Point3D> spots = generate_grid_spots(10, 10.0);
-	const std::vector<double>  pists = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 2);
+	const std::vector<double>  pists = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 10);
 	      std::vector<double>  phase(parameters.width * parameters.height, 0.0);
 	std::ofstream out(argv[1]);
 
@@ -51,44 +35,7 @@ int main(int argc, char* argv[]) {
 	// SYCL code here...
 	cl::sycl::queue q;
 
-	{
-		cl::sycl::buffer<Point3D> buff_spots(spots.data(), spots.size());
-		cl::sycl::buffer<double>  buff_pists(pists.data(), pists.size());
-		cl::sycl::buffer<int>     buff_pupil(pupil_indices, pupil_count);
-		cl::sycl::buffer<double>  buff_phase(phase.data(), phase.size());
-
-		cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
-
-		q.submit([&](cl::sycl::handler& cgh) {
-			auto access_spots = buff_spots.get_access<cl::sycl::access::mode::read>(cgh);
-			auto access_pists = buff_pists.get_access<cl::sycl::access::mode::read>(cgh);
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
-			auto access_phase = buff_phase.get_access<cl::sycl::access::mode::write>(cgh);
-
-			cgh.parallel_for<class test>(
-				work_items,
-				[=](cl::sycl::id<1> tid) {
-					const int index = access_pupil[tid];
-					const int i = index % width;
-					const int j = index / width;
-
-					const double x = parameters.pixel_size_um * LINSPACE(-1.0, 1.0, width,  i) * static_cast<double>(width)  / 2.0;
-					const double y = parameters.pixel_size_um * LINSPACE(-1.0, 1.0, height, j) * static_cast<double>(height) / 2.0;
-
-					std::complex<double> total_field(0.0, 0.0);
-
-					for (int ispot = 0; ispot < n; ++ispot) {
-						const double p_phase = COMPUTE_P_PHASE(parameters.wavelength_um, parameters.focal_length_mm, access_spots[ispot], x, y);
-
-						total_field += CEXP(p_phase + access_pists[ispot]);
-					}
-
-					// std::arg is not working!
-					access_phase[index] = std::atan2(total_field.imag(), total_field.real());
-				}
-			);
-		});
-	}
+	rs_kernel_naive(q, spots, pists, phase, parameters);
 
 	q.wait();
 

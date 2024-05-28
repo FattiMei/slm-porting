@@ -37,7 +37,7 @@ porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
-test: src/sycl.cpp src/units.cpp src/utils.cpp src/pupil.cpp
+test: src/sycl.cpp src/kernels.sycl.cpp src/units.cpp src/utils.cpp src/pupil.cpp
 	$(SYCLCC) $(INCLUDE) -O3 -o $@ $^
 
 
@@ -71,10 +71,6 @@ build/%.o: src/%.cpp include/config.hpp
 
 build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
-
-
-build/sycl.o: src/sycl.cpp
-	$(SYCLCC) $(INCLUDE) -O3 -c -o $@ $^
 
 
 src/pupil.cpp: generator/pupil
