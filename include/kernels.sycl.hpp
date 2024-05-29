@@ -10,8 +10,8 @@
 using namespace cl::sycl;
 
 
-void rs_kernel_naive(queue &q, const std::vector<Point3D> &spots, const std::vector<double> &pists, std::vector<double> &phase, const SLM::Parameters par);
-void rs_kernel_pupil(queue &q, const std::vector<Point3D> &spots, const std::vector<double> &pists, std::vector<double> &phase, const SLM::Parameters par);
+void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par);
+void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par);
 
 
 #endif

@@ -18,14 +18,23 @@ std::vector<Point3D> spots(n);
 std::vector<double>  pists(n);
 std::vector<double>  phase(width * height);
 
-cl::sycl::queue q;
 
+cl::sycl::queue q{cl::sycl::gpu_selector_v};
+double  *device_pists = cl::sycl::malloc_device<double>(pists.size(), q);
+Point3D *device_spots = cl::sycl::malloc_device<Point3D>(spots.size(), q);
+double  *device_phase = cl::sycl::malloc_device<double>(phase.size(), q);
 
 
 static void rs_sycl_naive(benchmark::State &state) {
+	q.memcpy(device_spots, spots.data(), spots.size() * sizeof(Point3D));
+
 	for (auto _ : state) {
 		random_fill(n, pists.data(), 0.0, 2.0 * M_PI, 1);
-		rs_kernel_naive(q, spots, pists, phase, parameters);
+		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
+		q.wait();
+
+		rs_kernel_naive(q, n, device_spots, device_pists, device_phase, parameters);
+		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
 		q.wait();
 	}
 }
@@ -34,7 +43,11 @@ static void rs_sycl_naive(benchmark::State &state) {
 static void rs_sycl_pupil(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists.data(), 0.0, 2.0 * M_PI, 1);
-		rs_kernel_pupil(q, spots, pists, phase, parameters);
+		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
+		q.wait();
+
+		rs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters);
+		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
 		q.wait();
 	}
 }

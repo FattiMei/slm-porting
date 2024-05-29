@@ -20,18 +20,10 @@ extern const int pupil_count;
 extern const int pupil_indices[];
 
 
-void rs_kernel_naive(queue &q, const std::vector<Point3D> &spots, const std::vector<double> &pists, std::vector<double> &phase, const SLM::Parameters par) {
-	cl::sycl::buffer<Point3D> buff_spots(spots.data(), spots.size());
-	cl::sycl::buffer<double>  buff_pists(pists.data(), pists.size());
-	cl::sycl::buffer<double>  buff_phase(phase.data(), phase.size());
-
+void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
 	cl::sycl::range<2> work_items{static_cast<size_t>(WIDTH), static_cast<size_t>(HEIGHT)};
 
 	q.submit([&](cl::sycl::handler& cgh) {
-		auto access_spots = buff_spots.get_access<cl::sycl::access::mode::read>(cgh);
-		auto access_pists = buff_pists.get_access<cl::sycl::access::mode::read>(cgh);
-		auto access_phase = buff_phase.get_access<cl::sycl::access::mode::write>(cgh);
-
 		cgh.parallel_for<class rs>(
 			work_items,
 			[=](cl::sycl::id<2> tid) {
@@ -43,14 +35,14 @@ void rs_kernel_naive(queue &q, const std::vector<Point3D> &spots, const std::vec
 					x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
 					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
 
-					for (size_t ispot = 0; ispot < access_spots.get_count(); ++ispot) {
-						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, access_spots[ispot], x, y);
+					for (size_t ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-						total_field += CEXP(p_phase + access_pists[ispot]);
+						total_field += CEXP(p_phase + pists[ispot]);
 					}
 
 					// std::arg is not working!
-					access_phase[tid[1] * WIDTH + tid[0]] = std::atan2(total_field.imag(), total_field.real());
+					phase[tid[1] * WIDTH + tid[0]] = std::atan2(total_field.imag(), total_field.real());
 				}
 			}
 		);
@@ -58,19 +50,12 @@ void rs_kernel_naive(queue &q, const std::vector<Point3D> &spots, const std::vec
 }
 
 
-void rs_kernel_pupil(queue &q, const std::vector<Point3D> &spots, const std::vector<double> &pists, std::vector<double> &phase, const SLM::Parameters par) {
-	cl::sycl::buffer<Point3D> buff_spots(spots.data(), spots.size());
-	cl::sycl::buffer<double>  buff_pists(pists.data(), pists.size());
-	cl::sycl::buffer<int>     buff_pupil(pupil_indices, pupil_count);
-	cl::sycl::buffer<double>  buff_phase(phase.data(), phase.size());
-
+void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 
 	q.submit([&](cl::sycl::handler& cgh) {
-		auto access_spots = buff_spots.get_access<cl::sycl::access::mode::read>(cgh);
-		auto access_pists = buff_pists.get_access<cl::sycl::access::mode::read>(cgh);
+		cl::sycl::buffer<int>     buff_pupil(pupil_indices, pupil_count);
 		cl::sycl::accessor access_pupil{buff_pupil, cgh};
-		auto access_phase = buff_phase.get_access<cl::sycl::access::mode::write>(cgh);
 
 		cgh.parallel_for<class test>(
 			work_items,
@@ -84,14 +69,14 @@ void rs_kernel_pupil(queue &q, const std::vector<Point3D> &spots, const std::vec
 
 				std::complex<double> total_field(0.0, 0.0);
 
-				for (size_t ispot = 0; ispot < access_spots.get_count(); ++ispot) {
-					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, access_spots[ispot], x, y);
+				for (size_t ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
-					total_field += CEXP(p_phase + access_pists[ispot]);
+					total_field += CEXP(p_phase + pists[ispot]);
 				}
 
 				// std::arg is not working!
-				access_phase[index] = std::atan2(total_field.imag(), total_field.real());
+				phase[index] = std::atan2(total_field.imag(), total_field.real());
 			}
 		);
 	});
