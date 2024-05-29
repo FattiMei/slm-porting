@@ -19,7 +19,7 @@ src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += benchmark regression porting test
+targets += benchmark regression porting test benchmark.sycl
 
 
 all: $(targets)
@@ -27,6 +27,10 @@ all: $(targets)
 
 benchmark: build/benchmark.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
+
+
+benchmark.sycl: build/benchmark.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
+	$(SYCLCC) -O3 -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
 regression: build/regression.o $(obj)
@@ -38,11 +42,10 @@ porting: build/main.o $(obj)
 
 
 test: build/main.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
-# test: src/sycl.cpp src/kernels.sycl.cpp src/units.cpp src/utils.cpp src/pupil.cpp
 	$(SYCLCC) $(INCLUDE) -O3 -o $@ $^
 
 
-bench: benchmark
+bench: benchmark.sycl
 	./$^
 
 
@@ -72,6 +75,10 @@ build/%.o: src/%.cpp include/config.hpp
 
 build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
+
+
+build/benchmark.sycl.o: src/benchmark.sycl.cpp
+	$(SYCLCC) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) -O3 -o $@ $<
 
 
 build/%.sycl.o: src/%.sycl.cpp
