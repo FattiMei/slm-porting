@@ -1,5 +1,4 @@
 #include "kernels.sycl.hpp"
-#include <complex>
 
 
 #define CEXP(x) std::complex<double>(std::cos(x), std::sin(x))
@@ -120,4 +119,70 @@ void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double 
 			}
 		);
 	});
+}
+
+
+
+void gs_kernel_naive(queue &q, const int n, const Point3D spots[], double pists[], double phase[], const SLM::Parameters par, const int iterations) {
+	cl::sycl::range<2> work_items{static_cast<size_t>(WIDTH), static_cast<size_t>(HEIGHT)};
+	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
+
+	for (int it = 0; it < iterations; ++it) {
+		// first compute all the total phases
+		q.submit([&](cl::sycl::handler& cgh) {
+			cgh.parallel_for<class rs>(
+				work_items,
+				[=](cl::sycl::id<2> tid) {
+					double x = LINSPACE(-1.0, 1.0, WIDTH,  tid[0]);
+					double y = LINSPACE(-1.0, 1.0, HEIGHT, tid[1]);
+
+					if (x*x + y*y < 1.0) {
+						std::complex<double> total_field(0.0, 0.0);
+						x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+						y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+						for (size_t ispot = 0; ispot < n; ++ispot) {
+							const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+							total_field += CEXP(p_phase + pists[ispot]);
+						}
+
+						// std::arg is not working!
+						phase[tid[1] * WIDTH + tid[0]] = std::atan2(total_field.imag(), total_field.real());
+					}
+				}
+			);
+		});
+
+		// then use the total phases to update the spot fields, but remember that we have to iterate all over pupil points again!
+		// lame implementation for now, could iterate only over pupil points, could do parallel reductions
+		q.submit([&](cl::sycl::handler& cgh) {
+			cgh.parallel_for<class test_spots>(
+				spot_items,
+				[=](cl::sycl::id<1> tid) {
+					std::complex<double> acc(0.0, 0.0);
+
+					for (int j = 0; j < HEIGHT; ++j) {
+						for (int i = 0; i < WIDTH; ++i) {
+							double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
+							double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+
+							if (x*x + y*y < 1.0) {
+								std::complex<double> total_field(0.0, 0.0);
+								x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
+								y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+
+								const double total_phase = phase[j * WIDTH + i];
+								const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[tid], x, y);
+
+								acc += CEXP(total_phase - p_phase);
+							}
+						}
+					}
+
+					pists[tid] = std::atan2(acc.imag(), acc.real());
+				}
+			);
+		});
+	}
 }

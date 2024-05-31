@@ -41,8 +41,8 @@ if __name__ == '__main__':
     COMPRESSION  = 0.05
 
 
-    reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
-    # reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
+    # reference, _ = refactor.rs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS)
+    reference, _ = refactor.gs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
     # reference, _ = refactor.wgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS)
     # reference, _ = refactor.csgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,1)
     # reference, _ = refactor.wcsgs(SPOTS,PISTS,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,ITERATIONS,COMPRESSION,1)
@@ -60,6 +60,8 @@ if __name__ == '__main__':
 
 
     abs_err = np.max(np.abs(reference - alternative))
+    plt.plot(np.abs(reference - alternative))
+    plt.show()
 
     nnz = np.where(reference != 0.0)
     rel_err = np.max(np.abs((reference[nnz] - alternative[nnz]) / reference[nnz]))
