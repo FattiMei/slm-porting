@@ -66,8 +66,22 @@ static void rs_sycl_local(benchmark::State &state) {
 }
 
 
+static void gs_sycl_naive(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists.data(), 0.0, 2.0 * M_PI, 1);
+		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
+		q.wait();
+
+		gs_kernel_naive(q, n, device_spots, device_pists, device_phase, parameters, 30);
+		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
+		q.wait();
+	}
+}
+
+
 // @TODO: set the time unit in the command invocation
 BENCHMARK(rs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_pupil)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_local)->Unit(benchmark::kMillisecond);
+BENCHMARK(gs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN();
