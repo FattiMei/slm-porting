@@ -577,6 +577,7 @@ void gs_kernel_naive(
 					const double total_phase = std::arg(total_field);
 					phase[j * WIDTH + i] = total_phase;
 
+					// @TODO: extract parallelism by separating this computation as GPU implementation
 					for (int ispot = 0; ispot < n; ++ispot) {
 						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 

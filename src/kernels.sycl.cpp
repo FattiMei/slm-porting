@@ -17,6 +17,7 @@
 
 extern const int pupil_count;
 extern const int pupil_indices[];
+static cl::sycl::buffer<int> buff_pupil(pupil_indices, pupil_count);
 
 
 void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
@@ -50,8 +51,6 @@ void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double 
 
 
 void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
-	// with this trick we send once the pupil indices vector
-	static cl::sycl::buffer<int>     buff_pupil(pupil_indices, pupil_count);
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 
 	q.submit([&](cl::sycl::handler& cgh) {
@@ -84,37 +83,31 @@ void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double 
 
 
 void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
+	cl::sycl::nd_range<1> work_items{static_cast<size_t>(pupil_count) * static_cast<size_t>(n), static_cast<size_t>(n)};
+
 	q.submit([&](cl::sycl::handler& cgh) {
-		cl::sycl::local_accessor<Point3D> local_spot{1, cgh};
+		cl::sycl::accessor access_pupil{buff_pupil, cgh};
 
-		cgh.parallel_for<class rs>(
-			cl::sycl::nd_range<2>{{static_cast<size_t>(WIDTH), static_cast<size_t>(HEIGHT)}, {1, 16}},
-			[=](cl::sycl::nd_item<2> item) {
-				const int i = item.get_global_id()[0];
-				const int j = item.get_global_id()[1];
+		cgh.parallel_for<class test_group_reductions>(
+			work_items,
+			[=](cl::sycl::nd_item<1> it) {
+				auto g = it.get_group();
 
-				double x = LINSPACE(-1.0, 1.0, WIDTH,  i);
-				double y = LINSPACE(-1.0, 1.0, HEIGHT, j);
+				const int index = access_pupil[g.get_group_id()];
+				const int i = index % WIDTH;
+				const int j = index / WIDTH;
 
-				if (x*x + y*y < 1.0) {
-					std::complex<double> total_field(0.0, 0.0);
-					x = x * PIXEL_SIZE * static_cast<double>(WIDTH)  / 2.0;
-					y = y * PIXEL_SIZE * static_cast<double>(HEIGHT) / 2.0;
+				const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+				const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
 
-					for (size_t ispot = 0; ispot < n; ++ispot) {
-						if (item.get_local_id()[0] == 0) {
-							local_spot[0] = spots[ispot];
-						}
-						item.barrier();
+				const std::complex<double> partial = CEXP(COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[it.get_local_id()], x, y) + pists[it.get_local_id()]);
 
-						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-						total_field += CEXP(p_phase + pists[ispot]);
+				const double total_field_real = cl::sycl::reduce_over_group(g, partial.real(), cl::sycl::plus<double>());
+				const double total_field_imag = cl::sycl::reduce_over_group(g, partial.imag(), cl::sycl::plus<double>());
 
-						item.barrier();
-					}
-
+				if (g.leader()) {
 					// std::arg is not working!
-					phase[j * WIDTH + i] = std::atan2(total_field.imag(), total_field.real());
+					phase[g.get_group_id()] = std::atan2(total_field_imag, total_field_real);
 				}
 			}
 		);
