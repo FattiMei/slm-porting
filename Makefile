@@ -45,8 +45,12 @@ test: build/main.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/p
 	$(SYCLCC) $(INCLUDE) -O3 -o $@ $^
 
 
-bench: benchmark.sycl
-	./$^
+bench: benchmark
+	./benchmark --benchmark_time_unit=ms
+	./benchmark --benchmark_filter="^(rs_static_scheduling|rs_pupil_indices|rs_static_index_bounds|rs_computed_index_bounds)" --benchmark_time_unit=ms
+	./benchmark --benchmark_filter=".*scheduling" --benchmark_time_unit=ms
+	./benchmark --benchmark_filter=".*branch.*" --benchmark_time_unit=ms
+	./benchmark --benchmark_filter="^(rs_pupil_indices|rs_simd)" --benchmark_time_unit=ms
 
 
 generator/pupil: build/pupil.gen.o build/slm.o build/utils.o

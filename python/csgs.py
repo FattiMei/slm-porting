@@ -431,7 +431,9 @@ if __name__ == "__main__":
     z=(np.random.random(NPOINTS)-0.5)*10.0
 
 
-    out, _ = rs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,SEED)
+    out, metrics = gs(x,y,z,FOCAL_LENGTH,PITCH,WAVELENGTH,PIXELS,30,SEED)
+
+    print(metrics[-1])
 
     plt.imshow(out, cmap='viridis', interpolation='nearest')
     plt.colorbar()

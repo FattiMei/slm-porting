@@ -13,6 +13,8 @@ const SLM::Parameters parameters(width, height, Length(20.0, Unit::Millimeters),
 Point3D spots[n];
 double  pists[n];
 double  phase[width * height];
+std::complex<double> spot_fields[n];
+double  p_phase_cache[n];
 
 extern const int pupil_count;
 extern const int pupil_indices[];
@@ -75,7 +77,7 @@ static void rs_pupil_indices(benchmark::State &state) {
 }
 
 
-static void rs_pupil_indices_simd(benchmark::State &state) {
+static void rs_simd(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
 		rs_kernel_pupil_indices_simd(n, spots, pists, phase, pupil_count, pupil_indices, &parameters);
@@ -115,17 +117,34 @@ static void rs_math_cache(benchmark::State &state) {
 }
 
 
-// @TODO: set the time unit in the command invocation
-BENCHMARK(rs_upper_bound)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_static_scheduling)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_dynamic_scheduling)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_custom_scheduling)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_pupil_indices)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_pupil_indices_simd)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_static_index_bounds)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_computed_index_bounds)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_branchless)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_branch_delay_slot)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_cache_constants)->Unit(benchmark::kMillisecond);
-BENCHMARK(rs_math_cache)->Unit(benchmark::kMillisecond);
+static void gs_naive(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_naive(n, spots, pists, spot_fields, phase, &parameters, 30);
+	}
+}
+
+
+static void gs_cached(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_cached(n, spots, pists, p_phase_cache, spot_fields, phase, &parameters, 30);
+	}
+}
+
+
+BENCHMARK(rs_upper_bound);
+BENCHMARK(rs_static_scheduling);
+BENCHMARK(rs_dynamic_scheduling);
+BENCHMARK(rs_custom_scheduling);
+BENCHMARK(rs_pupil_indices);
+BENCHMARK(rs_simd);
+BENCHMARK(rs_static_index_bounds);
+BENCHMARK(rs_computed_index_bounds);
+BENCHMARK(rs_branchless);
+BENCHMARK(rs_branch_delay_slot);
+BENCHMARK(rs_cache_constants);
+BENCHMARK(rs_math_cache);
+BENCHMARK(gs_naive);
+BENCHMARK(gs_cached);
 BENCHMARK_MAIN();
