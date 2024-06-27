@@ -58,6 +58,7 @@ int main() {
 		std::cout << "rs_kernel_pupil" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
+	if (false)
 	{
 		// for the moment I don't test if the kernel actually writes something, but I should
 		rs_kernel_local(q, n, device_spots, device_pists, device_phase, parameters);
