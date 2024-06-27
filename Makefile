@@ -1,15 +1,14 @@
-CXX        = g++-13
-SYCLCC     = acpp
+CXX        = g++ -fPIE
+SYCLCC     = /home/mmei/programs/acpp/bin/acpp --acpp-targets="cuda:sm_80" --acpp-platform=cuda --acpp-gpu-arch=sm_80 -fPIE
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math
 OPENMP     = -fopenmp
-PYTHON     = python3.8
 
 
 # requires installation of https://github.com/google/benchmark
-GOOGLE_BENCHMARK_INC_DIR = /home/matteo/hpc/programs/benchmark/include
-GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
+GOOGLE_BENCHMARK_INC_DIR = /home/mmei/benchmark/include
+GOOGLE_BENCHMARK_LIB_DIR = /home/mmei/benchmark/build/src
 
 
 CONFIG = -DREMOVE_EXP
@@ -19,7 +18,7 @@ src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += benchmark regression porting test benchmark.sycl
+targets += benchmark benchmark_sycl regression porting
 
 
 all: $(targets)
@@ -29,7 +28,7 @@ benchmark: build/benchmark.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
-benchmark.sycl: build/benchmark.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
+benchmark_sycl: build/benchmark.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
 	$(SYCLCC) -O3 -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
 
 
@@ -39,10 +38,6 @@ regression: build/regression.o $(obj)
 
 porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
-
-
-test: build/main.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
-	$(SYCLCC) $(INCLUDE) -O3 -o $@ $^
 
 
 bench: benchmark
@@ -81,12 +76,12 @@ build/benchmark.o: src/benchmark.cpp
 	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
 
 
-build/benchmark.sycl.o: src/benchmark.sycl.cpp
-	$(SYCLCC) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) -O3 -o $@ $<
-
-
 build/%.sycl.o: src/%.sycl.cpp
 	$(SYCLCC) -c $(INCLUDE) -O3 -o $@ $^
+
+
+build/benchmark.sycl.o: src/benchmark.sycl.cpp
+	$(SYCLCC) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) -O3 -o $@ $<
 
 
 src/pupil.cpp: generator/pupil
