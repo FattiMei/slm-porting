@@ -11,6 +11,10 @@ GOOGLE_BENCHMARK_INC_DIR = /home/mmei/benchmark/include
 GOOGLE_BENCHMARK_LIB_DIR = /home/mmei/benchmark/build/src
 
 
+BENCH_INCLUDE = -I $(GOOGLE_BENCHMARK_INC_DIR)
+BENCH_LIB     = -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
+
+
 CONFIG = -DREMOVE_EXP
 
 
@@ -18,26 +22,34 @@ src = src/kernels.cpp src/units.cpp src/utils.cpp src/slm.cpp src/pupil.cpp src/
 obj = $(patsubst src/%.cpp,build/%.o,$(src))
 
 
-targets += benchmark benchmark_sycl regression porting
+targets += benchmark benchmark_sycl regression regression_sycl porting porting_sycl
 
 
 all: $(targets)
 
 
 benchmark: build/benchmark.o $(obj)
-	$(CXX) $(OPENMP) -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
+	$(CXX) $(OPENMP) -o $@ $^ $(BENCH_LIB)
 
 
 benchmark_sycl: build/benchmark.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
-	$(SYCLCC) -O3 -o $@ $^ -L $(GOOGLE_BENCHMARK_LIB_DIR) -lbenchmark -lpthread
+	$(SYCLCC) -O3 -o $@ $^ $(BENCH_LIB)
 
 
 regression: build/regression.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
 
 
+regression_sycl: build/regression.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
+	$(SYCLCC) -O3 -o $@ $^
+
+
 porting: build/main.o $(obj)
 	$(CXX) $(OPENMP) -o $@ $^
+
+
+porting_sycl: build/main.sycl.o build/kernels.sycl.o build/units.o build/utils.o build/pupil.o
+	$(SYCLCC) -O3 -o $@ $^
 
 
 bench: benchmark
@@ -46,14 +58,6 @@ bench: benchmark
 	./benchmark --benchmark_filter=".*scheduling" --benchmark_time_unit=ms
 	./benchmark --benchmark_filter=".*branch.*" --benchmark_time_unit=ms
 	./benchmark --benchmark_filter="^(rs_pupil_indices|rs_simd)" --benchmark_time_unit=ms
-
-
-generator/pupil: build/pupil.gen.o build/slm.o build/utils.o
-	$(CXX) -o $@ $^
-
-
-generator/scheduling: build/scheduling.gen.o build/slm.o build/utils.o
-	$(CXX) -o $@ $^
 
 
 output.bin: test
@@ -73,15 +77,23 @@ build/%.o: src/%.cpp include/config.hpp
 
 
 build/benchmark.o: src/benchmark.cpp
-	$(CXX) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) $(OPT) -o $@ $<
+	$(CXX) -c $(WARNINGS) $(INCLUDE) $(BENCH_INCLUDE) $(OPT) -o $@ $<
+
+
+build/benchmark.sycl.o: src/benchmark.sycl.cpp
+	$(SYCLCC) -c $(WARNINGS) $(INCLUDE) $(BENCH_INCLUDE) -O3 -o $@ $<
 
 
 build/%.sycl.o: src/%.sycl.cpp
 	$(SYCLCC) -c $(INCLUDE) -O3 -o $@ $^
 
 
-build/benchmark.sycl.o: src/benchmark.sycl.cpp
-	$(SYCLCC) -c $(WARNINGS) $(INCLUDE) -I $(GOOGLE_BENCHMARK_INC_DIR) -O3 -o $@ $<
+generator/pupil: build/pupil.gen.o build/slm.o build/utils.o
+	$(CXX) -o $@ $^
+
+
+generator/scheduling: build/scheduling.gen.o build/slm.o build/utils.o
+	$(CXX) -o $@ $^
 
 
 src/pupil.cpp: generator/pupil
