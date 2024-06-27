@@ -43,24 +43,14 @@ int main() {
 
 	// setting up the reference
 	rs_kernel_naive(q, n, device_spots, device_pists, device_phase, parameters);
+	q.wait();
 	q.memcpy(reference, device_phase, width * height * sizeof(double));
 	q.wait();
 
 	{
 		// for the moment I don't test if the kernel actually writes something, but I should
-		rs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters);
-		q.memcpy(alternative, device_phase, width * height * sizeof(double));
-		q.wait();
-
-
-		const Difference diff = compare_outputs(width, height, reference, alternative);
-
-		std::cout << "rs_kernel_pupil" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-	}
-	{
-		// for the moment I don't test if the kernel actually writes something, but I should
 		rs_kernel_local(q, n, device_spots, device_pists, device_phase, parameters);
+		q.wait();
 		q.memcpy(alternative, device_phase, width * height * sizeof(double));
 		q.wait();
 
@@ -68,6 +58,19 @@ int main() {
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
 		std::cout << "rs_kernel_local" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+	}
+	{
+		// for the moment I don't test if the kernel actually writes something, but I should
+		rs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters);
+		q.wait();
+		q.memcpy(alternative, device_phase, width * height * sizeof(double));
+		q.wait();
+
+
+		const Difference diff = compare_outputs(width, height, reference, alternative);
+
+		std::cout << "rs_kernel_pupil" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
 

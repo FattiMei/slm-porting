@@ -107,7 +107,7 @@ void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double 
 
 				if (g.leader()) {
 					// std::arg is not working!
-					phase[g.get_group_id()] = std::atan2(total_field_imag, total_field_real);
+					phase[index] = std::atan2(total_field_imag, total_field_real);
 				}
 			}
 		);
