@@ -4,8 +4,11 @@ generator/
 src/pupil.cpp
 src/scheduling.cpp
 porting
+porting_sycl
 benchmark
+benchmark_sycl
 regression
+regression_sycl
 analysis
 test
 output.bin
