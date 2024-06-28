@@ -4,6 +4,7 @@ WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math
 OPENMP     = -fopenmp
+PYTHON     = python3
 
 
 # requires installation of https://github.com/google/benchmark
