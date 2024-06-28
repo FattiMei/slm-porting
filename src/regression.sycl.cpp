@@ -72,40 +72,6 @@ int main() {
 		std::cout << "rs_kernel_pupil" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 	}
-	{
-		gs_kernel_naive(q, n, device_spots, device_pists, device_phase, parameters, 1);
-		q.wait();
-		q.memcpy(alternative, device_phase, width * height * sizeof(double));
-		q.wait();
-
-
-		const Difference diff = compare_outputs(width, height, reference, alternative);
-
-		std::cout << "gs_kernel_naive" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-
-
-		// Restore the pists
-		q.memcpy(device_pists, pists, n * sizeof(double));
-		q.wait();
-	}
-	{
-		gs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters, 1);
-		q.wait();
-		q.memcpy(alternative, device_phase, width * height * sizeof(double));
-		q.wait();
-
-
-		const Difference diff = compare_outputs(width, height, reference, alternative);
-
-		std::cout << "gs_kernel_pupil" << std::endl;
-		std::cout << "max abs err: " << diff.linf_norm << std::endl;
-
-
-		// Restore the pists
-		q.memcpy(device_pists, pists, n * sizeof(double));
-		q.wait();
-	}
 
 
 	// setting up the reference for gs kernel
