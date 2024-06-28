@@ -145,7 +145,7 @@ void gs_kernel_naive(queue &q, const int n, const Point3D spots[], double pists[
 					}
 				}
 			);
-		});
+		}).wait();
 
 		// then use the total phases to update the spot fields, but remember that we have to iterate all over pupil points again!
 		// lame implementation for now, could iterate only over pupil points, could do parallel reductions
@@ -176,6 +176,72 @@ void gs_kernel_naive(queue &q, const int n, const Point3D spots[], double pists[
 					pists[tid] = std::atan2(acc.imag(), acc.real());
 				}
 			);
-		});
+		}).wait();
+	}
+}
+
+
+void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[], double phase[], const SLM::Parameters par, const int iterations) {
+	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
+	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
+
+	for (int it = 0; it < iterations; ++it) {
+		// first compute all the total phases
+		q.submit([&](cl::sycl::handler& cgh) {
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
+
+			cgh.parallel_for<class test>(
+				work_items,
+				[=](cl::sycl::id<1> tid) {
+					const int index = access_pupil[tid];
+					const int i = index % WIDTH;
+					const int j = index / WIDTH;
+
+					const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+					const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+					std::complex<double> total_field(0.0, 0.0);
+
+					for (size_t ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					// std::arg is not working!
+					// duplication in phase writing!
+					phase[index] = std::atan2(total_field.imag(), total_field.real());
+				}
+			);
+		}).wait();
+
+		// then use the total phases to update the spot fields, but remember that we have to iterate all over pupil points again!
+		q.submit([&](cl::sycl::handler& cgh) {
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
+			const int local_pupil_count = pupil_count;
+
+			cgh.parallel_for<class test_spots>(
+				spot_items,
+				[=](cl::sycl::id<1> tid) {
+					std::complex<double> acc(0.0, 0.0);
+
+					for (int pup = 0; pup < local_pupil_count; ++pup) {
+						const int index = access_pupil[pup];
+						const int i = index % WIDTH;
+						const int j = index / WIDTH;
+
+						const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+						const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+						const double total_phase = phase[index];
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[tid], x, y);
+
+						acc += CEXP(total_phase - p_phase);
+					}
+
+					pists[tid] = std::atan2(acc.imag(), acc.real());
+				}
+			);
+		}).wait();
 	}
 }
