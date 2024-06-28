@@ -46,7 +46,7 @@ void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double 
 				}
 			}
 		);
-	});
+	}).wait();
 }
 
 
@@ -78,7 +78,7 @@ void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double 
 				phase[index] = std::atan2(total_field.imag(), total_field.real());
 			}
 		);
-	});
+	}).wait();
 }
 
 
@@ -111,7 +111,7 @@ void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double 
 				}
 			}
 		);
-	});
+	}).wait();
 }
 
 
