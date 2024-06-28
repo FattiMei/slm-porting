@@ -60,7 +60,7 @@ bench: benchmark
 	./benchmark --benchmark_filter="^(rs_pupil_indices|rs_simd)" --benchmark_time_unit=ms
 
 
-output.bin: test
+output.bin: porting_sycl
 	./$^ $@
 
 
