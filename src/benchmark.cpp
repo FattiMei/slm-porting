@@ -141,6 +141,14 @@ static void gs_openmp(benchmark::State &state) {
 }
 
 
+static void gs_atomic(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_atomic(n, spots, pists, spot_fields, phase, pupil_count, pupil_indices, &parameters, 30);
+	}
+}
+
+
 static void gs_cached(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
@@ -172,6 +180,7 @@ BENCHMARK(rs_math_cache);
 BENCHMARK(gs_naive);
 BENCHMARK(gs_pupil);
 BENCHMARK(gs_openmp);
+BENCHMARK(gs_atomic);
 BENCHMARK(gs_cached);
 BENCHMARK(gs_reordered);
 BENCHMARK_MAIN();

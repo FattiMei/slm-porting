@@ -38,6 +38,7 @@ void rs_kernel_upper_bound               (const int n, const Point3D spots[], co
 void gs_kernel_naive    (const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const SLM::Parameters *par, const int iterations);
 void gs_kernel_pupil    (const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters *par, const int iterations);
 void gs_kernel_openmp   (const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters *par, const int iterations);
+void gs_kernel_atomic   (const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters *par, const int iterations);
 void gs_kernel_cached   (const int n, const Point3D spots[], double pists[], double p_phase_cache[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters *par, const int iterations);
 void gs_kernel_reordered(const int n, const Point3D spots[], double pists[],                         std::complex<double> spot_fields[], double phase[], const SLM::Parameters *par, const int iterations);
 

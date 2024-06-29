@@ -43,7 +43,8 @@ int main(int argc, char *argv[]) {
 	// rs_kernel_pupil_indices_simd(spots.size(), spots.data(), pists.data(), phase.data(), pupil_count, pupil_indices, &parameters);
 	// gs_kernel_naive(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), &parameters, 30);
 	// gs_kernel_pupil(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), pupil_count, pupil_indices, &parameters, 30);
-	gs_kernel_openmp(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), pupil_count, pupil_indices, &parameters, 30);
+	// gs_kernel_openmp(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), pupil_count, pupil_indices, &parameters, 30);
+	gs_kernel_atomic(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), pupil_count, pupil_indices, &parameters, 30);
 
 
 	std::ofstream out(argv[1]);
