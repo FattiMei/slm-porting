@@ -11,8 +11,8 @@ using namespace cl::sycl;
 
 
 void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par);
-void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par);
-void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par);
+void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par);
+void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par);
 
 
 void gs_kernel_naive(queue &q, const int n, const Point3D spots[], double pists[], double phase[], const SLM::Parameters par, const int iterations);

@@ -50,16 +50,14 @@ void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double 
 }
 
 
-void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
+void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par) {
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 
 	q.submit([&](cl::sycl::handler& cgh) {
-		cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 		cgh.parallel_for<class test>(
 			work_items,
 			[=](cl::sycl::id<1> tid) {
-				const int index = access_pupil[tid];
+				const int index = pupil_indices[tid];
 				const int i = index % WIDTH;
 				const int j = index / WIDTH;
 
@@ -82,18 +80,16 @@ void rs_kernel_pupil(queue &q, const int n, const Point3D spots[], const double 
 }
 
 
-void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
+void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par) {
 	cl::sycl::nd_range<1> work_items{static_cast<size_t>(pupil_count) * static_cast<size_t>(n), static_cast<size_t>(n)};
 
 	q.submit([&](cl::sycl::handler& cgh) {
-		cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 		cgh.parallel_for<class test_group_reductions>(
 			work_items,
 			[=](cl::sycl::nd_item<1> it) {
 				auto g = it.get_group();
 
-				const int index = access_pupil[g.get_group_id()];
+				const int index = pupil_indices[g.get_group_id()];
 				const int i = index % WIDTH;
 				const int j = index / WIDTH;
 
