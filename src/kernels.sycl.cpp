@@ -239,9 +239,6 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
 
-	std::complex<double> zero(0.0, 0.0);
-	cl::sycl::buffer<std::complex<double>> test_accumulator_buffer{&zero, 1};
-
 	for (int it = 0; it < iterations; ++it) {
 		// first compute all the total phases
 		q.submit([&](cl::sycl::handler& cgh) {
@@ -272,10 +269,8 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 
 		// then use the total phases to update the spot fields
 		// crazy idea: use sycl::reduction for every spot
-		for (size_t ispot = 0; ispot < 1; ++ispot) {
-#if 0
+		for (size_t ispot = 0; ispot < n; ++ispot) {
 			q.submit([&](cl::sycl::handler& cgh) {
-
 				cgh.parallel_for<class test_reduction>(
 					work_items,
 					cl::sycl::reduction(spot_fields + ispot, cl::sycl::plus<>()),
@@ -290,13 +285,12 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 						const double total_phase = phase[index];
 
 						// this line gives segfaults, no idea why
-						const double p_phase = 0.0; // COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
 
 						acc += CEXP(total_phase - p_phase);
 					}
 				);
 			});
-#endif
 		}
 
 		q.wait();
@@ -307,6 +301,7 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 				spot_items,
 				[=](cl::sycl::id<1> tid) {
 					pists[tid] = std::atan2(spot_fields[tid].imag(), spot_fields[tid].real());
+					spot_fields[tid] = std::complex<double>(0.0, 0.0);
 				}
 			);
 		}).wait();

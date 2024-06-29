@@ -132,6 +132,6 @@ BENCHMARK(rs_sycl_pupil)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_local)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_pupil)->Unit(benchmark::kMillisecond);
-// BENCHMARK(gs_sycl_reduction)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_block)->Unit(benchmark::kMillisecond);
+BENCHMARK(gs_sycl_reduction)->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN();
