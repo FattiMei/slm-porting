@@ -15,11 +15,6 @@
 #define WAVELENGTH   (par.wavelength_um)
 
 
-extern const int pupil_count;
-extern const int pupil_indices[];
-static cl::sycl::buffer<int> buff_pupil(pupil_indices, pupil_count);
-
-
 void rs_kernel_naive(queue &q, const int n, const Point3D spots[], const double pists[], double phase[], const SLM::Parameters par) {
 	cl::sycl::range<2> work_items{static_cast<size_t>(WIDTH), static_cast<size_t>(HEIGHT)};
 
@@ -177,19 +172,17 @@ void gs_kernel_naive(queue &q, const int n, const Point3D spots[], double pists[
 }
 
 
-void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[], double phase[], const SLM::Parameters par, const int iterations) {
+void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par, const int iterations) {
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
 
 	for (int it = 0; it < iterations; ++it) {
 		// first compute all the total phases
 		q.submit([&](cl::sycl::handler& cgh) {
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 			cgh.parallel_for<class test>(
 				work_items,
 				[=](cl::sycl::id<1> tid) {
-					const int index = access_pupil[tid];
+					const int index = pupil_indices[tid];
 					const int i = index % WIDTH;
 					const int j = index / WIDTH;
 
@@ -213,7 +206,6 @@ void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[
 
 		// then use the total phases to update the spot fields, but remember that we have to iterate all over pupil points again!
 		q.submit([&](cl::sycl::handler& cgh) {
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
 			const int local_pupil_count = pupil_count;
 
 			cgh.parallel_for<class test_spots>(
@@ -222,7 +214,7 @@ void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[
 					std::complex<double> acc(0.0, 0.0);
 
 					for (int pup = 0; pup < local_pupil_count; ++pup) {
-						const int index = access_pupil[pup];
+						const int index = pupil_indices[pup];
 						const int i = index % WIDTH;
 						const int j = index / WIDTH;
 
@@ -243,7 +235,7 @@ void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[
 }
 
 
-void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters par, const int iterations) {
+void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par, const int iterations) {
 	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
 	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
 
@@ -253,12 +245,10 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 	for (int it = 0; it < iterations; ++it) {
 		// first compute all the total phases
 		q.submit([&](cl::sycl::handler& cgh) {
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 			cgh.parallel_for<class test>(
 				work_items,
 				[=](cl::sycl::id<1> tid) {
-					const int index = access_pupil[tid];
+					const int index = pupil_indices[tid];
 					const int i = index % WIDTH;
 					const int j = index / WIDTH;
 
@@ -285,13 +275,12 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 		for (size_t ispot = 0; ispot < 1; ++ispot) {
 #if 0
 			q.submit([&](cl::sycl::handler& cgh) {
-				cl::sycl::accessor access_pupil{buff_pupil, cgh};
 
 				cgh.parallel_for<class test_reduction>(
 					work_items,
 					cl::sycl::reduction(spot_fields + ispot, cl::sycl::plus<>()),
 					[=](cl::sycl::id<1> tid, auto &acc) {
-						const int index = access_pupil[tid];
+						const int index = pupil_indices[tid];
 						const int i = index % WIDTH;
 						const int j = index / WIDTH;
 
@@ -325,17 +314,15 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 }
 
 
-void gs_kernel_block(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters par, const int iterations) {
+void gs_kernel_block(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const int pupil_count, const int pupil_indices[], const SLM::Parameters par, const int iterations) {
 	for (int it = 0; it < iterations; ++it) {
 		q.submit([&](cl::sycl::handler& cgh) {
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 			cgh.parallel_for(
 				cl::sycl::nd_range<1>{pupil_count * n, n},
 				[=](cl::sycl::nd_item<1> it) {
 					auto g = it.get_group();
 
-					const int index = access_pupil[g.get_group_id()];
+					const int index = pupil_indices[g.get_group_id()];
 					const int ispot = g.get_local_id();
 
 					const int i = index % WIDTH;
@@ -376,8 +363,6 @@ void gs_kernel_block(queue &q, const int n, const Point3D spots[], double pists[
 		}).wait();
 
 		q.submit([&](cl::sycl::handler& cgh) {
-			cl::sycl::accessor access_pupil{buff_pupil, cgh};
-
 			cgh.parallel_for(
 				cl::sycl::range<1>{static_cast<size_t>(n)},
 				[=](cl::sycl::id<1> tid) {

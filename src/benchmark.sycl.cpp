@@ -93,7 +93,7 @@ static void gs_sycl_pupil(benchmark::State &state) {
 		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
 		q.wait();
 
-		gs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters, 30);
+		gs_kernel_pupil(q, n, device_spots, device_pists, device_phase, pupil_count, device_pupil, parameters, 30);
 		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
 		q.wait();
 	}
@@ -106,7 +106,7 @@ static void gs_sycl_reduction(benchmark::State &state) {
 		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
 		q.wait();
 
-		gs_kernel_reduction(q, n, device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+		gs_kernel_reduction(q, n, device_spots, device_pists, device_spot_fields, device_phase, pupil_count, device_pupil, parameters, 30);
 		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
 		q.wait();
 	}
@@ -119,7 +119,7 @@ static void gs_sycl_block(benchmark::State &state) {
 		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
 		q.wait();
 
-		gs_kernel_block(q, n, device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+		gs_kernel_block(q, n, device_spots, device_pists, device_spot_fields, device_phase, pupil_count, device_pupil, parameters, 30);
 		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
 		q.wait();
 	}
@@ -132,6 +132,6 @@ BENCHMARK(rs_sycl_pupil)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_local)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_pupil)->Unit(benchmark::kMillisecond);
-BENCHMARK(gs_sycl_reduction)->Unit(benchmark::kMillisecond);
+// BENCHMARK(gs_sycl_reduction)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_block)->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN();
