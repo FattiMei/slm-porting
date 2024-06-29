@@ -642,6 +642,62 @@ void gs_kernel_pupil(
 }
 
 
+void gs_kernel_openmp(
+	const	int			n,
+	const	Point3D			spots[],
+		double			pists[],
+		std::complex<double>	spot_fields[],
+		double			phase[],
+	const	int			pupil_count,
+	const	int			pupil_indices[],
+	const	SLM::Parameters*	par,
+	const	int			iterations
+) {
+	for (int it = 0; it < iterations; ++it) {
+		for (int ispot = 0; ispot < n; ++ispot) {
+			spot_fields[ispot] = std::complex<double>(0.0, 0.0);
+		}
+
+		for (int index = 0; index < pupil_count; ++index) {
+			const int i = pupil_indices[index] % WIDTH;
+			const int j = pupil_indices[index] / WIDTH;
+
+			const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+			const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+			std::complex<double> total_field(0.0, 0.0);
+
+			for (int ispot = 0; ispot < n; ++ispot) {
+				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+				total_field += CEXP(p_phase + pists[ispot]);
+			}
+
+			const double total_phase = std::arg(total_field);
+			phase[j * WIDTH + i] = total_phase;
+		}
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			for (int index = 0; index < pupil_count; ++index) {
+				const int i = pupil_indices[index] % WIDTH;
+				const int j = pupil_indices[index] / WIDTH;
+
+				const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+				const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+				const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+				spot_fields[ispot] += CEXP(phase[pupil_indices[index]] - p_phase);
+			}
+		}
+
+		for (int ispot = 0; ispot < n; ++ispot) {
+			pists[ispot] = std::arg(spot_fields[ispot]);
+		}
+	}
+}
+
+
 void gs_kernel_cached(
 	const	int			n,
 	const	Point3D			spots[],
