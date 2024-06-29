@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
 	// rs_kernel_local(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters);
 	// gs_kernel_naive(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters, 30);
 	// gs_kernel_pupil(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters, 30);
-	gs_kernel_reduction(q, static_cast<int>(spots.size()), device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+	// gs_kernel_reduction(q, static_cast<int>(spots.size()), device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+	gs_kernel_block(q, static_cast<int>(spots.size()), device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
 
 	q.wait();
 	q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));

@@ -327,3 +327,68 @@ void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pi
 		}).wait();
 	}
 }
+
+
+void gs_kernel_block(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters par, const int iterations) {
+	for (int it = 0; it < iterations; ++it) {
+		q.submit([&](cl::sycl::handler& cgh) {
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
+
+			cgh.parallel_for(
+				cl::sycl::nd_range<1>{pupil_count * n, n},
+				[=](cl::sycl::nd_item<1> it) {
+					auto g = it.get_group();
+
+					const int index = access_pupil[g.get_group_id()];
+					const int ispot = g.get_local_id();
+
+					const int i = index % WIDTH;
+					const int j = index / WIDTH;
+
+					const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+					const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+					const std::complex<double> total_field = cl::sycl::reduce_over_group(g, CEXP(p_phase + pists[ispot]), cl::sycl::plus<>());
+					const double total_phase = std::atan2(total_field.imag(), total_field.real());
+
+					const std::complex<double> spot_contribution = CEXP(total_phase - p_phase);
+
+					cl::sycl::atomic_ref<
+						double,
+						cl::sycl::memory_order::relaxed,
+						cl::sycl::memory_scope::system,
+						cl::sycl::access::address_space::global_space
+					> atomic_spot_fields_real(*(reinterpret_cast<double*>(spot_fields + ispot)));
+
+					cl::sycl::atomic_ref<
+						double,
+						cl::sycl::memory_order::relaxed,
+						cl::sycl::memory_scope::system,
+						cl::sycl::access::address_space::global_space
+					> atomic_spot_fields_imag(*(reinterpret_cast<double*>(spot_fields + ispot) + 1));
+
+
+					atomic_spot_fields_real += spot_contribution.real();
+					atomic_spot_fields_imag += spot_contribution.imag();
+
+					if (g.leader()) {
+						phase[index] = total_phase;
+					}
+				}
+			);
+		}).wait();
+
+		q.submit([&](cl::sycl::handler& cgh) {
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
+
+			cgh.parallel_for(
+				cl::sycl::range<1>{static_cast<size_t>(n)},
+				[=](cl::sycl::id<1> tid) {
+					pists[tid] = std::atan2(spot_fields[tid].imag(), spot_fields[tid].real());
+					spot_fields[tid] = std::complex<double>(0.0, 0.0);
+				}
+			);
+		}).wait();
+	}
+}
