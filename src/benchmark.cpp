@@ -149,6 +149,14 @@ static void gs_cached(benchmark::State &state) {
 }
 
 
+static void gs_reordered(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_naive(n, spots, pists, spot_fields, phase, &parameters, 30);
+	}
+}
+
+
 BENCHMARK(rs_upper_bound);
 BENCHMARK(rs_static_scheduling);
 BENCHMARK(rs_dynamic_scheduling);
@@ -165,4 +173,5 @@ BENCHMARK(gs_naive);
 BENCHMARK(gs_pupil);
 BENCHMARK(gs_openmp);
 BENCHMARK(gs_cached);
+BENCHMARK(gs_reordered);
 BENCHMARK_MAIN();

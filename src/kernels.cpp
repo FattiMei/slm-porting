@@ -695,10 +695,7 @@ void gs_kernel_openmp(
 
 					spot_fields[ispot] += CEXP(phase[pupil_indices[index]] - p_phase);
 				}
-			}
 
-			#pragma omp for
-			for (int ispot = 0; ispot < n; ++ispot) {
 				pists[ispot] = std::arg(spot_fields[ispot]);
 			}
 		}

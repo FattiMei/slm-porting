@@ -54,11 +54,12 @@ porting_sycl: build/main.sycl.o build/kernels.sycl.o build/units.o build/utils.o
 
 
 bench: benchmark
-	./benchmark --benchmark_time_unit=ms
-	./benchmark --benchmark_filter="^(rs_static_scheduling|rs_pupil_indices|rs_static_index_bounds|rs_computed_index_bounds)" --benchmark_time_unit=ms
-	./benchmark --benchmark_filter=".*scheduling" --benchmark_time_unit=ms
-	./benchmark --benchmark_filter=".*branch.*" --benchmark_time_unit=ms
-	./benchmark --benchmark_filter="^(rs_pupil_indices|rs_simd)" --benchmark_time_unit=ms
+	./benchmark --benchmark_time_unit=ms --benchmark_filter="^rs*"
+	./benchmark --benchmark_time_unit=ms --benchmark_filter="^(rs_static_scheduling|rs_pupil_indices|rs_static_index_bounds|rs_computed_index_bounds)"
+	./benchmark --benchmark_time_unit=ms --benchmark_filter=".*scheduling"
+	./benchmark --benchmark_time_unit=ms --benchmark_filter=".*branch.*"
+	./benchmark --benchmark_time_unit=ms --benchmark_filter="^(rs_pupil_indices|rs_simd)"
+	./benchmark --benchmark_time_unit=ms --benchmark_filter="^gs*"
 
 
 output.bin: porting
