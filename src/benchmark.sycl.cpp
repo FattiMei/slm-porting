@@ -23,6 +23,7 @@ cl::sycl::queue q{cl::sycl::gpu_selector_v};
 double  *device_pists = cl::sycl::malloc_device<double>(pists.size(), q);
 Point3D *device_spots = cl::sycl::malloc_device<Point3D>(spots.size(), q);
 double  *device_phase = cl::sycl::malloc_device<double>(phase.size(), q);
+std::complex<double> *device_spot_fields = cl::sycl::malloc_device<std::complex<double>>(spots.size(), q);
 
 
 static void rs_sycl_naive(benchmark::State &state) {
@@ -92,10 +93,24 @@ static void gs_sycl_pupil(benchmark::State &state) {
 }
 
 
+static void gs_sycl_reduction(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists.data(), 0.0, 2.0 * M_PI, 1);
+		q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
+		q.wait();
+
+		gs_kernel_reduction(q, n, device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+		q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));
+		q.wait();
+	}
+}
+
+
 // @TODO: set the time unit in the command invocation
 BENCHMARK(rs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_pupil)->Unit(benchmark::kMillisecond);
 BENCHMARK(rs_sycl_local)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_naive)->Unit(benchmark::kMillisecond);
 BENCHMARK(gs_sycl_pupil)->Unit(benchmark::kMillisecond);
+BENCHMARK(gs_sycl_reduction)->Unit(benchmark::kMillisecond);
 BENCHMARK_MAIN();

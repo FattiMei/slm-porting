@@ -245,3 +245,85 @@ void gs_kernel_pupil(queue &q, const int n, const Point3D spots[], double pists[
 		}).wait();
 	}
 }
+
+
+void gs_kernel_reduction(queue &q, const int n, const Point3D spots[], double pists[], std::complex<double> spot_fields[], double phase[], const SLM::Parameters par, const int iterations) {
+	cl::sycl::range<1> work_items{static_cast<size_t>(pupil_count)};
+	cl::sycl::range<1> spot_items{static_cast<size_t>(n)};
+
+	std::complex<double> zero(0.0, 0.0);
+	cl::sycl::buffer<std::complex<double>> test_accumulator_buffer{&zero, 1};
+
+	for (int it = 0; it < iterations; ++it) {
+		// first compute all the total phases
+		q.submit([&](cl::sycl::handler& cgh) {
+			cl::sycl::accessor access_pupil{buff_pupil, cgh};
+
+			cgh.parallel_for<class test>(
+				work_items,
+				[=](cl::sycl::id<1> tid) {
+					const int index = access_pupil[tid];
+					const int i = index % WIDTH;
+					const int j = index / WIDTH;
+
+					const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+					const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+					std::complex<double> total_field(0.0, 0.0);
+
+					for (size_t ispot = 0; ispot < n; ++ispot) {
+						const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+						total_field += CEXP(p_phase + pists[ispot]);
+					}
+
+					// std::arg is not working!
+					// duplication in phase writing!
+					phase[index] = std::atan2(total_field.imag(), total_field.real());
+				}
+			);
+		}).wait();
+
+		// then use the total phases to update the spot fields
+		// crazy idea: use sycl::reduction for every spot
+		for (size_t ispot = 0; ispot < 1; ++ispot) {
+#if 0
+			q.submit([&](cl::sycl::handler& cgh) {
+				cl::sycl::accessor access_pupil{buff_pupil, cgh};
+
+				cgh.parallel_for<class test_reduction>(
+					work_items,
+					cl::sycl::reduction(spot_fields + ispot, cl::sycl::plus<>()),
+					[=](cl::sycl::id<1> tid, auto &acc) {
+						const int index = access_pupil[tid];
+						const int i = index % WIDTH;
+						const int j = index / WIDTH;
+
+						const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+						const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+						const double total_phase = phase[index];
+
+						// this line gives segfaults, no idea why
+						const double p_phase = 0.0; // COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+						acc += CEXP(total_phase - p_phase);
+					}
+				);
+			});
+#endif
+		}
+
+		q.wait();
+
+		// last kernel invocation to manage spot update
+		q.submit([&](cl::sycl::handler& cgh) {
+			cgh.parallel_for<class spot_update>(
+				spot_items,
+				[=](cl::sycl::id<1> tid) {
+					pists[tid] = std::atan2(spot_fields[tid].imag(), spot_fields[tid].real());
+				}
+			);
+		}).wait();
+	}
+}

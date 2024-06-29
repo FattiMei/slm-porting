@@ -1,5 +1,5 @@
 CXX        = g++ -fPIE
-SYCLCC     = /home/mmei/programs/acpp/bin/acpp --acpp-targets="cuda:sm_80" --acpp-platform=cuda --acpp-gpu-arch=sm_80 -fPIE
+SYCLCC     = /home/mmei/programs/acpp/bin/acpp --acpp-targets="cuda:sm_60" -fPIE
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math

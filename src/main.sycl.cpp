@@ -35,16 +35,18 @@ int main(int argc, char* argv[]) {
 	double  *device_pists = cl::sycl::malloc_device<double>(pists.size(), q);
 	Point3D *device_spots = cl::sycl::malloc_device<Point3D>(spots.size(), q);
 	double  *device_phase = cl::sycl::malloc_device<double>(phase.size(), q);
+	std::complex<double> *device_spot_fields = cl::sycl::malloc_device<std::complex<double>>(spots.size(), q);
 
 	q.memcpy(device_spots, spots.data(), spots.size() * sizeof(Point3D));
 	q.memcpy(device_pists, pists.data(), pists.size() * sizeof(double));
 	q.wait();
 
-	rs_kernel_naive(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters);
+	// rs_kernel_naive(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters);
 	// rs_kernel_pupil(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters);
 	// rs_kernel_local(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters);
 	// gs_kernel_naive(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters, 30);
-	gs_kernel_pupil(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters, 30);
+	// gs_kernel_pupil(q, static_cast<int>(spots.size()), device_spots, device_pists, device_phase, parameters, 30);
+	gs_kernel_reduction(q, static_cast<int>(spots.size()), device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
 
 	q.wait();
 	q.memcpy(phase.data(), device_phase, phase.size() * sizeof(double));

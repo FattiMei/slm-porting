@@ -35,6 +35,7 @@ int main() {
 	double  *device_pists = cl::sycl::malloc_device<double> (n, q);
 	Point3D *device_spots = cl::sycl::malloc_device<Point3D>(n, q);
 	double  *device_phase = cl::sycl::malloc_device<double> (width * height, q);
+	std::complex<double> *device_spot_fields = cl::sycl::malloc_device<std::complex<double>>(n, q);
 
 	q.memcpy(device_spots, spots, n * sizeof(Point3D));
 	q.memcpy(device_pists, pists, n * sizeof(double));
@@ -80,11 +81,11 @@ int main() {
 	q.memcpy(reference, device_phase, width * height * sizeof(double));
 	q.wait();
 
-	// Restore the pists
-	q.memcpy(device_pists, pists, n * sizeof(double));
-	q.wait();
-
 	{
+		// Restore the pists
+		q.memcpy(device_pists, pists, n * sizeof(double));
+		q.wait();
+
 		gs_kernel_pupil(q, n, device_spots, device_pists, device_phase, parameters, 30);
 		q.wait();
 		q.memcpy(alternative, device_phase, width * height * sizeof(double));
@@ -94,6 +95,26 @@ int main() {
 		const Difference diff = compare_outputs(width, height, reference, alternative);
 
 		std::cout << "gs_kernel_pupil" << std::endl;
+		std::cout << "max abs err: " << diff.linf_norm << std::endl;
+
+		// Restore the pists
+		q.memcpy(device_pists, pists, n * sizeof(double));
+		q.wait();
+	}
+	{
+		// Restore the pists
+		q.memcpy(device_pists, pists, n * sizeof(double));
+		q.wait();
+
+		gs_kernel_reduction(q, n, device_spots, device_pists, device_spot_fields, device_phase, parameters, 30);
+		q.wait();
+		q.memcpy(alternative, device_phase, width * height * sizeof(double));
+		q.wait();
+
+
+		const Difference diff = compare_outputs(width, height, reference, alternative);
+
+		std::cout << "gs_kernel_reduction" << std::endl;
 		std::cout << "max abs err: " << diff.linf_norm << std::endl;
 
 		// Restore the pists
