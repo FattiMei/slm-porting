@@ -35,11 +35,17 @@ int main(int argc, char *argv[]) {
 
 	const std::vector<Point3D> spots = generate_grid_spots(10, 10.0);
 	const std::vector<double>  pists = generate_random_vector(spots.size(), 0.0, 2.0 * M_PI, 1);
-	      std::vector<double>  phase(parameters.width * parameters.height);
+	std::vector<double>  pists_copy = pists;
+	std::vector<double>  phase(parameters.width * parameters.height);
+	std::vector<std::complex<double>> spot_fields(spots.size());
+
+
+	// rs_kernel_pupil_indices_simd(spots.size(), spots.data(), pists.data(), phase.data(), pupil_count, pupil_indices, &parameters);
+	// gs_kernel_naive(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), &parameters, 30);
+	gs_kernel_pupil(spots.size(), spots.data(), pists_copy.data(), spot_fields.data(), phase.data(), pupil_count, pupil_indices, &parameters, 30);
+
+
 	std::ofstream out(argv[1]);
-
-	rs_kernel_pupil_indices_simd(spots.size(), spots.data(), pists.data(), phase.data(), pupil_count, pupil_indices, &parameters);
-
 	write_vector_on_file(phase, parameters.width, parameters.height, out);
 	write_vector_on_file(pists, spots.size(), 1, out);
 	write_spots_on_file(spots, out);
