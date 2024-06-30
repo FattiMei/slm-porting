@@ -93,6 +93,7 @@ void rs_kernel_local(queue &q, const int n, const Point3D spots[], const double 
 
 				const std::complex<double> partial = CEXP(COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[it.get_local_id()], x, y) + pists[it.get_local_id()]);
 
+				// @DESIGN: don't do reductions on std::complex to be compatible with the SSCP
 				const double total_field_real = cl::sycl::reduce_over_group(g, partial.real(), cl::sycl::plus<double>());
 				const double total_field_imag = cl::sycl::reduce_over_group(g, partial.imag(), cl::sycl::plus<double>());
 
@@ -327,8 +328,13 @@ void gs_kernel_block(queue &q, const int n, const Point3D spots[], double pists[
 					const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
 
 					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
-					const std::complex<double> total_field = cl::sycl::reduce_over_group(g, CEXP(p_phase + pists[ispot]), cl::sycl::plus<>());
-					const double total_phase = std::atan2(total_field.imag(), total_field.real());
+					const std::complex<double> partial = CEXP(p_phase + pists[ispot]);
+
+					// @DESIGN: don't do reductions on std::complex to be compatible with the SSCP
+					const double total_field_real = cl::sycl::reduce_over_group(g, partial.real(), cl::sycl::plus<>());
+					const double total_field_imag = cl::sycl::reduce_over_group(g, partial.imag(), cl::sycl::plus<>());
+
+					const double total_phase = std::atan2(total_field_imag, total_field_real);
 
 					const std::complex<double> spot_contribution = CEXP(total_phase - p_phase);
 
