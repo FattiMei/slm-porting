@@ -125,10 +125,42 @@ static void gs_naive(benchmark::State &state) {
 }
 
 
+static void gs_pupil(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_pupil(n, spots, pists, spot_fields, phase, pupil_count, pupil_indices, &parameters, 30);
+	}
+}
+
+
+static void gs_openmp(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_openmp(n, spots, pists, spot_fields, phase, pupil_count, pupil_indices, &parameters, 30);
+	}
+}
+
+
+static void gs_atomic(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_atomic(n, spots, pists, spot_fields, phase, pupil_count, pupil_indices, &parameters, 30);
+	}
+}
+
+
 static void gs_cached(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
 		gs_kernel_cached(n, spots, pists, p_phase_cache, spot_fields, phase, &parameters, 30);
+	}
+}
+
+
+static void gs_reordered(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_naive(n, spots, pists, spot_fields, phase, &parameters, 30);
 	}
 }
 
@@ -146,5 +178,9 @@ BENCHMARK(rs_branch_delay_slot);
 BENCHMARK(rs_cache_constants);
 BENCHMARK(rs_math_cache);
 BENCHMARK(gs_naive);
+BENCHMARK(gs_pupil);
+BENCHMARK(gs_openmp);
+BENCHMARK(gs_atomic);
 BENCHMARK(gs_cached);
+BENCHMARK(gs_reordered);
 BENCHMARK_MAIN();
