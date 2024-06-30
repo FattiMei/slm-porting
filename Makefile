@@ -1,15 +1,15 @@
-CXX        = g++-13
-SYCLCC     = acpp
+CXX        = g++ -fPIE
+SYCLCC     = /home/mmei/programs/acpp/bin/acpp --acpp-targets="cuda:sm_60" -fPIE
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math
 OPENMP     = -fopenmp
-PYTHON     = python3.8
+PYTHON     = python3.10
 
 
 # requires installation of https://github.com/google/benchmark
-GOOGLE_BENCHMARK_INC_DIR = /home/matteo/hpc/programs/benchmark/include
-GOOGLE_BENCHMARK_LIB_DIR = /home/matteo/hpc/programs/benchmark/build/src
+GOOGLE_BENCHMARK_INC_DIR = /home/mmei/benchmark/include
+GOOGLE_BENCHMARK_LIB_DIR = /home/mmei/benchmark/build/src
 
 
 BENCH_INCLUDE = -I $(GOOGLE_BENCHMARK_INC_DIR)
@@ -62,7 +62,7 @@ bench: benchmark
 	./benchmark --benchmark_time_unit=ms --benchmark_filter="^gs*"
 
 
-output.bin: porting
+output.bin: porting_sycl
 	./$^ $@
 
 
