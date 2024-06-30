@@ -1,10 +1,10 @@
 CXX        = g++ -fPIE
-SYCLCC     = /home/mmei/programs/acpp/bin/acpp --acpp-targets="cuda:sm_60" -fPIE
+SYCLCC     = acpp -fPIE
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include
 OPT        = -O2 -march=native -ftree-vectorize -ffast-math
 OPENMP     = -fopenmp
-PYTHON     = python3.10
+PYTHON     = python3.8
 
 
 # requires installation of https://github.com/google/benchmark
@@ -60,6 +60,14 @@ bench: benchmark
 	./benchmark --benchmark_time_unit=ms --benchmark_filter=".*branch.*"
 	./benchmark --benchmark_time_unit=ms --benchmark_filter="^(rs_pupil_indices|rs_simd)"
 	./benchmark --benchmark_time_unit=ms --benchmark_filter="^gs*"
+
+
+bench_sycl: benchmark_sycl
+	./benchmark_sycl --benchmark_time_unit=ms --benchmark_filter="^rs*"
+	# apparently doing gs benchmarks in one program gives wait() errors
+	./benchmark_sycl --benchmark_time_unit=ms --benchmark_filter="gs_sycl_naive"
+	./benchmark_sycl --benchmark_time_unit=ms --benchmark_filter="gs_sycl_pupil"
+	./benchmark_sycl --benchmark_time_unit=ms --benchmark_filter="gs_sycl_reduction"
 
 
 output.bin: porting_sycl
