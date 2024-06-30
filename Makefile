@@ -1,4 +1,4 @@
-CXX        = g++ -fPIE
+CXX        = g++-13 -fPIE
 SYCLCC     = acpp -fPIE
 WARNINGS   = -Wall -Wextra -Wpedantic
 INCLUDE    = -I ./include

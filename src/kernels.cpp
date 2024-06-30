@@ -654,7 +654,7 @@ void gs_kernel_openmp(
 	const	int			iterations
 ) {
 
-	#pragma omp parallel
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
 	{
 		for (int it = 0; it < iterations; ++it) {
 			#pragma omp for
@@ -717,7 +717,7 @@ void gs_kernel_atomic(
 	const	int			iterations
 ) {
 
-	#pragma omp parallel
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
 	{
 		for (int it = 0; it < iterations; ++it) {
 			#pragma omp for
