@@ -70,7 +70,7 @@ bench_sycl: benchmark_sycl
 	./benchmark_sycl --benchmark_time_unit=ms --benchmark_filter="gs_sycl_reduction"
 
 
-output.bin: porting_sycl
+output.bin: porting
 	./$^ $@
 
 
