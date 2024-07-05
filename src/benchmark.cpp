@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include "config.hpp"
 #include "slm.hpp"
 #include "utils.hpp"
 #include "kernels.hpp"
@@ -15,6 +16,7 @@ double  pists[n];
 double  phase[width * height];
 std::complex<double> spot_fields[n];
 double  p_phase_cache[n];
+std::complex<double> spot_fields_private_acc[n * OMP_NUM_THREADS];
 
 extern const int pupil_count;
 extern const int pupil_indices[];
@@ -157,6 +159,14 @@ static void gs_atomic(benchmark::State &state) {
 }
 
 
+static void gs_atomic_but_private_acc(benchmark::State &state) {
+	for (auto _ : state) {
+		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
+		gs_kernel_atomic_private(n, spots, pists, spot_fields, spot_fields_private_acc, phase, pupil_count, pupil_indices, &parameters, 30);
+	}
+}
+
+
 static void gs_cached(benchmark::State &state) {
 	for (auto _ : state) {
 		random_fill(n, pists, 0.0, 2.0 * M_PI, 1);
@@ -190,6 +200,7 @@ BENCHMARK(gs_pupil);
 BENCHMARK(gs_openmp);
 BENCHMARK(gs_openmp_serial);
 BENCHMARK(gs_atomic);
+BENCHMARK(gs_atomic_but_private_acc);
 BENCHMARK(gs_cached);
 BENCHMARK(gs_reordered);
 BENCHMARK_MAIN();

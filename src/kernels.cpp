@@ -824,6 +824,75 @@ void gs_kernel_atomic(
 }
 
 
+void gs_kernel_atomic_private(
+	const	int			n,
+	const	Point3D			spots[],
+		double			pists[],
+		std::complex<double>	spot_fields[],
+		std::complex<double>	spot_fields_private_acc[],
+		double			phase[],
+	const	int			pupil_count,
+	const	int			pupil_indices[],
+	const	SLM::Parameters*	par,
+	const	int			iterations
+) {
+
+	#pragma omp parallel num_threads(OMP_NUM_THREADS)
+	{
+		const int thread_num = omp_get_thread_num();
+
+		for (int it = 0; it < iterations; ++it) {
+			#pragma omp for
+			for (int ispot = 0; ispot < n; ++ispot) {
+				spot_fields[ispot] = std::complex<double>(0.0, 0.0);
+				spot_fields_private_acc[thread_num * n + ispot] = std::complex<double>(0.0, 0.0);
+			}
+
+			#pragma omp for
+			for (int index = 0; index < pupil_count; ++index) {
+				const int i = pupil_indices[index] % WIDTH;
+				const int j = pupil_indices[index] / WIDTH;
+
+				const double x = PIXEL_SIZE * LINSPACE(-1.0, 1.0, WIDTH,  i) * static_cast<double>(WIDTH)  / 2.0;
+				const double y = PIXEL_SIZE * LINSPACE(-1.0, 1.0, HEIGHT, j) * static_cast<double>(HEIGHT) / 2.0;
+
+				std::complex<double> total_field(0.0, 0.0);
+
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+
+					total_field += CEXP(p_phase + pists[ispot]);
+				}
+
+				const double total_phase = std::arg(total_field);
+				phase[j * WIDTH + i] = total_phase;
+
+				for (int ispot = 0; ispot < n; ++ispot) {
+					const double p_phase = COMPUTE_P_PHASE(WAVELENGTH, FOCAL_LENGTH, spots[ispot], x, y);
+					spot_fields_private_acc[thread_num * n + ispot] += CEXP(total_phase - p_phase);
+				}
+			}
+
+			// commit the information, but how?
+			#pragma omp critical
+			{
+				for (int ispot = 0; ispot < n; ++ispot) {
+					spot_fields[ispot] += spot_fields_private_acc[thread_num * n + ispot];
+				}
+			}
+
+			#pragma omp for
+			for (int ispot = 0; ispot < n; ++ispot) {
+				pists[ispot] = std::arg(spot_fields[ispot]);
+			}
+
+		}
+
+		#pragma omp barrier
+	}
+}
+
+
 void gs_kernel_cached(
 	const	int			n,
 	const	Point3D			spots[],
