@@ -1,94 +1,35 @@
 # slm-porting
+This project extends the work of [Paolo Pozzi](https://github.com/ppozzi) for *"generating 3D point cloud holograms, with phase only spatial light modulators, in real time through a GPU implementation of 5 algorithms (random superposition, Gerchberg-Saxton, weighted Gerchberg-Saxton, compressed sensing Gerchberg-Saxton, compressed sensing weighted Gerchberg-Saxton)"*
 
-## DISCLAIMER
-I do not own the rights of:
- * csgs.py
- * example.py
- * slm_3dpointcloud.py
+The original repositories are available at:
+  * [SLM-3dPointCloud](https://github.com/ppozzi/SLM-3dPointCloud) for a real time NVidia GPU implementation
+  * [compressive-sensing-Gerchberg-Saxton](https://github.com/csi-dcsc/compressive-sensing-Gerchberg-Saxton) for a CPU only implementation (if you have NVidia hardware, prefer the first one)
 
+### Goals
+I want to explore the vector programming paradigm, which is implemented by the `numpy` library. Describing the hologram algorithms as tensor operations allows the user to:
+  * reduce the number of for loops written
+  * keep writing in a high level language like python
+  * **performance portability:** access different backends (openmp, cuda, opencl) with minimal modifications to the code
 
-but I will modify them to suit my needs. I don't take any responsability for the use or misuse of the programs in this repository.
+Since tensor operations are very well understood patterns, it's likely that off-the-shelf implementations will beat hand written kernels, this project will test this hypothesis.
 
+### Tech stack
+I propose to map the same algorithm into the following python libraries:
+  * [numpy](https://numpy.org/)
+  * [jax](https://docs.jax.dev/en/latest/) - should have support for GPU execution
+  * [pyTorch](https://pytorch.org/) - should support a wide variety of backends, including non-NVidia GPUs
+  * [Triton](https://triton-lang.org/main/index.html)
 
-## Key people
-Project developed under the supervision of:
- * Gianluca Palermo
- * Gianmarco Accordi
- * Davide Gadioli
+the performance will be compared against heavily hand optimized solutions in C++ and SYCL. Keep in mind that even in case of a tie the **hand optimized solutions have required engineering effort and specialized low-level knowledge**. The original algorithm designers may not be willing to invest time and money in optimizing a suboptimal solution, rather they'd want to explore the design space of algorithms given a rough estimation of the performance. This is something for which the chosen high-level libraries proposed have been designed and marketed.
 
+## Architecture
+All the algorithm proposed, namely:
+  * rs
+  * gs
+  * wgs
+  * csgs
+  * wcsgs
 
-## Proposed goals
- * Understand the kernels in `csgs.py` and produce an equivalent serial implementation in C/C++
- * Measure the correctness of the new version (but keep in mind that C++ and numpy random generators are different)
- * Port the `slm_3dpointcloud.py` + `example.py` application to C/C++ while still using CUDA and openGL
- * Squeeze some performance out of the kernels
- * Get rid of CUDA and port the kernels to SYCL
- * Build a pipeline for automatically evaluate kernel performance and correctness
+share a common signature. They take as input a vector of points, the SLM configuration, and produce a 2D vector representing the input signals of the spatial light modulator to generate the desired hologram. Since every algorithm perform the same preprocessing on the inputs, I decided to encapsulate this logic in the base class `BaseSLM`.
 
-
-## Agreed goals
-...
-
-
-## Development steps
-`csgs.py`
- * Remove the indeterminism in the kernel invocation (fixed seed)
- * Annotate shapes in all data used (done for rs, others still in progress)
- * Produce regression tests with adequate makefile rules (partially solved by `regression.py`)
- * (HARD) setup remote pipeline for testing and reporting results
-
-`slm_3dpointcloud.py`
- * Build a virtual environment that takes care of the many dependencies (virtual environment or maybe Docker??)
- * Search on the internet the way to properly install pycuda with openGL support
- * Run on an NVIDIA machine the script once
- * Separate CUDA code in its own file
- * Solve kernel parameter hell (see Critical path section)
-
-The oldest file also gave me the most detailed information about the kernels, and producing the serial version makes sense of the algorithm.
-
-
-## Critical path
-Understand the relation between `csgs.py` and `slm_3dpointcloud.py`. It seems that the latter builds on top of the basic kernels, but implements them in CUDA and does obfuscated parameter passing (we'll figure it out).
-The parameter passing was an emergent behaviour, every kernel needs pretty much the same data and it's often run-time constants (e.g wavelength, pitch, focal length...), it is advisable to pass this information in a pointer to a struct. I will still need some benchmark to assess the performance difference for this new parameter passing.
-
-
-## Testing procedure
- 1. Strip away the rng from the python kernels
- 2. Output the random data from the cpp application
- 3. Load such data into python kernels and compare the two implementations
-
-Unfortunately this approach falls short for compressive kernels (csgs and wcsgs) because the process of sampling pupil points is hard to port:
- * python computes all the pupil points, shuffles them and then take chunks for computation
- * cpp decides to accept or decline every pupil point based on a Bernoulli outcome
-
-Since I completely removed the computation of all pupil points for performance reasons (big memory footprint), I won't port the python kernels as-is. To make tests like all the other kernels I would have to modify the python implementation but such changes couldn't be tested against the original implementation (I'm talking about deterministic tests here).
-For these reasons the testing for the csgs and wcsgs kernels will be only visual, until I find some weaker tests.
-
-
-## Profiling procedure
-I propose an hybrid strategy:
- 1. `gprof` profiling for high level information, to know where the kernel spend time
- 2. google benchmark for assessing the effects of optimizations in kernels
-
-
-## Interactivity issues
-The kernel invocations take a very long time, it's not possible to interact with the application when the kernels are working, I proposed a multithreading solution that still needs to be researched, also to avoid compatibility with the openMP integration
-
-
-## SYCL
-https://github.com/cagnulein/sycl-benchmarks
-https://pramodkumbhar.com/2019/07/intels-one-api-what-we-know-and-how-to-get-ready/
-
-
-## Presentation points
-Remove calls to exp function: a principle about doing only the essential computation
-Engineering analysis about improvement on performance on rs kernel, measures and estimation of improvement on gs kernel (extrapolation, ahmdal's law)
-linspace - inline or not? Does it matter?
-
-// replicate the same memory access patterns, but use simple arithmetic operations
-// it's the best performance we could expect from this system
-
-
-## SIMD
-Finally I implemented SIMD into rs kernel, but I've got a problem with spawning threads. If I spawn as much threads as cores, SIMD give me a good speedup. If I spawn double the threads SIMD is slightly worse. The explanation I give is that each kernel has only one vectorized unit to be shared by the two threads.
-Of course I need to experiment with SIMD_LANE_SIZE, and really try to convince the compiler to store x[] and y[] vectors only into registers and not into memory. It may involve writing directly assembly.
+Every possible algorithm would be tied to a particular derived class of `BaseSLM` an would expose the method `compute(points)`. Additional performance metric will be evaluated for every implementation.
