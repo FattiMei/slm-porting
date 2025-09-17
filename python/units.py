@@ -1,14 +1,12 @@
 import unittest
 import itertools
 import numpy as np
-from enum import Enum
 
 
-class Power(Enum):
-    one   = 1
-    milli = 10**(-3)
-    micro = 10**(-6)
-    nano  = 10**(-9)
+ONE = 1
+MILLI = -3
+MICRO = -6
+NANO = -9
 
 
 class Length:
@@ -19,31 +17,42 @@ class Length:
     interface is good, so we can always improve it without
     changing other code
     '''
-    def __init__(self, mantissa: float, order_of_magnitude: Power = Power.one):
-        self.value = mantissa * order_of_magnitude.value
+    def __init__(self, mantissa: float, order_of_magnitude: int = 1):
+        self.value = mantissa * (10**order_of_magnitude)
 
-    def convert_to(self, order_of_magnitude: Power) -> float:
-        return self.value / order_of_magnitude.value
+    def convert_to(self, order_of_magnitude: int) -> float:
+        return self.value * (10**-order_of_magnitude)
 
 
 class TestLength(unittest.TestCase):
-    def test_conversion_down_base(self):
-        l = Length(1.0)
-        millimeters = l.convert_to(Power.milli)
+    def test_conversion_down(self):
+        mantissa = 1.0
+        l = Length(mantissa)
+        millimeters = l.convert_to(MILLI)
 
         self.assertTrue(np.allclose(
             millimeters,
             l.value * 1000.0
         ))
 
+    def test_conversion_up(self):
+        mantissa = 0.324
+        l = Length(mantissa, MICRO)
+        millimeters = l.convert_to(MILLI)
+
+        self.assertTrue(np.allclose(
+            millimeters,
+            mantissa / 1000.0
+        ))
+
     def test_identity(self):
         mantissa = 3.14
-        exponents = [Power.one, Power.milli, Power.micro, Power.nano]
+        orders = [ONE, MILLI, MICRO, NANO]
 
-        for (e1, e2) in itertools.product(exponents, exponents):
-            l = Length(mantissa, e1)
-            m = Length(l.convert_to(e2), e2)
-            n = Length(m.convert_to(e1), e1)
+        for (o1, o2) in itertools.product(orders, orders):
+            l = Length(mantissa, o1)
+            m = Length(l.convert_to(o2), o2)
+            n = Length(m.convert_to(o1), o1)
 
             self.assertTrue(np.allclose(l.value, n.value))
 
