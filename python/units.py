@@ -16,11 +16,13 @@ class Length:
     This means it could lose some precision, fortunately the
     interface is good, so we can always improve it without
     changing other code
+
+    A nice addition is that it works with numpy arrays out of the box
     '''
-    def __init__(self, mantissa: float, order_of_magnitude: int = 1):
+    def __init__(self, mantissa, order_of_magnitude: int = 1):
         self.value = mantissa * (10**order_of_magnitude)
 
-    def convert_to(self, order_of_magnitude: int) -> float:
+    def convert_to(self, order_of_magnitude: int):
         return self.value * (10**-order_of_magnitude)
 
 
@@ -55,6 +57,14 @@ class TestLength(unittest.TestCase):
             n = Length(m.convert_to(o1), o1)
 
             self.assertTrue(np.allclose(l.value, n.value))
+
+    def test_numpy_integration(self):
+        l = Length(np.random.random(100), ONE)
+
+        self.assertTrue(np.allclose(
+            l.value * 1000.0,
+            l.convert_to(MILLI)
+        ))
 
 
 if __name__ == '__main__':
