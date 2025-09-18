@@ -20,9 +20,13 @@ def precompute_pupil_data(resolution: int, pixel_size: Length, dtype):
     xx, yy = np.meshgrid(mesh, mesh)
     pupil_idx = np.where(xx**2 + yy**2 < 1.0)
 
-    xx = xx * pixel_size.convert_to(units.MICRO) * resolution / 2.0
-    yy = xx
+    # maybe `xx` could be of type `Length`, we have proof that it's possible
+    # now `xx` is a list of scalars, we don't have anymore the cartesian product structure
+    xx = xx[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
+    yy = yy[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
+
     assert(xx.dtype == dtype)
+    assert(xx.ndim == 1)
 
     return pupil_idx, xx, yy
 
@@ -56,6 +60,11 @@ class SLM:
             dtype
         )
 
+        # these are coefficients used in every algorithm
+        # for the `slm_p_phase` calculation, we compute them at once
+        self.C1 = 2*np.pi / (wavelength.convert_to(units.MICRO) * focal.convert_to(units.MICRO))
+        self.C2 = np.pi / (wavelength.convert_to(units.MICRO) * focal.convert_to(units.MICRO)**2)
+
 
 class TestSLM(unittest.TestCase):
     def test_constructor(self):
@@ -69,6 +78,11 @@ class TestSLM(unittest.TestCase):
         for dtype in [np.float32, np.float64, np.float128]:
             with self.subTest(dtype=dtype):
                 slm = SLM(focal, pixel_size, wavelength, resolution, dtype)
+
+    # TODO: there was a bug in the pupil coordinates generation,
+    # make a regression test
+    def test_xx_yy(self):
+        pass
 
 
 if __name__ == '__main__':
