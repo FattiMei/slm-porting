@@ -2,7 +2,7 @@ import units
 from units import Length
 from slm import SLM
 from rng import NumpyRng
-from algorithms import rs
+from algorithms import rs, compute_quality_metrics
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,7 +28,10 @@ if __name__ == '__main__':
     end_time = perf_counter()
     delta = end_time - start_time
 
+    metrics = compute_quality_metrics(slm, x, y, z, phase)
+
     print(f'rs algorithm (NPOINTS={NPOINTS}): {delta:.2g} s')
+    print(metrics)
 
     plt.title("rs algorithm")
     plt.imshow(phase)
