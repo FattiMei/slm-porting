@@ -46,7 +46,7 @@ def rs_soa_pupil(x, y, z, xx, yy, C1, C2, rng: NumpyRng) -> np.ndarray:
                 1j * (
                     C1 * (x[:,ε]*xx[ε,:] + y[:,ε]*yy[ε,:]) +
                     C2 * z[:,ε] * (xx**2 + yy**2)[ε,:] +
-                    2*np.pi*pists
+                    2*np.pi*pists[:,ε]
                 )
             ),
             axis=0
@@ -78,7 +78,7 @@ def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> QualityMetrics:
         axis=1
     )
 
-    intensity = np.dot(avg_spot_field, avg_spot_field)
+    intensity = np.abs(avg_spot_field)**2
     imin = np.min(intensity)
     imax = np.max(intensity)
 

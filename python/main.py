@@ -1,8 +1,8 @@
 import units
 from units import Length
+import backend_numpy
 from slm import SLM
 from rng import NumpyRng
-from algorithms import rs, compute_quality_metrics
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,15 +24,27 @@ if __name__ == '__main__':
     z =  10.0 * (np.random.random(NPOINTS)-0.5)
 
     start_time = perf_counter()
-    phase = rs(slm, x, y, z, NumpyRng(seed=42))
+    phase = backend_numpy.rs_soa_pupil(
+        x, y, z,
+        slm.xx, slm.yy,
+        slm.C1, slm.C2,
+        NumpyRng(seed=42)
+    )
     end_time = perf_counter()
     delta = end_time - start_time
 
-    metrics = compute_quality_metrics(slm, x, y, z, phase)
+    metrics = backend_numpy.compute_metrics_soa_pupil(
+        x, y, z,
+        slm.xx, slm.yy,
+        slm.C1, slm.C2,
+        phase
+    )
 
     print(f'rs algorithm (NPOINTS={NPOINTS}): {delta:.2g} s')
     print(metrics)
 
     plt.title("rs algorithm")
-    plt.imshow(phase)
+    surf = np.zeros((slm.resolution, slm.resolution))
+    surf[slm.pupil_idx] = phase
+    plt.imshow(surf)
     plt.show()
