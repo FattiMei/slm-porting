@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(slm-porting CXX)
 
-find_package(Python3 REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 # for now the python tests are made by calling independent programs that perform unit testing
 enable_testing()
