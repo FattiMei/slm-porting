@@ -1,6 +1,6 @@
 import unittest
 import itertools
-import numpy as np
+from dependency_manager import DEPS
 
 
 ONE = 1
@@ -32,20 +32,14 @@ class TestLength(unittest.TestCase):
         l = Length(mantissa)
         millimeters = l.convert_to(MILLI)
 
-        self.assertTrue(np.allclose(
-            millimeters,
-            l.value * 1000.0
-        ))
+        self.assertTrue(millimeters == l.value * 1000.0)
 
     def test_conversion_up(self):
         mantissa = 0.324
         l = Length(mantissa, MICRO)
         millimeters = l.convert_to(MILLI)
 
-        self.assertTrue(np.allclose(
-            millimeters,
-            mantissa / 1000.0
-        ))
+        self.assertTrue(millimeters == mantissa / 1000.0)
 
     def test_identity(self):
         mantissa = 3.14
@@ -56,15 +50,22 @@ class TestLength(unittest.TestCase):
             m = Length(l.convert_to(o2), o2)
             n = Length(m.convert_to(o1), o1)
 
-            self.assertTrue(np.allclose(l.value, n.value))
+            # there may be round off errors so the
+            # comparison mustn't be exact
+            self.assertTrue(abs(l.value - n.value) < 1e-8)
 
     def test_numpy_integration(self):
-        l = Length(np.random.random(100), ONE)
+        if 'numpy' in DEPS:
+            np = DEPS['numpy']
+            l = Length(np.random.random(100), ONE)
 
-        self.assertTrue(np.allclose(
-            l.value * 1000.0,
-            l.convert_to(MILLI)
-        ))
+            self.assertTrue(np.allclose(
+                l.value * 1000.0,
+                l.convert_to(MILLI)
+            ))
+
+        else:
+            self.skipTest("numpy is not available")
 
 
 if __name__ == '__main__':
