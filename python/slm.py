@@ -1,7 +1,9 @@
-import numpy as np
 import units
 from units import Length
 import unittest
+
+import dependency_manager
+np = dependency_manager.dep('numpy')
 
 
 '''
@@ -24,9 +26,6 @@ def precompute_pupil_data(resolution: int, pixel_size: Length, dtype):
     # now `xx` is a list of scalars, we don't have anymore the cartesian product structure
     xx = xx[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
     yy = yy[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
-
-    assert(xx.dtype == dtype)
-    assert(xx.ndim == 1)
 
     return pupil_idx, xx, yy
 
@@ -73,16 +72,12 @@ class TestSLM(unittest.TestCase):
         wavelength = units.Length(488.0, units.NANO)
         resolution = 512
 
-        # WARNING: when computing in float16, the arrays are promoted
-        # to a larger type
-        for dtype in [np.float32, np.float64, np.float128]:
+        for dtype in [np.float16, np.float32, np.float64, np.float128]:
             with self.subTest(dtype=dtype):
                 slm = SLM(focal, pixel_size, wavelength, resolution, dtype)
 
-    # TODO: there was a bug in the pupil coordinates generation,
-    # make a regression test
-    def test_xx_yy(self):
-        pass
+                self.assertTrue(slm.xx.dtype == dtype)
+                self.assertTrue(slm.yy.dtype == dtype)
 
 
 if __name__ == '__main__':

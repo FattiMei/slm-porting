@@ -1,6 +1,6 @@
 import unittest
 import itertools
-from dependency_manager import DEPS
+import dependency_manager
 
 
 ONE = 1
@@ -55,8 +55,8 @@ class TestLength(unittest.TestCase):
             self.assertTrue(abs(l.value - n.value) < 1e-8)
 
     def test_numpy_integration(self):
-        if 'numpy' in DEPS:
-            np = DEPS['numpy']
+        try:
+            np = dependency_manager.dep('numpy')
             l = Length(np.random.random(100), ONE)
 
             self.assertTrue(np.allclose(
@@ -64,7 +64,7 @@ class TestLength(unittest.TestCase):
                 l.convert_to(MILLI)
             ))
 
-        else:
+        except ImportError:
             self.skipTest("numpy is not available")
 
 
