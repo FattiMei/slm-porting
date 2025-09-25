@@ -1,5 +1,6 @@
-import numpy as np
-from rng import NumpyRng
+import dependency_manager
+np = dependency_manager.dep('numpy')
+
 from common import QualityMetrics
 
 
@@ -37,9 +38,7 @@ is compromised. Wrapper functions could then profile the computation as the sequ
 The glue code is yet to be written but it will have to solve the problem of minimizing the amount
 of redundant arguments across devices and backends
 '''
-def rs_soa_pupil(x, y, z, xx, yy, C1, C2, rng: NumpyRng) -> np.ndarray:
-    pists = rng.sample(shape=x.shape, dtype=x.dtype)
-
+def rs_soa_pupil(x, y, z, xx, yy, C1, C2, pists) -> np.ndarray:
     return np.angle(
         np.mean(
             np.exp(
