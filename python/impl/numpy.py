@@ -1,7 +1,6 @@
 import dependency_manager
 np = dependency_manager.dep('numpy')
-
-from common import QualityMetrics
+import slm
 
 
 ε = np.newaxis
@@ -65,7 +64,7 @@ than computation.
     | recompute |    O(N+M)     |   O(N*M)     |
     +-----------+---------------+--------------+
 '''
-def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> QualityMetrics:
+def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> slm.QualityMetrics:
     avg_spot_field = np.mean(
         np.exp(
             1j * (
@@ -81,7 +80,7 @@ def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> QualityMetrics:
     imin = np.min(intensity)
     imax = np.max(intensity)
 
-    return QualityMetrics(
+    return slm.QualityMetrics(
         efficiency = np.sum(intensity),
         uniformity = 1 - (imax-imin)/(imax+imin),
         variance   = np.sqrt(np.var(intensity)) / np.mean(intensity)

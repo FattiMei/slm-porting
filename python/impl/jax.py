@@ -2,7 +2,7 @@ import dependency_manager
 jax = dependency_manager.dep('jax')
 jnp = jax.numpy
 
-from common import QualityMetrics
+import slm
 from functools import partial
 
 
