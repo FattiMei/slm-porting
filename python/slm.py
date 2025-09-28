@@ -45,12 +45,12 @@ class SLM:
         self.C2 =   np.pi / (wavelength.convert_to(Unit.MICROMETERS) * focal.convert_to(Unit.MICROMETERS)**2)
 
     def get_standard_slm():
-        focal      = units.Length(20.0, Unit.MILLIMETERS)
-        pixel_size = units.Length(15.0, Unit.MICROMETERS)
-        wavelength = units.Length(488.0, Unit.NANOMETERS)
+        focal      = Length(20.0, Unit.MILLIMETERS)
+        pixel_size = Length(15.0, Unit.MICROMETERS)
+        wavelength = Length(488.0, Unit.NANOMETERS)
         resolution = 512
 
-        return SLM(focal, pixel_size, wavelength, resolution, dtype)
+        return SLM(focal, pixel_size, wavelength, resolution)
 
 
 class TestSLM(unittest.TestCase):
@@ -66,6 +66,9 @@ class TestSLM(unittest.TestCase):
 
                 self.assertTrue(slm.xx.dtype == dtype)
                 self.assertTrue(slm.yy.dtype == dtype)
+
+    def test_standard_creation(self):
+        slm = SLM.get_standard_slm()
 
 
 class QualityMetrics(NamedTuple):
