@@ -17,7 +17,7 @@ class Executor(ABC):
         self.yy = self._convert_from_numpy_to_native(yy)
 
     @abstractmethod
-    ''' this can be used to select the float dtype'''
+    # this can be used to select the float dtype
     def _convert_from_numpy_to_native(self, x: np.ndarray):
         pass
 
@@ -27,14 +27,14 @@ class Executor(ABC):
 
     # all the algorithms implemetations, maybe I could do them with some metaprogramming
     @abstractmethod
-    def _rs(x, y, z, xx, yy, C1, C2, pists):
+    def _rs(self, x, y, z, xx, yy, C1, C2, pists):
         pass
 
-    def rs(x, y, z, pists) -> np.ndarray:
-        x = _convert_from_numpy_to_native(x)
-        y = _convert_from_numpy_to_native(y)
-        z = _convert_from_numpy_to_native(z)
-        pists = _convert_from_numpy_to_native(pists)
+    def rs(self, x, y, z, pists) -> np.ndarray:
+        x = self._convert_from_numpy_to_native(x)
+        y = self._convert_from_numpy_to_native(y)
+        z = self._convert_from_numpy_to_native(z)
+        pists = self._convert_from_numpy_to_native(pists)
 
         return self._convert_from_native_to_numpy(
             self._rs(
