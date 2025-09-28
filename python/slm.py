@@ -1,10 +1,9 @@
 import dependency_manager
 np = dependency_manager.dep('numpy')
 
-import units
-from units import Length
-import unittest
+from units import Length, Unit
 from typing import NamedTuple
+import unittest
 
 
 def precompute_pupil_data(resolution: int, pixel_size: Length, dtype):
@@ -15,10 +14,9 @@ def precompute_pupil_data(resolution: int, pixel_size: Length, dtype):
     xx, yy = np.meshgrid(mesh, mesh)
     pupil_idx = np.where(xx**2 + yy**2 < 1.0)
 
-    # maybe `xx` could be of type `Length`, we have proof that it's possible
     # now `xx` is a list of scalars, we don't have anymore the cartesian product structure
-    xx = xx[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
-    yy = yy[pupil_idx] * pixel_size.convert_to(units.MICRO) * resolution / 2.0
+    xx = xx[pupil_idx] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0
+    yy = yy[pupil_idx] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0
 
     return pupil_idx, xx, yy
 
@@ -43,29 +41,23 @@ class SLM:
             dtype
         )
 
-        self.C1 = 2*np.pi / (wavelength.convert_to(units.MICRO) * focal.convert_to(units.MICRO))
-        self.C2 = np.pi / (wavelength.convert_to(units.MICRO) * focal.convert_to(units.MICRO)**2)
+        self.C1 = 2*np.pi / (wavelength.convert_to(Unit.MICROMETERS) * focal.convert_to(Unit.MICROMETERS))
+        self.C2 =   np.pi / (wavelength.convert_to(Unit.MICROMETERS) * focal.convert_to(Unit.MICROMETERS)**2)
 
     def get_standard_slm():
-        focal      = units.Length(20.0, units.MILLI)
-        pixel_size = units.Length(15.0, units.MICRO)
-        wavelength = units.Length(488.0, units.NANO)
+        focal      = units.Length(20.0, Unit.MILLIMETERS)
+        pixel_size = units.Length(15.0, Unit.MICROMETERS)
+        wavelength = units.Length(488.0, Unit.NANOMETERS)
         resolution = 512
 
         return SLM(focal, pixel_size, wavelength, resolution, dtype)
 
 
-class QualityMetrics(NamedTuple):
-    efficiency: float
-    uniformity: float
-    variance:   float
-
-
 class TestSLM(unittest.TestCase):
     def test_constructor(self):
-        focal      = units.Length(20.0, units.MILLI)
-        pixel_size = units.Length(15.0, units.MICRO)
-        wavelength = units.Length(488.0, units.NANO)
+        focal      = Length(20.0, Unit.MILLIMETERS)
+        pixel_size = Length(15.0, Unit.MICROMETERS)
+        wavelength = Length(488.0, Unit.NANOMETERS)
         resolution = 512
 
         for dtype in [np.float16, np.float32, np.float64, np.float128]:
@@ -74,6 +66,12 @@ class TestSLM(unittest.TestCase):
 
                 self.assertTrue(slm.xx.dtype == dtype)
                 self.assertTrue(slm.yy.dtype == dtype)
+
+
+class QualityMetrics(NamedTuple):
+    efficiency: float
+    uniformity: float
+    variance:   float
 
 
 if __name__ == '__main__':
