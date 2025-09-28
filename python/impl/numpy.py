@@ -18,9 +18,9 @@ class NumpyExecutor(Executor):
     def _convert_from_native_to_numpy(self, native):
         return native
 
-    def _rs(x, y, z, xx, yy, C1, C2, pists):
+    def _rs(self, x, y, z, xx, yy, C1, C2, pists):
         return rs_soa_pupil(
-            x, y, z
+            x, y, z,
             xx, yy,
             C1, C2,
             pists
@@ -46,7 +46,7 @@ def rs_soa_pupil(x, y, z, xx, yy, C1, C2, pists) -> np.ndarray:
     )
 
 
-def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> slm.QualityMetrics:
+def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> QualityMetrics:
     avg_spot_field = np.mean(
         np.exp(
             1j * (
@@ -62,7 +62,7 @@ def compute_metrics_soa_pupil(x, y, z, xx, yy, C1, C2, phase) -> slm.QualityMetr
     imin = np.min(intensity)
     imax = np.max(intensity)
 
-    return slm.QualityMetrics(
+    return QualityMetrics(
         efficiency = np.sum(intensity),
         uniformity = 1 - (imax-imin)/(imax+imin),
         variance   = np.sqrt(np.var(intensity)) / np.mean(intensity)
