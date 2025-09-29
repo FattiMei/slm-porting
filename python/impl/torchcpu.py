@@ -16,11 +16,11 @@ class TorchCpuExecutor(Executor):
     def _convert_from_native_to_numpy(self, native):
         return native.numpy(force=True)
 
-    def _rs(self, x, y, z, xx, yy, C1, C2, pists):
+    def _rs(self, x, y, z, pists):
         return rs_soa_pupil(
             x, y, z,
-            xx, yy,
-            C1, C2,
+            self.xx, self.yy,
+            self.C1, self.C2,
             pists
         )
 

@@ -37,10 +37,5 @@ class Executor(ABC):
         pists = self._convert_from_numpy_to_native(pists)
 
         return self._convert_from_native_to_numpy(
-            self._rs(
-                x, y, z,
-                self.xx, self.yy,
-                self.C1, self.C2,
-                pists
-            )
+            self._rs(x, y, z, pists)
         )

@@ -8,9 +8,6 @@ from executor import Executor
 from functools import partial
 
 
-ε = jnp.newaxis
-
-
 class JaxCpuExecutor(Executor):
     def __init__(self, slm: SLM):
         super().__init__(slm)
@@ -21,17 +18,20 @@ class JaxCpuExecutor(Executor):
     def _convert_from_native_to_numpy(self, native):
         return np.array(native)
 
-    def _rs(self, x, y, z, xx, yy, C1, C2, pists):
+    def _rs(self, x, y, z, pists):
         return rs_soa_pupil(
             x, y, z,
-            xx, yy,
-            C1, C2,
+            self.xx, self.yy,
+            self.C1, self.C2,
             pists
         )
 
 
 def get_executor(slm: SLM):
     return JaxCpuExecutor(slm)
+
+
+ε = jnp.newaxis
 
 
 @partial(jax.jit, static_argnames=('C1', 'C2'))

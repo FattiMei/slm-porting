@@ -5,9 +5,6 @@ from slm import SLM, QualityMetrics
 from executor import Executor
 
 
-ε = np.newaxis
-
-
 class NumpyExecutor(Executor):
     def __init__(self, slm: SLM):
         super().__init__(slm)
@@ -18,17 +15,20 @@ class NumpyExecutor(Executor):
     def _convert_from_native_to_numpy(self, native):
         return native
 
-    def _rs(self, x, y, z, xx, yy, C1, C2, pists):
+    def _rs(self, x, y, z, pists):
         return rs_soa_pupil(
             x, y, z,
-            xx, yy,
-            C1, C2,
+            self.xx, self.yy,
+            self.C1, self.C2,
             pists
         )
 
 
 def get_executor(slm: SLM):
     return NumpyExecutor(slm)
+
+
+ε = np.newaxis
 
 
 def rs_soa_pupil(x, y, z, xx, yy, C1, C2, pists) -> np.ndarray:
