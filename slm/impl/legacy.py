@@ -1,9 +1,8 @@
-import dependency_manager
-np = dependency_manager.dep('numpy')
-
-from units import Unit
-from slm import SLM, QualityMetrics
-from executor import Executor
+from slm.common.units import Unit
+from slm.common.slm import SLM, QualityMetrics
+from slm.common.executor import Executor
+from slm.common.loader import load
+np = load('numpy')
 
 
 class LegacyExecutor(Executor):

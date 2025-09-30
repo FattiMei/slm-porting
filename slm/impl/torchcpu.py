@@ -1,9 +1,8 @@
-import dependency_manager
-np = dependency_manager.dep('numpy')
-torch = dependency_manager.dep('torch')
-
-from slm import SLM, QualityMetrics
-from executor import Executor
+from slm.common.slm import SLM, QualityMetrics
+from slm.common.executor import Executor
+from slm.common.loader import load
+np = load('numpy')
+torch = load('torch')
 
 
 class TorchCpuExecutor(Executor):

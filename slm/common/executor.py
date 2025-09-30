@@ -1,8 +1,8 @@
-import dependency_manager
-np = dependency_manager.dep('numpy')
-
 from abc import ABC, abstractmethod
-from slm import SLM
+
+from slm.common.slm import SLM
+from slm.common.loader import load
+np = load('numpy')
 
 
 class Executor(ABC):

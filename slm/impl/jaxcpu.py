@@ -1,11 +1,11 @@
-import dependency_manager
-np = dependency_manager.dep('numpy')
-jax = dependency_manager.dep('jax')
-jnp = jax.numpy
-
-from slm import SLM, QualityMetrics
-from executor import Executor
 from functools import partial
+from slm.common.slm import SLM, QualityMetrics
+from slm.common.executor import Executor
+from slm.common.loader import load
+
+np = load('numpy')
+jax = load('jax')
+jnp = jax.numpy
 
 
 class JaxCpuExecutor(Executor):

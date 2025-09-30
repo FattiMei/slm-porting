@@ -1,7 +1,9 @@
 import unittest
 import itertools
-import dependency_manager
 from enum import Enum
+
+from slm.common.loader import load
+np = load('numpy')
 
 
 class Unit(Enum):
@@ -49,7 +51,6 @@ class TestLength(unittest.TestCase):
 
     def test_numpy_integration(self):
         try:
-            np = dependency_manager.dep('numpy')
             l = Length(np.random.random(100))
 
             self.assertTrue(np.allclose(

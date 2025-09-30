@@ -1,9 +1,9 @@
-import dependency_manager
-np = dependency_manager.dep('numpy')
-
-from units import Length, Unit
-from typing import NamedTuple
 import unittest
+from typing import NamedTuple
+
+from slm.common.units import Length, Unit
+from slm.common.loader import load
+np = load('numpy')
 
 
 def precompute_pupil_data(resolution: int, pixel_size: Length, dtype):
