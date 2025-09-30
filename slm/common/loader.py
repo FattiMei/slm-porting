@@ -49,17 +49,12 @@ def get_available_backends() -> dict:
     root_path = pathlib.Path(__file__).parent.parent
     impl_path = root_path / 'impl'
 
-    print(root_path)
-
     backends = {}
     for _, name, _ in pkgutil.iter_modules([str(impl_path)]):
-        print(name)
-        backends[name] = importlib.import_module(f'slm.impl.{name}')
-
-        # try:
-        #     backends[name] = importlib.import_module(f'impl.{name}')
-        # except ImportError:
-        #     pass
+        try:
+            backends[name] = importlib.import_module(f'slm.impl.{name}')
+        except ImportError:
+            pass
 
     return backends
 
@@ -70,7 +65,7 @@ def print_available_backends(backends=None):
 
     print('Available backends:')
     for b in backends.keys():
-        print(f'  * b')
+        print(f'  * {b}')
 
 
 class TestDependencyLoad(unittest.TestCase):

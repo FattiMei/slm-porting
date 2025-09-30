@@ -1,7 +1,7 @@
 from slm.common.slm import SLM, QualityMetrics
 from slm.common.executor import Executor
 from slm.common.loader import load
-np = dependency.load('numpy')
+np = load('numpy')
 
 
 class NumpyExecutor(Executor):

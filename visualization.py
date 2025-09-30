@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 
 from time import perf_counter
 from slm.common.slm import SLM
-from slm.common.backends import get_available_backends
-from slm.common.loader import load
+from slm.common.loader import load, get_available_backends, print_available_backends
 np = load('numpy')
 
 
@@ -45,17 +44,13 @@ if __name__ == '__main__':
     nspots = args.nspots
 
     slm = SLM.get_standard_slm()
-    available_backends = dependency_manager.get_available_backends()
+    available_backends = get_available_backends()
 
     try:
         executor = available_backends[requested_backend].get_executor(slm)
     except KeyError:
-        print(f'Backend "{requested_backend}" is not supported')
-        print(f'Available backends:')
-
-        for backend in available_backends.keys():
-            print(f'  * {backend}')
-
+        print(f'Requested backend "{requested_backend}" is not supported')
+        print_available_backends(available_backends)
         exit()
 
     rng = np.random.default_rng(seed)
