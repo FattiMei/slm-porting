@@ -40,15 +40,15 @@ def rs_soa_gen(x, y, z, focal_mm, pixel_size_um, wavelength_um, resolution, pist
     xx, yy = np.meshgrid(mesh, mesh)
 
     pupil_idx = np.where(xx**2 + yy**2 < 1.0)
-    xx = xx * pixel_size_um / 2.0
-    yy = yy * pixel_size_um / 2.0
+    xx = xx * pixel_size_um * resolution / 2.0
+    yy = yy * pixel_size_um * resolution / 2.0
     slm_p_phase = np.zeros((NSPOTS, pupil_idx[0].shape[0]))
 
     for i in range(NSPOTS):
         slm_p_phase[i,:] = (2.0*np.pi/((wavelength_um)*(focal_mm*10.0**3)))*(x[i]*xx[pupil_idx] + y[i]*yy[pupil_idx]) + ((np.pi*z[i])/(wavelength_um*(focal_mm*10.0**3)**2))*(xx[pupil_idx]**2 + yy[pupil_idx]**2)
 
     slm_total_field = np.sum(
-        1.0/NSPOTS * np.exp(
+        (1.0/NSPOTS) * np.exp(
             1j*(slm_p_phase + 2.0*np.pi*pists[:,ε])
         ),
         axis=0

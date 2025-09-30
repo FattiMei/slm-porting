@@ -16,29 +16,25 @@ def parse_command_line():
     parser.add_argument(
         '--seed',
         type=int,
-        help='seed to initialize the RNG'
+        help='seed to initialize the RNG',
+        default=42
     )
 
     parser.add_argument(
         '--backend',
         type=str,
-        help='Select the implementation (cpu, gpu, different ones)'
+        help='Select the implementation (cpu, gpu, different ones)',
+        default='numpy'
     )
 
     return parser.parse_args()
 
 
-def validate_arguments(args):
-    seed = args.seed
-    backend = 'numpy' if args.backend is None else args.backend
-
-    return seed, backend
-
-
 if __name__ == '__main__':
-    seed, requested_backend = validate_arguments(
-        parse_command_line()
-    )
+    args = parse_command_line()
+    seed = args.seed
+    requested_backend = args.backend
+
     slm = SLM.get_standard_slm()
     available_backends = dependency_manager.get_available_backends()
 
