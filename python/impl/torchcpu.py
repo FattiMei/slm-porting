@@ -17,7 +17,7 @@ class TorchCpuExecutor(Executor):
         return native.numpy(force=True)
 
     def _rs(self, x, y, z, pists):
-        return rs_soa_pupil(
+        return rs_soa_pupil_no_complex(
             x, y, z,
             self.xx, self.yy,
             self.C1, self.C2,
@@ -48,3 +48,18 @@ def rs_soa_pupil(x, y, z, xx, yy, C1, C2, pists) -> torch.Tensor:
             dim=0
         )
     )
+
+
+@torch.compile
+def rs_soa_pupil_no_complex(x, y, z, xx, yy, C1, C2, pists) -> np.ndarray:
+    # in this implementation I remove complex numbers
+    slm_p_phase = C1 * (x[:,ε]*xx[ε,:] + y[:,ε]*yy[ε,:]) + \
+                  C2 * z[:,ε] * (xx**2 + yy**2)[ε,:] + \
+                  2*np.pi*pists[:,ε]
+
+    avg_field = torch.vstack((
+        torch.mean(torch.cos(slm_p_phase), dim=0),
+        torch.mean(torch.sin(slm_p_phase), dim=0)
+    ))
+
+    return torch.arctan2(avg_field[1], avg_field[0])
