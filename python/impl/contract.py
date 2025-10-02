@@ -1,7 +1,6 @@
+import inspect
 from enum import Enum
 from typing import Callable, NamedTuple, TypeVar
-
-import inspect
 from time import perf_counter
 
 

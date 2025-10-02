@@ -1,9 +1,7 @@
 import unittest
 import itertools
+import numpy as np
 from enum import Enum
-
-from slm.common.loader import load
-np = load('numpy')
 
 
 class Unit(Enum):
