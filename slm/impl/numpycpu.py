@@ -1,19 +1,26 @@
 import itertools
 import numpy as np
-from impldecorator import implementation
+from contract import implementation, FloatType
 
 
 ε = np.newaxis
-identity = lambda x: x
 
 
-@implementation(
-    algorithm_class = 'rs',
-    backend_name = 'numpy',
-    conversion_from_numpy_to_native = identity,
-    conversion_from_native_to_numpy = identity,
-    description = 'array programming implementation'
-)
+def conversion_from_numpy_to_native(x: np.ndarray, dtype: FloatType) -> np.ndarray:
+    return np.array(
+        x,
+        dtype = {
+            FloatType.fp16: np.float16,
+            FloatType.fp32: np.float32,
+            FloatType.fp64: np.float64,
+        }[dtype]
+    )
+
+
+def conversion_from_native_to_numpy(x: np.ndarray) -> np.ndarray:
+    return np.array(x, dtype=np.float64)
+
+
 def rs_soa(x, y, z, pists, C1: float, C2: float, pixel_size_um: float, resolution: int) -> np.ndarray:
     mesh = np.linspace(-1.0, 1.0, num=resolution, dtype=x.dtype)
     xx, yy = np.meshgrid(mesh,mesh)
@@ -36,13 +43,6 @@ def rs_soa(x, y, z, pists, C1: float, C2: float, pixel_size_um: float, resolutio
     )
 
 
-@implementation(
-    algorithm_class = 'rs',
-    backend_name = 'numpy',
-    conversion_from_numpy_to_native = identity,
-    conversion_from_native_to_numpy = identity,
-    description = 'emulating complex numbers with reals'
-)
 def rs_soa_no_complex(x, y, z, pists, C1: float, C2: float, pixel_size_um: float, resolution: int) -> np.ndarray:
     # complex numbers are treated as a pair of real numbers
     mesh = np.linspace(-1.0, 1.0, num=resolution, dtype=x.dtype)
@@ -64,13 +64,6 @@ def rs_soa_no_complex(x, y, z, pists, C1: float, C2: float, pixel_size_um: float
     return np.arctan2(avg_field[1], avg_field[0])
 
 
-@implementation(
-    algorithm_class = 'rs',
-    backend_name = 'numpy',
-    conversion_from_numpy_to_native = identity,
-    conversion_from_native_to_numpy = identity,
-    description = 'avoid nspots*npupils allocation'
-)
 def rs_soa_manual_loop(x, y, z, pists, C1: float, C2: float, pixel_size_um: float, resolution: int) -> np.ndarray:
     # by writing the loop manually I don't store the `slm_p_phase` variable
     # this way I can work with as many spots as I want without allocating 30GB of data
@@ -102,13 +95,6 @@ def rs_soa_manual_loop(x, y, z, pists, C1: float, C2: float, pixel_size_um: floa
     return np.array(acc)
 
 
-@implementation(
-    algorithm_class = 'rs',
-    backend_name = 'numpy',
-    conversion_from_numpy_to_native = identity,
-    conversion_from_native_to_numpy = identity,
-    description = 'itertools to improve `rs_soa_manual_loop`'
-)
 def rs_soa_manual_loop_itertools(x, y, z, pists, C1: float, C2: float, pixel_size_um: float, resolution: int) -> np.ndarray:
     mesh = np.linspace(-1.0, 1.0, num=resolution, dtype=x.dtype)
 
@@ -136,3 +122,14 @@ def rs_soa_manual_loop_itertools(x, y, z, pists, C1: float, C2: float, pixel_siz
 # TODO: add an implementation that performs some mathematical
 # transformations and don't compute the product with pixel_size and resolution,
 # but put them into C1 and C2
+
+
+# manually add the implementatios here to be tested from specialized scripts
+# it's another level of indirection because in GPU implementations I need to import
+# the undecorated functions from other files
+IMPLS = [
+    implementation(rs_soa                      , 'rs', 'numpy', conversion_from_numpy_to_native, conversion_from_native_to_numpy, description = 'array programming implementation'),
+    implementation(rs_soa_no_complex           , 'rs', 'numpy', conversion_from_numpy_to_native, conversion_from_native_to_numpy, description = 'emulating complex numbers with reals'),
+    implementation(rs_soa_manual_loop          , 'rs', 'numpy', conversion_from_numpy_to_native, conversion_from_native_to_numpy, description = 'avoid nspots*npupils allocation'),
+    implementation(rs_soa_manual_loop_itertools, 'rs', 'numpy', conversion_from_numpy_to_native, conversion_from_native_to_numpy, description = 'itertools to improve `rs_soa_manual_loop`'),
+]

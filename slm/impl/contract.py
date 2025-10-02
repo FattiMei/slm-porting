@@ -1,13 +1,31 @@
+from enum import Enum
+from typing import Callable, NamedTuple, TypeVar
+
 import inspect
 from time import perf_counter
-from typing import NamedTuple
+
+
+class FloatType(Enum):
+    fp16 = 2
+    fp32 = 4
+    fp64 = 8
+
+
+class ProfileInfo(NamedTuple):
+    compiletime: float
+    runtime: float
+
+
+T = TypeVar('T')
+U = TypeVar('U')
+ConversionFunction = Callable[[T, FloatType], U]
 
 
 def implementation(
     algorithm_class: str,
     backend_name: str,
-    conversion_from_numpy_to_native,
-    conversion_from_native_to_numpy,
+    conversion_from_numpy_to_native: ConversionFunction,
+    conversion_from_native_to_numpy: ConversionFunction,
     compilation_function = lambda x: x,
     description: str = ''
 ):
@@ -22,7 +40,9 @@ def implementation(
             signature = inspect.signature(fn)
             desc = description
 
-            def __init__(self):
+            def __init__(self, dtype: FloatType):
+                self.dtype = dtype
+
                 t0 = perf_counter()
                 self.fn = compile_fcn(fn)
                 t1 = perf_counter()
@@ -33,10 +53,10 @@ def implementation(
 
             def call(self, x, y, z, pists, **kwargs):
                 t0 = perf_counter()
-                x = conversion_from_numpy_to_native(x)
-                y = conversion_from_numpy_to_native(y)
-                z = conversion_from_numpy_to_native(z)
-                pists = conversion_from_numpy_to_native(pists)
+                x = conversion_from_numpy_to_native(x, self.dtype)
+                y = conversion_from_numpy_to_native(y, self.dtype)
+                z = conversion_from_numpy_to_native(z, self.dtype)
+                pists = conversion_from_numpy_to_native(pists, self.dtype)
                 t1 = perf_counter()
 
                 result = self.call_unsafe(x, y, z, pists, **kwargs)
