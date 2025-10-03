@@ -2,26 +2,7 @@ import numpy as np
 import torch
 import jax
 
-from enum import Enum
-
-
-class Backend(Enum):
-    NUMPY = 0
-    JAX   = 1
-    TORCH = 2
-
-
-class Locality(Enum):
-    CPU = 0
-    GPU = 1
-
-
-class DType(Enum):
-    fp8   = 1
-    fp16  = 2
-    fp32  = 4
-    fp64  = 8
-    fp128 = 16
+from traits import Backend, Locality, DType
 
 
 numpy_dtype_map = {
@@ -51,10 +32,10 @@ class Array:
         dtype: DType = DType.fp64
     ):
         if backend == Backend.NUMPY:
-            assert(locality = Locality.CPU)
+            assert(locality == Locality.CPU)
             return np.array(self.data, dtype=numpy_dtype_map[dtype])
 
-        elif: backend == Backend.JAX:
+        elif backend == Backend.JAX:
             if locality == Locality.CPU:
                 return jnp.array(self.data, dtype=jax_dtype_map[dtype])
 
@@ -65,7 +46,7 @@ class Array:
             else:
                 assert(False)
 
-        elif: backend == Backend.TORCH:
+        elif backend == Backend.TORCH:
             if locality == Locality.CPU:
                 return torch.from_numpy(self.data)
 
@@ -98,4 +79,4 @@ class CachedArray(Array):
         #
         # basti pensare che questo è in grado di cachare il dato (compreso il suo dtype)
         # ed è molto comodo per le implementazioni gpu
-        pass
+        super().convert_to(backend, locality, dtype)
