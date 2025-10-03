@@ -2,8 +2,10 @@ import time
 import inspect
 import itertools
 import numpy as np
-from traits import Algorithm, Backend, DType, Locality, ProfileInfo
 from collections.abc import Iterable
+
+from slm import SLM
+from traits import Algorithm, Backend, DType, Locality, ProfileInfo
 
 
 algorithm_signature_map = {
@@ -40,6 +42,7 @@ def _build_interface(signature, target_signature, backend: Backend):
 
     acc = []
 
+    header = f'def __call__(self, {", ".join(target_signature)}, slm: SLM, locality: Locality = Locality.CPU, dtype: DType = DType.fp64):'
     acc.append('# get reference time')
     acc.append('t0 = time.perf_counter()\n')
 
@@ -66,7 +69,6 @@ def _build_interface(signature, target_signature, backend: Backend):
     acc.append('# discriminate between computation time and transfer time')
     acc.append('return result, ProfileInfo(transfer_time=(t1-t0)+(t3-t2), compute_time=(t2-t1))')
 
-    header = f'def __call__(self, {",".join(target_signature)}, slm, locality: Locality = Locality.CPU, dtype: DType = DType.fp64):'
     indended_code = map(
         lambda line: '    ' + line,
         acc
@@ -133,13 +135,3 @@ def impl(algorithm: Algorithm, backend: Backend, locality: Locality, compiler = 
         return Implementation
 
     return decorator
-
-
-@impl(Algorithm.RS, Backend.NUMPY, Locality.CPU, description='original implementation')
-def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1, C2):
-    return x
-
-
-@impl(Algorithm.RS, Backend.JAX, Locality.GPU)
-def rs_jax(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1, C2):
-    return x
