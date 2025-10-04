@@ -9,7 +9,6 @@ numpy_dtype_map = {
     DType.fp16:  np.float16,
     DType.fp32:  np.float32,
     DType.fp64:  np.float64,
-    DType.fp128: np.float128,
 }
 
 
@@ -17,7 +16,6 @@ jax_dtype_map = {
     DType.fp16:  'float16',
     DType.fp32:  'float32',
     DType.fp64:  'float64',
-    DType.fp128: 'float128',
 }
 
 

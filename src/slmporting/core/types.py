@@ -18,7 +18,6 @@ class DType(Enum):
     fp16  = 2
     fp32  = 4
     fp64  = 8
-    fp128 = 16
 
 
 class Algorithm(Enum):

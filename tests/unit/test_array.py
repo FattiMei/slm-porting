@@ -10,7 +10,7 @@ def test_array_creation(size: int):
     arr = Array(np.zeros(size))
 
 
-@pytest.mark.parametrize("dtype", [DType.fp16, DType.fp32, DType.fp64, DType.fp128])
+@pytest.mark.parametrize("dtype", [DType.fp16, DType.fp32, DType.fp64])
 def test_numpy_conversion(dtype: DType):
     arr = Array(np.zeros(100))
     converted = arr.convert_to(
