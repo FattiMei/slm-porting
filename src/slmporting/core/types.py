@@ -8,7 +8,7 @@ class Backend(Enum):
     TORCH = 2
 
 
-class Locality(Enum):
+class Device(Enum):
     CPU = 0
     GPU = 1
 

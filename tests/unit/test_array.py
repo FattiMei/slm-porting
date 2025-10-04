@@ -5,7 +5,7 @@ import torch
 import pytest
 
 from slmporting.core.array import Array, CachedArray, numpy_dtype_map
-from slmporting.core.types import Backend, Locality, DType
+from slmporting.core.types import Backend, Device, DType
 
 
 all_backends = [Backend.NUMPY, Backend.JAX, Backend.TORCH]
@@ -41,7 +41,7 @@ def test_cpu_conversion(source: Backend, dest: Backend, dtype: DType):
 
     converted = arr.convert_to(
         backend = dest,
-        locality = Locality.CPU,
+        device = Device.CPU,
         dtype = dtype
     )
 
@@ -54,7 +54,7 @@ def test_caching(backend: Backend, dtype: DType):
 
     first = arr.convert_to(
         backend = backend,
-        locality = Locality.CPU,
+        device = Device.CPU,
         dtype = dtype
     )
 
@@ -62,7 +62,7 @@ def test_caching(backend: Backend, dtype: DType):
     # cached, so there isn't a copy
     second = arr.convert_to(
         backend = backend,
-        locality = Locality.CPU,
+        device = Device.CPU,
         dtype = dtype
     )
 
