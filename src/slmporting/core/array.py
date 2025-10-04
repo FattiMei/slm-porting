@@ -22,7 +22,7 @@ jax_dtype_map = {
 
 
 jax_device_map = {
-    Locality.CPU: 'cpu',
+    Locality.CPU: jax.devices(backend='cpu')[0],
     Locality.GPU: 'gpu'
 }
 
@@ -53,12 +53,12 @@ class Array:
             locality = Locality.CPU
             dtype = inverse_search_dict(numpy_dtype_map, data.dtype)
 
-        elif isinstance(data, jax.numpy.array):
+        elif isinstance(data, jax.Array):
             backend = Backend.JAX
-            locality = Locality.CPU if data.device().platform == 'cpu' else Locality.GPU
+            locality = Locality.CPU if data.device.platform == 'cpu' else Locality.GPU
             dtype = inverse_search_dict(jax_dtype_map, data.dtype)
 
-        elif isinstance(data, torch.tensor):
+        elif isinstance(data, torch.Tensor):
             backend = Backend.TORCH
             locality = Locality.CPU if data.device.type == 'cpu' else Locality.GPU
             dtype = inverse_search_dict(torch_dtype_map, data.dtype)

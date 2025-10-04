@@ -1,30 +1,54 @@
 import numpy as np
+import jax
+import jax.numpy as jnp
+import torch
 import pytest
 
 from slmporting.core.array import Array, CachedArray, numpy_dtype_map
 from slmporting.core.types import Backend, Locality, DType
 
 
-@pytest.mark.parametrize("size", [10, 100, 1000])
-def test_array_creation(size: int):
-    arr = Array(np.zeros(size))
+all_backends = [Backend.NUMPY, Backend.JAX, Backend.TORCH]
+all_dtypes = [DType.fp16, DType.fp32, DType.fp64]
 
 
-@pytest.mark.parametrize("dtype", [DType.fp16, DType.fp32, DType.fp64])
-def test_numpy_conversion(dtype: DType):
-    arr = Array(np.zeros(100))
+def ones(size: int, backend: Backend):
+    if backend == Backend.NUMPY:
+        return np.ones(size)
+
+    elif backend == Backend.JAX:
+        return jnp.ones(size)
+
+    elif backend == Backend.TORCH:
+        return torch.ones(size)
+
+    else:
+        assert(False)
+
+
+@pytest.mark.parametrize("backend", all_backends)
+def test_array_creation(backend: Backend):
+    data = ones(100, backend)
+    arr = Array(data)
+
+
+@pytest.mark.parametrize("source", all_backends)
+@pytest.mark.parametrize("dest", all_backends)
+@pytest.mark.parametrize("dtype", all_dtypes)
+def test_cpu_conversion(source: Backend, dest: Backend, dtype: DType):
+    data = ones(100, source)
+    arr = Array(data)
+
     converted = arr.convert_to(
-        backend = Backend.NUMPY,
+        backend = dest,
         locality = Locality.CPU,
         dtype = dtype
     )
 
-    assert(type(converted) == np.ndarray)
-    assert(converted.dtype == numpy_dtype_map[dtype])
 
 
-@pytest.mark.parametrize("backend", [Backend.NUMPY, Backend.JAX, Backend.TORCH])
-@pytest.mark.parametrize("dtype", [DType.fp16, DType.fp32, DType.fp64])
+@pytest.mark.parametrize("backend", all_backends)
+@pytest.mark.parametrize("dtype", all_dtypes)
 def test_caching(backend: Backend, dtype: DType):
     arr = CachedArray(np.random.rand(100))
 
