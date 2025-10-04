@@ -31,3 +31,11 @@ class Algorithm(Enum):
 class ProfileInfo(NamedTuple):
     transfer_time: float
     compute_time: float
+
+
+'''
+This class is for annotating the implementations for
+the automatic generation of calling functions
+'''
+class Tensor:
+    pass
