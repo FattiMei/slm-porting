@@ -2,7 +2,7 @@ import jax
 import torch
 import numpy as np
 
-from slm_porting.core.types import Backend, Locality, DType
+from slmporting.core.types import Backend, Locality, DType
 
 
 numpy_dtype_map = {
