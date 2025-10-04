@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "slm-porting"
+name = "slmporting"
 version = "0.1.0"
 description = "A study in algorithm porting across backends and devices"
 authors = [
@@ -17,11 +17,12 @@ dependencies = [
 	"numpy",
 	"jax",
 	"torch",
-	"triton"
+	"triton",
+	"pytest",
 ]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+python_files = "tests/*.py"
