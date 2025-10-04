@@ -105,6 +105,7 @@ def impl(algorithm: Algorithm, backend: Backend, device: Device, compiler = (lam
             'SLM': SLM,
             'ProfileInfo': ProfileInfo
         }
+        exec(local_code, local_vars)
 
         class Implementation:
             name        = fn.__name__
@@ -115,10 +116,10 @@ def impl(algorithm: Algorithm, backend: Backend, device: Device, compiler = (lam
             devices     = local_devices
             code        = local_code
 
+            __call__ = local_vars['__call__']
+
             def __init__(self):
                 t0 = time.perf_counter()
-                exec(local_code, local_vars)
-                __call__ = local_vars['__call__']
                 self.fn = local_compiler(fn)
                 t1 = time.perf_counter()
                 self.comptime = t1 - t0

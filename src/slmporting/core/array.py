@@ -83,10 +83,7 @@ class Array:
             )
 
         elif backend == Backend.JAX:
-            result = jnp.array(
-                jnp.from_dlpack(self.data, device=jax_device_map[device]),
-                dtype = jax_dtype_map[dtype]
-            )
+            result = jnp.from_dlpack(self.data, device=jax_device_map[device])
 
         elif backend == Backend.TORCH:
             result = torch.from_dlpack(self.data).to(
@@ -115,10 +112,16 @@ class CachedArray:
         dtype: DType = DType.fp64
     ):
         if dtype not in self.cache[device]:
-            self.cache[device][dtype] = self.arr.convert_to(
-                backend = Backend.TORCH,
-                device = device,
-                dtype = dtype
+            self.cache[device][dtype] = Array(
+                self.arr.convert_to(
+                    backend = Backend.TORCH,
+                    device = device,
+                    dtype = dtype
+                )
             )
 
-        return self.cache[device][dtype]
+        return self.cache[device][dtype].convert_to(
+            backend,
+            device,
+            dtype
+        )

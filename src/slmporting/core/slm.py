@@ -26,6 +26,7 @@ class SLM:
         xx, yy = np.meshgrid(mesh, mesh)
         mask = xx**2 + yy**2 < 1.0
 
+        self.pupil_idx = np.where(mask)
         self.xx = CachedArray(xx[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0)
         self.yy = CachedArray(yy[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0)
 
