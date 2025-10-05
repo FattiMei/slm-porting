@@ -59,7 +59,7 @@ def test_cpu_conversion(source: Backend, dest: Backend, dtype: DType):
 @pytest.mark.parametrize("backend", all_backends)
 @pytest.mark.parametrize("dtype", all_dtypes)
 def test_caching(backend: Backend, dtype: DType):
-    arr = CachedArray(np.random.rand(100))
+    arr = CachedArray(Array(np.random.rand(100)))
 
     first = arr.convert_to(
         backend = backend,

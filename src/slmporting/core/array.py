@@ -83,6 +83,7 @@ class Array:
             )
 
         elif backend == Backend.JAX:
+            # https://github.com/jax-ml/jax/issues/29810
             result = jnp.from_dlpack(self.data, device=jax_device_map[device])
 
         elif backend == Backend.TORCH:
@@ -97,9 +98,24 @@ class Array:
         return result
 
 
-class CachedArray:
+class AlignedArray:
     def __init__(self, data):
-        self.arr = Array(data)
+        original = Array(data)
+        aligned = jnp.asarray(original.convert_to(
+            backend = Backend.NUMPY,
+            device = original.device,
+            dtype = original.dtype
+        ))
+
+        self.arr = Array(aligned)
+
+    def convert_to(self, backend: Backend, device: Device, dtype: DType):
+        return self.arr.convert_to(backend, device, dtype)
+
+
+class CachedArray:
+    def __init__(self, arr: Array):
+        self.arr = arr
         self.cache = {
             Device.CPU: {},
             Device.GPU: {}
