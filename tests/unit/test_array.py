@@ -6,11 +6,11 @@ import pytest
 
 from slmporting.core.array import Array, CachedArray, numpy_dtype_map, jax_dtype_map, torch_dtype_map, jax_device_map
 from slmporting.core.types import Backend, Device, DType
+from slmporting.utils.device_discovery import get_available_devices
 
 
 all_backends = [Backend.NUMPY, Backend.JAX, Backend.TORCH]
-all_devices = [Device.CPU]
-# all_devices = [Device.CPU, Device.GPU] but check at runtime which device is supported
+all_devices = get_available_devices()
 all_dtypes = [DType.fp16, DType.fp32, DType.fp64]
 
 
