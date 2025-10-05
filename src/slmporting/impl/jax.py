@@ -4,12 +4,15 @@ import jax.numpy as jnp
 
 from slmporting.core.types import Algorithm, Backend, Device, DType, Tensor
 from slmporting.core.contract import impl
+from functools import partial
 
 
 ε = jnp.newaxis
 
 
-@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU), description = 'same code')
+@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+      compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
+      description = 'same code')
 def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return jnp.angle(
         jnp.mean(
@@ -25,7 +28,9 @@ def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C
     )
 
 
-@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU), description = 'simulate complex numbers with real numbers')
+@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+      compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
+      description = 'simulate complex numbers with real numbers')
 def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     slm_p_phase = C1 * (x[:,ε]*xx[ε,:] + y[:,ε]*yy[ε,:]) + \
                   C2 * z[:,ε] * (xx**2 + yy**2)[ε,:] + \
