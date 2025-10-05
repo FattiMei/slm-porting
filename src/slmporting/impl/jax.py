@@ -44,4 +44,28 @@ def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy
     return jnp.arctan2(avg_field[1], avg_field[0])
 
 
-IMPLS = [rs, rs_no_complex]
+@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+      compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
+      description = 'using `jax.vmap` to remove the slm_p_phase allocation')
+def rs_vmap(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
+    def rs_for_a_single_pupil_point(coord):
+        xx, yy = coord[0], coord[1]
+
+        return jnp.angle(
+            jnp.mean(
+                jnp.exp(
+                    1j * (
+                        C1 * (x*xx + y*yy) +
+                        C2 * z * (xx**2 + yy**2) +
+                        2*jnp.pi*pists
+                    )
+                )
+            )
+        )
+
+    return jax.vmap(rs_for_a_single_pupil_point)(
+        jnp.vstack((xx,yy)).T
+    )
+
+
+IMPLS = [rs, rs_no_complex, rs_vmap]

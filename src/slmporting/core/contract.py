@@ -62,7 +62,7 @@ def build_interface(signature, target_signature, backend: Backend):
     acc.append('t3 = time.perf_counter()\n')
 
     acc.append('# discriminate between computation time and transfer time')
-    acc.append('return result, ProfileInfo(transfer_time=(t1-t0)+(t3-t2), compute_time=(t2-t1))')
+    acc.append('return result, ProfileInfo(in_transfer_time=(t1-t0), out_transfer_time=(t3-t2), compute_time=(t2-t1))')
 
     indended_code = map(
         lambda line: '    ' + line,
