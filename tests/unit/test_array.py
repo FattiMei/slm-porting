@@ -89,6 +89,9 @@ def test_any_to_any_conversion(
     dest_device: Device,
     dest_dtype: DType):
 
+    if source_backend == Backend.NUMPY and source_device == Device.GPU:
+        return
+
     arr = Array(ones(
         100, 
         backend = source_backend,

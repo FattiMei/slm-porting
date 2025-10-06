@@ -26,6 +26,11 @@ jax_device_map = {
     Device.GPU: 'gpu'
 }
 
+try:
+    jax_device_map[Device.GPU] = jax.devices(backend='gpu')[0]
+except RuntimeError:
+    pass
+
 
 torch_dtype_map = {
     DType.fp16:  torch.float16,

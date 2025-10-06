@@ -29,8 +29,7 @@ class Algorithm(Enum):
 
 
 class ProfileInfo(NamedTuple):
-    in_transfer_time: float
-    out_transfer_time: float
+    transfer_time: float
     compute_time: float
 
 
