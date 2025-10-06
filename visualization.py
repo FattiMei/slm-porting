@@ -46,7 +46,7 @@ if __name__ == '__main__':
         phase = np.zeros((slm.resolution, slm.resolution))
         phase[slm.pupil_idx] = result
 
-        print(f'rs algorithm (NSPOTS={nspots}, {impl.backend}): compile time {impl.comptime:.2g} s, in_transfer time {times.in_transfer_time:.2g} s, out_transfer_time: {times.out_transfer_time:.2g}, compute time {times.compute_time:.2g} s')
+        print(f'rs algorithm (NSPOTS={nspots}, {impl.backend}): compile time {impl.comptime:.2g} s, transfer time {times.transfer_time:.2g} s, compute time {times.compute_time:.2g} s')
 
     plt.title("rs algorithm")
     plt.imshow(phase)

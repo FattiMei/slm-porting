@@ -53,8 +53,15 @@ def build_interface(signature, target_signature, backend: Backend):
     acc.append('t1 = time.perf_counter()\n')
 
     function_call = 'self.fn(' + ','.join(p for p in arguments) + ')'
+    if backend == Backend.JAX:
+        function_call += '.block_until_ready()'
+
     acc.append('# call function with the original signature')
     acc.append(f'result = {function_call}')
+
+    if backend == Backend.TORCH:
+        acc.append('if device == Device.GPU:')
+        acc.append('    torch.cuda.synchronize()')
 
     acc.append('t2 = time.perf_counter()')
     acc.append('# cast result to the usual numpy array')
@@ -62,7 +69,7 @@ def build_interface(signature, target_signature, backend: Backend):
     acc.append('t3 = time.perf_counter()\n')
 
     acc.append('# discriminate between computation time and transfer time')
-    acc.append('return result, ProfileInfo(in_transfer_time=(t1-t0), out_transfer_time=(t3-t2), compute_time=(t2-t1))')
+    acc.append('return result, ProfileInfo(transfer_time=(t1-t0)+(t3-t2), compute_time=(t2-t1))')
 
     indended_code = map(
         lambda line: '    ' + line,
