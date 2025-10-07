@@ -60,28 +60,21 @@ class Array:
     returns an array of the requested type (zero-copy if possible)
     '''
     def convert_to(self, backend: Backend, device: Device, dtype: DType):
+        converted = self.data.to(
+            device = torch_device_map[device],
+            dtype = torch_dtype_map[dtype],
+            copy = False
+        )
+
         if backend == Backend.NUMPY:
             assert(device == Device.CPU)
-            result = np.array(
-                np.from_dlpack(self.data),
-                dtype = numpy_dtype_map[dtype]
-            )
+            result = converted.numpy()
 
         elif backend == Backend.JAX:
-            result = jnp.from_dlpack(
-                self.data.to(
-                    device = torch_device_map[device],
-                    dtype = torch_dtype_map[dtype],
-                    copy = False
-                )
-            )
+            result = jnp.from_dlpack(converted)
 
         elif backend == Backend.TORCH:
-            result = torch.from_dlpack(self.data).to(
-                device = torch_device_map[device],
-                dtype = torch_dtype_map[dtype],
-                copy = False
-            )
+            result = converted
 
         else:
             assert(False)
