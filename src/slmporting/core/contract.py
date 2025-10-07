@@ -65,6 +65,10 @@ def build_interface(signature, target_signature, backend: Backend):
 
     acc.append('t2 = time.perf_counter()')
     acc.append('# cast result to the usual numpy array')
+
+    if backend == Backend.TORCH:
+        acc.append("result = result.to('cpu')")
+
     acc.append('result = np.array(result, dtype=np.float64)')
     acc.append('t3 = time.perf_counter()\n')
 
@@ -110,7 +114,8 @@ def impl(algorithm: Algorithm, backend: Backend, device: Device, compiler = (lam
             'DType': DType,
             'Device': Device,
             'SLM': SLM,
-            'ProfileInfo': ProfileInfo
+            'ProfileInfo': ProfileInfo,
+            'torch': torch,
         }
         exec(local_code, local_vars)
 
