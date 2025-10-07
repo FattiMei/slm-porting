@@ -62,22 +62,6 @@ def test_array_creation(backend: Backend, device: Device, dtype: DType):
     arr = Array(data)
 
 
-@pytest.mark.parametrize("source", all_backends)
-@pytest.mark.parametrize("dest", all_backends)
-@pytest.mark.parametrize("dtype", all_dtypes)
-def test_cpu_conversion(source: Backend, dest: Backend, dtype: DType):
-    data = ones(100, source, device = Device.CPU)
-    arr = Array(data)
-
-    converted = arr.convert_to(
-        backend = dest,
-        device = Device.CPU,
-        dtype = dtype
-    )
-
-    assert(isinstance(converted, backend_type_map[dest]))
-
-
 @pytest.mark.parametrize("source_backend", all_backends)
 @pytest.mark.parametrize("source_device",  all_devices)
 @pytest.mark.parametrize("source_dtype",   all_dtypes)
@@ -117,7 +101,7 @@ def test_any_to_any_conversion(
 @pytest.mark.parametrize("backend", all_backends)
 @pytest.mark.parametrize("dtype", all_dtypes)
 def test_caching(backend: Backend, dtype: DType):
-    arr = CachedArray(Array(np.random.rand(100)))
+    arr = CachedArray(np.random.rand(100))
 
     first = arr.convert_to(
         backend = backend,
@@ -126,25 +110,17 @@ def test_caching(backend: Backend, dtype: DType):
     )
 
     # this second time the array has already been
-    # cached, so there isn't a copy
+    # cached, so there shouldn't be a copy
     second = arr.convert_to(
         backend = backend,
         device = Device.CPU,
         dtype = dtype
     )
 
-    # one would have to test that the two arrays
-    # share the same memory
-    #
-    # they are not anymore the same object because
-    # they are build on the go from a previously
-    # allocated memory
     assert(isinstance(first, backend_type_map[backend]))
     assert(isinstance(second, backend_type_map[backend]))
 
-
-# We need to make sure that the transfers that are supposed to be zero copy
-# are in fact zero copy.
-#
-# With CachedArray, some bad implementations could still provide the expected
-# performance because the results are cached.
+    # TODO: we need to make sure that the transfers that are supposed to be zero copy
+    # are in fact zero copy.
+    # I think I could use backend specific implementations (the equivalent
+    # of comparing the pointers)

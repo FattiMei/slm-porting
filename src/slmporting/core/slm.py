@@ -1,7 +1,7 @@
 import numpy as np
 
 from slmporting.core.types import DType
-from slmporting.core.array import AlignedArray, CachedArray
+from slmporting.core.array import CachedArray
 from slmporting.utils.units import Length, Unit
 
 
@@ -27,8 +27,8 @@ class SLM:
         mask = xx**2 + yy**2 < 1.0
 
         self.pupil_idx = np.where(mask)
-        self.xx = CachedArray(AlignedArray(xx[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0))
-        self.yy = CachedArray(AlignedArray(yy[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0))
+        self.xx = CachedArray(xx[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0)
+        self.yy = CachedArray(yy[mask] * pixel_size.convert_to(Unit.MICROMETERS) * resolution / 2.0)
 
     def get_standard_slm():
         focal      = Length(20.0, Unit.MILLIMETERS)

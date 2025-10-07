@@ -54,8 +54,6 @@ and to control
 class Array:
     def __init__(self, data):
         self.data = torch.from_dlpack(data)
-        self.device = Device.CPU if self.data.device.type == 'cpu' else Device.GPU
-        self.dtype = 0
 
     '''
     returns an array of the requested type (zero-copy if possible)
@@ -69,11 +67,11 @@ class Array:
             )
 
         elif backend == Backend.JAX:
-            # https://github.com/jax-ml/jax/issues/29810
             # TODO: qua devi controllare il dtype, occhio
             result = jnp.from_dlpack(
                 self.data,
-                device=jax_device_map[device]
+                device=jax_device_map[device],
+                copy=False
             )
 
         elif backend == Backend.TORCH:
@@ -89,24 +87,9 @@ class Array:
         return result
 
 
-class AlignedArray:
-    def __init__(self, data):
-        original = Array(data)
-        aligned = jnp.asarray(original.convert_to(
-            backend = Backend.NUMPY,
-            device = original.device,
-            dtype = original.dtype
-        ))
-
-        self.arr = Array(aligned)
-
-    def convert_to(self, backend: Backend, device: Device, dtype: DType):
-        return self.arr.convert_to(backend, device, dtype)
-
-
 class CachedArray:
-    def __init__(self, arr: Array):
-        self.arr = arr
+    def __init__(self, data):
+        self.arr = Array(data)
         self.cache = {
             Device.CPU: {},
             Device.GPU: {}

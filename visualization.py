@@ -4,7 +4,7 @@ import itertools
 import matplotlib.pyplot as plt
 
 from slmporting.core.slm import SLM
-from slmporting.core.array import AlignedArray
+from slmporting.core.array import Array
 import slmporting.impl.jax
 import slmporting.impl.numpy
 import slmporting.impl.torch
@@ -28,10 +28,11 @@ if __name__ == '__main__':
     slm = SLM.get_standard_slm()
 
     rng = np.random.default_rng(seed)
-    x = AlignedArray(100.0 * (rng.random(nspots)-0.5))
-    y = AlignedArray(100.0 * (rng.random(nspots)-0.5))
-    z = AlignedArray( 10.0 * (rng.random(nspots)-0.5))
-    pists = AlignedArray(rng.random(nspots))
+    # TODO: there is still the need for an aligned array. For now we keep it this way
+    x = Array(100.0 * (rng.random(nspots)-0.5))
+    y = Array(100.0 * (rng.random(nspots)-0.5))
+    z = Array( 10.0 * (rng.random(nspots)-0.5))
+    pists = Array(rng.random(nspots))
 
     IMPLS = itertools.chain(
         slmporting.impl.jax.IMPLS,
