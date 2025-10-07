@@ -54,6 +54,7 @@ and to control
 class Array:
     def __init__(self, data):
         self.data = torch.from_dlpack(data)
+        self.device = Device.CPU if self.data.device.type == 'cpu' else Device.GPU
 
     '''
     returns an array of the requested type (zero-copy if possible)
@@ -67,11 +68,12 @@ class Array:
             )
 
         elif backend == Backend.JAX:
-            # TODO: qua devi controllare il dtype, occhio
             result = jnp.from_dlpack(
-                self.data,
-                device=jax_device_map[device],
-                copy=False
+                self.data.to(
+                    device = torch_device_map[device],
+                    dtype = torch_dtype_map[dtype],
+                    copy = False
+                )
             )
 
         elif backend == Backend.TORCH:
