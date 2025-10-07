@@ -23,7 +23,6 @@ jax_dtype_map = {
 
 jax_device_map = {
     Device.CPU: jax.devices(backend='cpu')[0],
-    Device.GPU: 'gpu'
 }
 
 try:

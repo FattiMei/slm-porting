@@ -55,6 +55,9 @@ def ones(size: int, backend: Backend, device: Device = Device.CPU, dtype: DType 
 @pytest.mark.parametrize("device", all_devices)
 @pytest.mark.parametrize("dtype", all_dtypes)
 def test_array_creation(backend: Backend, device: Device, dtype: DType):
+    if (backend, device) == (Backend.NUMPY, Device.GPU):
+        return
+
     data = ones(100, backend, device, dtype)
     arr = Array(data)
 
@@ -89,7 +92,10 @@ def test_any_to_any_conversion(
     dest_device: Device,
     dest_dtype: DType):
 
-    if source_backend == Backend.NUMPY and source_device == Device.GPU:
+    if (source_backend, source_device) == (Backend.NUMPY, Device.GPU):
+        return
+
+    if (dest_backend, dest_device) == (Backend.NUMPY, Device.GPU):
         return
 
     arr = Array(ones(
