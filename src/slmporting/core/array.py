@@ -44,36 +44,18 @@ torch_device_map = {
 }
 
 
-def inverse_search_dict(dtype_map, value):
-    for key in dtype_map.keys():
-        if dtype_map[key] == value:
-            return key
+'''
+This class manages an internally allocated torch.Tensor and
+its conversion to every possible backend, device and dtype
 
-
+The choice to use only a torch.Tensor is simpler to understand
+and to control
+'''
 class Array:
     def __init__(self, data):
-        if isinstance(data, np.ndarray):
-            backend = Backend.NUMPY
-            device = Device.CPU
-            dtype = inverse_search_dict(numpy_dtype_map, data.dtype)
-
-        elif isinstance(data, jax.Array):
-            backend = Backend.JAX
-            device = Device.CPU if data.device.platform == 'cpu' else Device.GPU
-            dtype = inverse_search_dict(jax_dtype_map, data.dtype)
-
-        elif isinstance(data, torch.Tensor):
-            backend = Backend.TORCH
-            device = Device.CPU if data.device.type == 'cpu' else Device.GPU
-            dtype = inverse_search_dict(torch_dtype_map, data.dtype)
-
-        else:
-            assert(False)
-
-        self.data = data
-        self.backend = backend
-        self.device = device
-        self.dtype = dtype
+        self.data = torch.from_dlpack(data)
+        self.device = Device.CPU if self.data.device.type == 'cpu' else Device.GPU
+        self.dtype = 0
 
     '''
     returns an array of the requested type (zero-copy if possible)
@@ -88,12 +70,17 @@ class Array:
 
         elif backend == Backend.JAX:
             # https://github.com/jax-ml/jax/issues/29810
-            result = jnp.from_dlpack(self.data, device=jax_device_map[device])
+            # TODO: qua devi controllare il dtype, occhio
+            result = jnp.from_dlpack(
+                self.data,
+                device=jax_device_map[device]
+            )
 
         elif backend == Backend.TORCH:
             result = torch.from_dlpack(self.data).to(
                 device = torch_device_map[device],
-                dtype = torch_dtype_map[dtype]
+                dtype = torch_dtype_map[dtype],
+                copy = False
             )
 
         else:
