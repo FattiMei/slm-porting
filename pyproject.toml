@@ -19,6 +19,8 @@ dependencies = [
 	"torch",
 	"triton",
 	"pytest",
+	"ipykernel",
+	"pandas"
 ]
 
 [tool.setuptools.packages.find]
