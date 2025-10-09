@@ -13,7 +13,7 @@ enum class Unit {
 class Length {
 	public:
 		Length(double mantissa, Unit unit);
-		double convert_to(Unit unit);
+		double convert_to(Unit unit) const;
 
 	private:
 		const double value;

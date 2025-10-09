@@ -21,6 +21,7 @@ file(GLOB TESTS "${TESTS_DIR}/*")
 
 add_library(common STATIC
 	"${CMAKE_SOURCE_DIR}/src/units.cpp"
+	"${CMAKE_SOURCE_DIR}/src/slm.cpp"
 )
 include_directories(common "${CMAKE_SOURCE_DIR}/include")
 
