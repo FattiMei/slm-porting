@@ -1,8 +1,0 @@
-# for the visualization of results
-matplotlib
-
-# computing backends
-numpy # possibly search for a multithreaded implementation
-jax
-triton
-torch
