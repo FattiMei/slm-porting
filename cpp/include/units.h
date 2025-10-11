@@ -3,7 +3,7 @@
 
 
 enum class Unit {
-	METERS = 1,
+	METERS = 0,
 	MILLIMETERS = -3,
 	MICROMETERS = -6,
 	NANOMETERS = -9
