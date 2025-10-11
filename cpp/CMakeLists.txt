@@ -4,11 +4,6 @@ project(slm-porting CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-if (NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release)
-	set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize")
-endif()
-
 enable_testing()
 
 
