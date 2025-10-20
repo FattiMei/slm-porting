@@ -87,7 +87,6 @@ class SpotSoaContainer {
 			return S(m_x[i], m_y[i], m_z[i]);
 		}
 
-	private:
 		std::vector<double> m_x;
 		std::vector<double> m_y;
 		std::vector<double> m_z;

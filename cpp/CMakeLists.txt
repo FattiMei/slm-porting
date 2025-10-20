@@ -4,8 +4,16 @@ project(slm-porting CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+find_package(OpenMP REQUIRED)
 enable_testing()
 
+
+if (NOT CMAKE_BUILD_TYPE)
+	message("No build type specified, defaulting to Release")
+	set(CMAKE_BUILD_TYPE Release)
+endif ()
+
+set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize" "-ffast-math")
 
 set(SRC_DIR   "${CMAKE_SOURCE_DIR}/src")
 set(IMPL_DIR  "${CMAKE_SOURCE_DIR}/impl")
@@ -29,6 +37,8 @@ foreach (TEST_FILE ${TESTS})
 	add_executable(${TEST_NAME} ${TEST_FILE})
 	target_include_directories(${TEST_NAME} PRIVATE ${INCL_DIR})
 	target_link_libraries(${TEST_NAME} PRIVATE common)
+	target_link_libraries(${TEST_NAME} PRIVATE OpenMP::OpenMP_CXX)
+	target_compile_options(${TEST_NAME} PRIVATE ${AGGRESSIVE_OPTIMIZATIONS})
 
 	add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 	list(APPEND TESTS_EXE ${TEST_NAME})
