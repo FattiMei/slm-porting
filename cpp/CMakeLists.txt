@@ -4,6 +4,8 @@ project(slm-porting CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/cnpy")
+
 find_package(OpenMP REQUIRED)
 enable_testing()
 
@@ -13,7 +15,7 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif ()
 
-set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize" "-ffast-math")
+set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize")
 
 set(SRC_DIR   "${CMAKE_SOURCE_DIR}/src")
 set(IMPL_DIR  "${CMAKE_SOURCE_DIR}/impl")
@@ -37,6 +39,7 @@ foreach (TEST_FILE ${TESTS})
 	add_executable(${TEST_NAME} ${TEST_FILE})
 	target_include_directories(${TEST_NAME} PRIVATE ${INCL_DIR})
 	target_link_libraries(${TEST_NAME} PRIVATE common)
+	target_link_libraries(${TEST_NAME} PRIVATE cnpy)
 	target_link_libraries(${TEST_NAME} PRIVATE OpenMP::OpenMP_CXX)
 	target_compile_options(${TEST_NAME} PRIVATE ${AGGRESSIVE_OPTIMIZATIONS})
 
