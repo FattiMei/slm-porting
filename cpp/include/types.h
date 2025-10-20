@@ -62,29 +62,35 @@ template <SpotLike S>
 class SpotSoaContainer {
 	public:
 		SpotSoaContainer(const SpotContainer auto& v) {
-			x.reserve(v.size());
-			y.reserve(v.size());
-			z.reserve(v.size());
+			m_x.reserve(v.size());
+			m_y.reserve(v.size());
+			m_z.reserve(v.size());
 
 			for (const auto& spot : v) {
-				x.push_back(spot.x);
-				y.push_back(spot.y);
-				z.push_back(spot.z);
+				m_x.push_back(spot.x);
+				m_y.push_back(spot.y);
+				m_z.push_back(spot.z);
 			}
 		}
 
+		SpotSoaContainer(std::vector<double>&& x,
+		                 std::vector<double>&& y,
+		                 std::vector<double>&& z) : m_x(x),
+		                                            m_y(y),
+		                                            m_z(z) {}
+
 		std::size_t size() const {
-			return x.size();
-		};
+			return m_x.size();
+		}
 
 		const auto operator[](std::integral auto i) const {
-			return S(x[i], y[i], z[i]);
+			return S(m_x[i], m_y[i], m_z[i]);
 		}
 
 	private:
-		std::vector<double> x;
-		std::vector<double> y;
-		std::vector<double> z;
+		std::vector<double> m_x;
+		std::vector<double> m_y;
+		std::vector<double> m_z;
 };
 
 
