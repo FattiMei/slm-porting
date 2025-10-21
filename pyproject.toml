@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["python"]
+where = ["."]
 
 [tool.pytest.ini_options]
 python_files = "tests/*.py"
