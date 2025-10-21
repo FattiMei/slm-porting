@@ -6,6 +6,7 @@ class Backend(Enum):
     NUMPY = 0
     JAX   = 1
     TORCH = 2
+    CPP   = 3
 
 
 class Device(Enum):

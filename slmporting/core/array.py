@@ -76,6 +76,10 @@ class Array:
         elif backend == Backend.TORCH:
             result = converted
 
+        # cpp backend uses the same things as pytorch
+        elif backend == Backend.CPP:
+            result = converted
+
         else:
             assert(False)
 
