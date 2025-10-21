@@ -1,6 +1,6 @@
-import slmporting.impl.numpy as impl_numpy
-import slmporting.impl.torch as impl_torch
-import slmporting.impl.jax   as impl_jax
+import slmporting.impl.impl_numpy as impl_numpy
+import slmporting.impl.impl_torch as impl_torch
+import slmporting.impl.impl_jax   as impl_jax
 
 
 def test_numpy_impl():

@@ -9,9 +9,9 @@ import numpy as np
 from slmporting.core.slm import SLM
 from slmporting.core.array import Array
 from slmporting.core.types import Backend, Device, DType
-import slmporting.impl.jax
-import slmporting.impl.numpy
-import slmporting.impl.torch
+import slmporting.impl.impl_jax
+import slmporting.impl.impl_numpy
+import slmporting.impl.impl_torch
 
 
 def key_to_int(key):
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     all_implementations = [
         impl()
         for impl in itertools.chain(
-            slmporting.impl.numpy.IMPLS,
-            slmporting.impl.jax.IMPLS,
-            slmporting.impl.torch.IMPLS
+            slmporting.impl.impl_numpy.IMPLS,
+            slmporting.impl.impl_jax.IMPLS,
+            slmporting.impl.impl_torch.IMPLS
         )
     ]
 

@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 from slmporting.core.slm import SLM
 from slmporting.core.array import Array
-import slmporting.impl.jax
-import slmporting.impl.numpy
-import slmporting.impl.torch
+import slmporting.impl.impl_jax
+import slmporting.impl.impl_numpy
+import slmporting.impl.impl_torch
 
 
 def parse_command_line():
@@ -35,9 +35,9 @@ if __name__ == '__main__':
     pists = Array(rng.random(nspots))
 
     IMPLS = itertools.chain(
-        slmporting.impl.jax.IMPLS,
-        slmporting.impl.numpy.IMPLS,
-        slmporting.impl.torch.IMPLS
+        slmporting.impl.impl_jax.IMPLS,
+        slmporting.impl.impl_numpy.IMPLS,
+        slmporting.impl.impl_torch.IMPLS
     )
 
     for blueprint in IMPLS:
