@@ -19,6 +19,7 @@ dependencies = [
 	"torch",
 	"triton",
 	"pytest",
+	"ninja",
 	"ipykernel",
 	"pandas"
 ]
