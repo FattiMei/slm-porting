@@ -32,6 +32,10 @@ struct Spot {
 	double y;
 	double z;
 
+	Spot() = default;
+	Spot(double x_, double y_, double z_) : x(x_),
+	                                        y(y_),
+	                                        z(z_) {}
 	bool operator==(const Spot& rhs) const {
 		return x == rhs.x and
 		       y == rhs.y and
@@ -41,6 +45,7 @@ struct Spot {
 
 
 struct SpotAligned {
+	SpotAligned() = default;
 	SpotAligned(double x_, double y_, double z_) : x(x_),
 	                                               y(y_),
 	                                               z(z_),
@@ -90,6 +95,34 @@ class SpotSoaContainer {
 		std::vector<double> m_x;
 		std::vector<double> m_y;
 		std::vector<double> m_z;
+};
+
+
+template <SpotLike S>
+class SpotAosContainer {
+	public:
+		SpotAosContainer(const SpotContainer auto& v) {
+			m_spots.reserve(v.size());
+
+			for (const auto& spot : v) {
+				m_spots.push_back(S(
+					spot.x,
+					spot.y,
+					spot.z
+				));
+			}
+		}
+
+		std::size_t size() const {
+			return m_spots.size();
+		}
+
+		const auto operator[](std::integral auto i) const {
+			return m_spots[i];
+		}
+
+	private:
+		std::vector<S> m_spots;
 };
 
 
