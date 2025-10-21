@@ -1,4 +1,6 @@
 import torch
+from slmporting.core.types import Algorithm, Backend, Device, DType, Tensor
+from slmporting.core.contract import impl
 
 try:
     from slmporting import config
@@ -13,6 +15,11 @@ except ImportError:
 # the path to search the sources is the one of the includee
 torch.ops.load_library(config.meilib_path)
 
-x = torch.arange(6, dtype=torch.float32)
-torch.ops.meilib.scale_inplace(x, 2.0)
-print("scaled x:", x)
+
+# TODO: we need to add a new backend
+@impl(Algorithm.RS, Backend.TORCH, (Device.CPU), description = 'original cpp implementation, with openmp')
+def rs_cpp(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
+    return torch.ops.meilib.rs(x, y, z, pists, xx, yy, C1, C2)
+
+
+IMPLS = [rs_cpp]

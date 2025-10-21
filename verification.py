@@ -12,6 +12,7 @@ from slmporting.core.types import Backend, Device, DType
 import slmporting.impl.impl_jax
 import slmporting.impl.impl_numpy
 import slmporting.impl.impl_torch
+import slmporting.impl.impl_cpp
 
 
 def key_to_int(key):
@@ -74,7 +75,8 @@ if __name__ == '__main__':
         for impl in itertools.chain(
             slmporting.impl.impl_numpy.IMPLS,
             slmporting.impl.impl_jax.IMPLS,
-            slmporting.impl.impl_torch.IMPLS
+            slmporting.impl.impl_torch.IMPLS,
+            slmporting.impl.impl_cpp.IMPLS,
         )
     ]
 
