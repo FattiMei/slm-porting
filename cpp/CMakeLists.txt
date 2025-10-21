@@ -15,11 +15,12 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif ()
 
-set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize")
+set(AGGRESSIVE_OPTIMIZATIONS "-march=native" "-ftree-vectorize" "-ffast-math")
 
 set(SRC_DIR   "${CMAKE_SOURCE_DIR}/src")
 set(IMPL_DIR  "${CMAKE_SOURCE_DIR}/impl")
 set(INCL_DIR  "${CMAKE_SOURCE_DIR}/include")
+set(VERIFICATION_EXE "cpp-verification")
 set(TESTS_DIR "${CMAKE_SOURCE_DIR}/tests")
 set(TESTS_EXE "")
 file(GLOB TESTS "${TESTS_DIR}/*")
@@ -31,6 +32,14 @@ add_library(common STATIC
 	"${CMAKE_SOURCE_DIR}/src/rand.cpp"
 )
 include_directories(common "${CMAKE_SOURCE_DIR}/include")
+
+
+add_executable(cpp-verification "${CMAKE_SOURCE_DIR}/src/verification.cpp")
+target_include_directories(cpp-verification PRIVATE ${INCL_DIR})
+target_link_libraries(${VERIFICATION_EXE} PRIVATE common)
+target_link_libraries(${VERIFICATION_EXE} PRIVATE cnpy)
+target_link_libraries(${VERIFICATION_EXE} PRIVATE OpenMP::OpenMP_CXX)
+target_compile_options(${VERIFICATION_EXE} PRIVATE ${AGGRESSIVE_OPTIMIZATIONS})
 
 
 foreach (TEST_FILE ${TESTS})

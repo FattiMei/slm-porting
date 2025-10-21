@@ -37,7 +37,7 @@ int main() {
 	const auto start_time = TIC();
 	// rs(spots, pists, slm.xx, slm.yy, slm.C1, slm.C2, phase);
 	rs_simd(spots, pists, slm.xx, slm.yy, slm.C1, slm.C2, phase);
-	rs_simulated_simd(spots, pists, slm.xx, slm.yy, slm.C1, slm.C2, phase);
+	// rs_simulated_simd(spots, pists, slm.xx, slm.yy, slm.C1, slm.C2, phase);
 	const auto end_time = TIC();
 
 	std::cout << std::format("Compute time: {} s\n",
