@@ -67,7 +67,7 @@ find_package(Torch REQUIRED)
 # now we can easily compile all the c++ sources into a shared library
 # to be loaded at will from the python scripts
 set(AGGRESSIVE_COMPILE_OPTIONS "-O3" "-march=native" "-ftree-vectorize" "-ffast-math")
-set(CPP_SHARED_LIB cpp_optimized_implementations)
+set(CPP_SHARED_LIB meilib)
 set(CPP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/slmporting/cpp")
 file(GLOB CPP_SOURCE_FILES "${CPP_SOURCE_DIR}/*.cpp")
 
@@ -77,6 +77,12 @@ target_include_directories(${CPP_SHARED_LIB} PRIVATE ${Python3_INCLUDE_DIRS})
 target_include_directories(${CPP_SHARED_LIB} PRIVATE ${TORCH_INCLUDE_DIRS})
 target_link_libraries(${CPP_SHARED_LIB} PRIVATE ${TORCH_LIBRARIES})
 set_target_properties(${CPP_SHARED_LIB} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# I need to export the shared library to the python script
+set(PYTHON_CONFIG_FILE "${CMAKE_SOURCE_DIR}/slmporting/config.py")
+add_custom_command(TARGET ${CPP_SHARED_LIB}
+	COMMAND ${CMAKE_COMMAND} -E echo "meilib_path = '\"$<TARGET_FILE:${CPP_SHARED_LIB}>\"'" > ${PYTHON_CONFIG_FILE}
+)
 
 
 # Here I want custom rules for invoking the verification and profiling scripts

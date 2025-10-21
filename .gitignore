@@ -3,3 +3,4 @@ venv/
 *.egg-info/
 *.csv
 build/
+slmporting/config.py
