@@ -10,9 +10,11 @@ if __name__ == '__main__':
 
     input_filename = sys.argv[1]
 
+    # at the moment it doesn't even pass this stage
     try:
-        npz = np.loadz(input_filename)
+        npz = np.load(input_filename)
     except:
+        print(a)
         print(f"[ERROR]: the file `{input_filename}` is not .npz")
         exit(1)
 
@@ -26,11 +28,11 @@ if __name__ == '__main__':
 
     ok = True
 
-    if not np.allclose(integers, np.arange(2, 10)):
+    if not np.allclose(integers, np.arange(1, 11)):
         print(f"Expected integers from 1 to 10, got {integers}")
         ok = False
 
-    if not np.allclose(doubles, np.arange(1, 10, dtype=np.float64)):
+    if not np.allclose(doubles, np.arange(1, 11, dtype=np.float64)):
         print(f"Expected doubles from 1.0 to 10.0, got {integers}")
         ok = False
 
