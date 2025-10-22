@@ -62,6 +62,7 @@ endif ()
 # could have CUDA installed I need to make it a required dependency
 list(APPEND CMAKE_PREFIX_PATH ${torch_cmake_prefix_path_output})
 find_package(Torch REQUIRED)
+find_package(OpenMP REQUIRED)
 
 
 # now we can easily compile all the c++ sources into a shared library
@@ -76,6 +77,13 @@ target_compile_options(${CPP_SHARED_LIB} PRIVATE ${AGGRESSIVE_COMPILE_OPTIONS})
 target_include_directories(${CPP_SHARED_LIB} PRIVATE ${Python3_INCLUDE_DIRS})
 target_include_directories(${CPP_SHARED_LIB} PRIVATE ${TORCH_INCLUDE_DIRS})
 target_link_libraries(${CPP_SHARED_LIB} PRIVATE ${TORCH_LIBRARIES})
+
+# there are some difficulties with the openmp library. It seems that the pytorch
+# environment supplies an independent omplib.so, but I can't really make it work
+#
+# when things are not done properly the performance of the implementations
+# will immediately suffer
+target_link_libraries(${CPP_SHARED_LIB} PRIVATE OpenMP::OpenMP_CXX)
 set_target_properties(${CPP_SHARED_LIB} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # I need to export the shared library to the python script

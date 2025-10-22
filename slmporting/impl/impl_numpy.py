@@ -53,4 +53,4 @@ def rs_manual_loop(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, y
     return np.arctan2(avg_field_y, avg_field_x)
 
 
-IMPLS = [rs, rs_no_complex, rs_manual_loop]
+IMPLS = [rs, rs_no_complex]
