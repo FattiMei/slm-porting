@@ -20,7 +20,9 @@ dependencies = [
 	"triton",
 	"pytest",
 	"ninja",
+
 	"ipykernel",
+	"matplotlib",
 	"pandas"
 ]
 
