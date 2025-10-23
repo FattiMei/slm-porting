@@ -16,17 +16,17 @@ except ImportError:
 torch.ops.load_library(config.meilib_path)
 
 
-@impl(Algorithm.RS, Backend.CPP, (Device.CPU), description = 'original cpp implementation, with openmp')
+@impl(Algorithm.RS, Backend.CPP, [Device.CPU], description = 'original cpp implementation, with openmp')
 def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return torch.ops.meilib.rs(x, y, z, pists, xx, yy, C1, C2)
 
 
-@impl(Algorithm.RS, Backend.CPP, (Device.CPU), description = 'uses std::experimental::simd')
+@impl(Algorithm.RS, Backend.CPP, [Device.CPU], description = 'uses std::experimental::simd')
 def rs_simd(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return torch.ops.meilib.rs_simd(x, y, z, pists, xx, yy, C1, C2)
 
 
-@impl(Algorithm.RS, Backend.CPP, (Device.CPU), description = 'manual unrolling')
+@impl(Algorithm.RS, Backend.CPP, [Device.CPU], description = 'manual unrolling')
 def rs_simulated_simd(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return torch.ops.meilib.rs_simulated_simd(x, y, z, pists, xx, yy, C1, C2)
 

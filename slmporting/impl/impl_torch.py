@@ -8,7 +8,7 @@ from slmporting.core.contract import impl
 ε = None
 
 
-@impl(Algorithm.RS, Backend.TORCH, (Device.CPU, Device.GPU), compiler = torch.compile, description = 'same code, just change math functions')
+@impl(Algorithm.RS, Backend.TORCH, [Device.CPU, Device.GPU], compiler = torch.compile, description = 'same code, just change math functions')
 def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return torch.angle(
         torch.mean(
@@ -24,7 +24,7 @@ def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C
     )
 
 
-@impl(Algorithm.RS, Backend.TORCH, (Device.CPU, Device.GPU), compiler = torch.compile, description = 'remove complex operators, not supported in compilation')
+@impl(Algorithm.RS, Backend.TORCH, [Device.CPU, Device.GPU], compiler = torch.compile, description = 'remove complex operators, not supported in compilation')
 def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     slm_p_phase = C1 * (x[:,ε]*xx[ε,:] + y[:,ε]*yy[ε,:]) + \
                   C2 * z[:,ε] * (xx**2 + yy**2)[ε,:] + \

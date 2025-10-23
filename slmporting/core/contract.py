@@ -85,21 +85,13 @@ def build_interface(signature, target_signature, backend: Backend):
 
 
 
-def impl(algorithm: Algorithm, backend: Backend, device: Device, compiler = (lambda x: x), description: str = None):
+def impl(algorithm: Algorithm, backend: Backend, devices: list[Device], compiler = (lambda x: x), description: str = None):
     local_algorithm   = algorithm
     local_backend     = backend
     local_compiler    = compiler
     local_description = description
 
-    local_devices = []
-    if isinstance(device, Device):
-        local_devices.append(device)
-    elif isinstance(device, Iterable):
-        for d in device:
-            assert(isinstance(d, Device))
-            local_devices.append(d)
-    else:
-        assert(False)
+    local_devices = devices
 
     def decorator(fn):
         signature = inspect.signature(fn)

@@ -10,7 +10,7 @@ from functools import partial
 ε = jnp.newaxis
 
 
-@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+@impl(Algorithm.RS, Backend.JAX, [Device.CPU, Device.GPU],
       compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
       description = 'same code')
 def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
@@ -28,7 +28,7 @@ def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C
     )
 
 
-@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+@impl(Algorithm.RS, Backend.JAX, [Device.CPU, Device.GPU],
       compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
       description = 'simulate complex numbers with real numbers')
 def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
@@ -44,7 +44,7 @@ def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy
     return jnp.arctan2(avg_field[1], avg_field[0])
 
 
-@impl(Algorithm.RS, Backend.JAX, (Device.CPU, Device.GPU),
+@impl(Algorithm.RS, Backend.JAX, [Device.CPU, Device.GPU],
       compiler = partial(jax.jit, static_argnames=('C1', 'C2')),
       description = 'using `jax.vmap` to remove the slm_p_phase allocation')
 def rs_vmap(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):

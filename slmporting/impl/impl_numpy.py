@@ -7,7 +7,7 @@ from slmporting.core.contract import impl
 ε = np.newaxis
 
 
-@impl(Algorithm.RS, Backend.NUMPY, Device.CPU, description = 'array programming implementation')
+@impl(Algorithm.RS, Backend.NUMPY, [Device.CPU], description = 'array programming implementation')
 def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     return np.angle(
         np.mean(
@@ -23,7 +23,7 @@ def rs(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C
     )
 
 
-@impl(Algorithm.RS, Backend.NUMPY, Device.CPU, description = 'simulate complex numbers with real numbers')
+@impl(Algorithm.RS, Backend.NUMPY, [Device.CPU], description = 'simulate complex numbers with real numbers')
 def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     slm_p_phase = C1 * (x[:,ε]*xx[ε,:] + y[:,ε]*yy[ε,:]) + \
                   C2 * z[:,ε] * (xx**2 + yy**2)[ε,:] + \
@@ -37,7 +37,7 @@ def rs_no_complex(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy
     return np.arctan2(avg_field[1], avg_field[0])
 
 
-@impl(Algorithm.RS, Backend.NUMPY, Device.CPU, description = 'do not store the complete slm_p_phase')
+@impl(Algorithm.RS, Backend.NUMPY, [Device.CPU], description = 'do not store the complete slm_p_phase')
 def rs_manual_loop(x: Tensor, y: Tensor, z: Tensor, pists: Tensor, xx: Tensor, yy: Tensor, C1: float, C2: float):
     avg_field_x = np.empty(xx.shape, xx.dtype)
     avg_field_y = np.empty(yy.shape, yy.dtype)
