@@ -22,8 +22,10 @@ dependencies = [
 	"ninja",
 
 	"ipykernel",
+	"ipywidgets",
 	"matplotlib",
-	"pandas"
+	"pandas",
+	"tqdm"
 ]
 
 [tool.setuptools.packages.find]
