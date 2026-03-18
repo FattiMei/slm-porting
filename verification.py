@@ -14,6 +14,8 @@ import slmporting.impl.impl_numpy
 import slmporting.impl.impl_torch
 import slmporting.impl.impl_cpp
 
+import pylikwid
+
 
 def key_to_int(key):
     """Combine two uint32 values into a single 64-bit integer seed."""
@@ -82,6 +84,9 @@ if __name__ == '__main__':
 
     slm = SLM.get_standard_slm()
 
+    pylikwid.markerinit()
+    pylikwid.markerthreadinit()
+
     print('algorithm,name,backend,device,dtype,key,abs_err,total_time')
 
     for n in range(args.nruns):
@@ -100,7 +105,26 @@ if __name__ == '__main__':
         reference_phase, _ = reference_impl(x, y, z, pists, slm)
         for impl in all_implementations:
             assert(reference_impl.algorithm == impl.algorithm)
+
+            # warmup run
             alternative_phase, times = impl(x, y, z, pists, slm)
+            region_name = '_'.join(map(str, (
+                reference_impl.algorithm,
+                impl.name,
+                impl.backend,
+                Device.CPU,
+                DType.fp64
+            )))
+
+            pylikwid.markerstartregion(region_name)
+
+            # true run
+            alternative_phase, times = impl(x, y, z, pists, slm)
+
+            pylikwid.markerstopregion(region_name)
+            nr_events, elist, time, count = pylikwid.markergetregion(region_name)
+            for i, e in enumerate(elist):
+                print(i, e)
 
             error = error_function(reference_phase, alternative_phase)
             total_time = times.transfer_time + times.compute_time
@@ -115,3 +139,5 @@ if __name__ == '__main__':
                 error,
                 total_time
             ))))
+
+    pylikwid.markerclose()
